@@ -365,6 +365,14 @@ describe('catalog', function () {
                 });
             });
 
+            describe('on submit with baseUri', function () {
+                it('call rest service', inject(function (config) {
+                    config.baseUri = 'http://host/context/';
+                    scope.submit();
+                    expect(rest.ctx.params.url).toEqual(config.baseUri + 'api/entity/catalog-partition?id=/partition');
+                }));
+            });
+
             it('on submit success redirect to custom path', function () {
                 scope.submit('/custom-path');
                 rest.ctx.success();

@@ -192,7 +192,7 @@ function RemoveCatalogPartitionController(config, $scope, $location, scopedRestS
             scope: $scope,
             params: {
                 method: 'DELETE',
-                url: 'api/entity/catalog-partition?id=' + self.id
+                url: (config.baseUri || '') + 'api/entity/catalog-partition?id=' + self.id
             },
             success: function () {
                 topicMessageDispatcher.fire('system.success', {
