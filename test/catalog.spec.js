@@ -343,6 +343,7 @@ describe('catalog', function () {
                     expect(rest.ctx.scope).toEqual(scope);
                     expect(rest.ctx.params.method).toEqual('DELETE');
                     expect(rest.ctx.params.url).toEqual('api/entity/catalog-partition?id=/partition');
+                    expect(rest.ctx.params.withCredentials).toEqual(true);
                 });
 
                 it('on submit success send removed notification', function () {
