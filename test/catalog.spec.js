@@ -1060,6 +1060,7 @@ describe('catalog', function () {
 
                 it('perform rest call', function () {
                     expect(rest.context.scope).toEqual(scope);
+                    expect(rest.context.params.withCredentials).toEqual(true);
                     expect(rest.context.params.method).toEqual('POST');
                     expect(rest.context.params.url).toEqual('api/entity/catalog-item');
                     expect(rest.context.params.data.context).toEqual('update');
@@ -1084,6 +1085,17 @@ describe('catalog', function () {
                         expect(topics['catalog.item.updated']).toEqual(item);
                     });
                 });
+            });
+
+            describe('on update with baseUri', function () {
+                beforeEach(inject(function (config) {
+                    config.baseUri = 'http://host/context/';
+                    scope.update();
+                }));
+
+                it('uses baseUri in POST request', inject(function (config) {
+                    expect(rest.context.params.url).toEqual(config.baseUri + 'api/entity/catalog-item');
+                }));
             });
         });
     });

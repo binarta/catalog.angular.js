@@ -393,8 +393,9 @@ function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, t
         scopedRestServiceHandler({
             scope: $scope,
             params: {
+                withCredentials: true,
                 method: 'POST',
-                url: 'api/entity/catalog-item',
+                url: (config.baseUri || '') + 'api/entity/catalog-item',
                 data: $scope.item
             },
             success: function () {
