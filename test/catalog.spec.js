@@ -107,6 +107,7 @@ describe('catalog', function () {
 
         it('on execute perform rest call', inject(function (config) {
             fixture.usecase('partition-id', onSuccess);
+            expect(fixture.rest.calls[0].args[0].params.withCredentials).toEqual(true);
             expect(fixture.rest.calls[0].args[0].params.method).toEqual('POST');
             expect(fixture.rest.calls[0].args[0].params.url).toEqual('api/query/catalog-item/findByPartition');
             expect(fixture.rest.calls[0].args[0].params.data).toEqual({

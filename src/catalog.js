@@ -46,10 +46,15 @@ function FindCatalogPartitionsFactory(config, $http) {
 function FindCatalogItemsByPartitionFactory(config, restServiceHandler) {
     return function (id, onSuccess) {
         restServiceHandler({
-            params: {method: 'POST', url: (config.baseUri || '') + 'api/query/catalog-item/findByPartition', data: {args: {
-                namespace: config.namespace,
-                partition: id
-            }}},
+            params: {
+                method: 'POST',
+                url: (config.baseUri || '') + 'api/query/catalog-item/findByPartition',
+                data: {args: {
+                    namespace: config.namespace,
+                    partition: id
+                }},
+                withCredentials:true
+            },
             error: function () {
                 onSuccess([])
             },
