@@ -298,6 +298,19 @@ describe('catalog', function () {
                             });
                         });
                     });
+
+                    it('catalog.partition.removed notification removes the partition', function () {
+                        scope.partitions = [
+                            {id: 'partition-1'},
+                            {id: 'partition-2'}
+                        ];
+
+                        subscribers['catalog.partition.removed']('partition-1');
+
+                        expect(scope.partitions).toEqual([
+                            {id: 'partition-2'}
+                        ]);
+                    });
                 });
 
             });

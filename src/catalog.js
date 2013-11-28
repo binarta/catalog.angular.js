@@ -181,6 +181,12 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, topicReg
         topicRegistry.subscribe('catalog.partition.added', function (partition) {
             if (partition.owner == $scope.partition) $scope.partitions.push(partition);
         });
+
+        topicRegistry.subscribe('catalog.partition.removed', function (id) {
+            $scope.partitions = $scope.partitions.filter(function (it) {
+                return it.id != id
+            });
+        });
     }
 }
 
