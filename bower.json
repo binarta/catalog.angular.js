@@ -1,6 +1,6 @@
 {
     "name": "binarta.catalog.angular",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "main": "./src/catalog.js",
     "dependencies": {
         "angular": "1.0.7"

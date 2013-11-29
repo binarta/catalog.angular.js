@@ -155,6 +155,14 @@ describe('catalog', function () {
             expect(notifications['app.start']).toBeUndefined();
         });
 
+        it('does not subscribe to catalog.item.updated notifications at construction time', function () {
+            expect(notifications['catalog.item.updated']).toBeUndefined();
+        });
+
+        it('does not subscribe to catalog.item.added notifications at construction time', function () {
+            expect(notifications['catalog.item.added']).toBeUndefined();
+        });
+
         describe('given parent partition', function () {
             beforeEach(function () {
                 scope.forPartition('partition');
@@ -167,6 +175,46 @@ describe('catalog', function () {
             describe('and app.start notification received', function () {
                 beforeEach(function () {
                     notifications['app.start']();
+                });
+
+                it('request catalog items for that partition', function () {
+                    expect(fixture.query.calls[0].args[0]).toEqual('partition');
+                });
+
+                describe('when catalog items received', function () {
+                    beforeEach(function () {
+                        fixture.query.calls[0].args[1](payload);
+                    });
+
+                    it('expose items on local scope', function () {
+                        expect(scope.items).toEqual(payload);
+                    });
+                });
+            });
+
+            describe('and catalog.item.updated notification received', function () {
+                beforeEach(function () {
+                    notifications['catalog.item.updated']();
+                });
+
+                it('request catalog items for that partition', function () {
+                    expect(fixture.query.calls[0].args[0]).toEqual('partition');
+                });
+
+                describe('when catalog items received', function () {
+                    beforeEach(function () {
+                        fixture.query.calls[0].args[1](payload);
+                    });
+
+                    it('expose items on local scope', function () {
+                        expect(scope.items).toEqual(payload);
+                    });
+                });
+            });
+
+            describe('and catalog.item.added notification received', function () {
+                beforeEach(function () {
+                    notifications['catalog.item.added']();
                 });
 
                 it('request catalog items for that partition', function () {
@@ -198,18 +246,6 @@ describe('catalog', function () {
             ]);
         });
 
-        it('catalog.item.added notifications add the item to the backed list', function () {
-            scope.items = [
-                {id: 'item-1'}
-            ];
-
-            notifications['catalog.item.added']({id: 'item-2'});
-
-            expect(scope.items).toEqual([
-                {id: 'item-1'},
-                {id: 'item-2'}
-            ]);
-        });
     });
 
     describe('ListPartitionsController', function () {

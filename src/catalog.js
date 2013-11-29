@@ -143,6 +143,18 @@ function QueryCatalogController($scope, topicRegistry, findCatalogItemsByPartiti
                 $scope.items = items;
             });
         });
+
+        topicRegistry.subscribe('catalog.item.updated', function (item) {
+            findCatalogItemsByPartition(partition, function (items) {
+                $scope.items = items;
+            });
+        });
+
+        topicRegistry.subscribe('catalog.item.added', function (item) {
+            findCatalogItemsByPartition(partition, function (items) {
+                $scope.items = items;
+            });
+        });
     };
 
     topicRegistry.subscribe('catalog.item.removed', function (id) {
@@ -151,9 +163,6 @@ function QueryCatalogController($scope, topicRegistry, findCatalogItemsByPartiti
         });
     });
 
-    topicRegistry.subscribe('catalog.item.added', function (item) {
-        $scope.items.push(item);
-    });
 }
 
 function ListCatalogPartitionsController($scope, findCatalogPartitions, topicRegistry) {
