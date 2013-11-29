@@ -356,7 +356,7 @@ describe('catalog', function () {
                 it('call rest service', function () {
                     expect(rest.ctx.scope).toEqual(scope);
                     expect(rest.ctx.params.method).toEqual('DELETE');
-                    expect(rest.ctx.params.url).toEqual('api/entity/catalog-partition?id=/partition');
+                    expect(rest.ctx.params.url).toEqual('api/entity/catalog-partition?id=' + encodeURIComponent('/partition'));
                     expect(rest.ctx.params.withCredentials).toEqual(true);
                 });
 
@@ -384,7 +384,7 @@ describe('catalog', function () {
                 it('call rest service', inject(function (config) {
                     config.baseUri = 'http://host/context/';
                     scope.submit();
-                    expect(rest.ctx.params.url).toEqual(config.baseUri + 'api/entity/catalog-partition?id=/partition');
+                    expect(rest.ctx.params.url).toEqual(config.baseUri + 'api/entity/catalog-partition?id=' + encodeURIComponent('/partition'));
                 }));
             });
 
@@ -841,7 +841,7 @@ describe('catalog', function () {
             it('perform rest call', function () {
                 expect(rest.ctx.scope).toEqual(scope);
                 expect(rest.ctx.params.method).toEqual('DELETE');
-                expect(rest.ctx.params.url).toEqual('api/entity/catalog-item?id=/parent/id');
+                expect(rest.ctx.params.url).toEqual('api/entity/catalog-item?id=' + encodeURIComponent('/parent/id'));
                 expect(rest.ctx.params.withCredentials).toEqual(true);
             });
 
@@ -904,7 +904,7 @@ describe('catalog', function () {
             }));
 
             it('uses baseUri in DELETE request', inject(function (config) {
-                expect(rest.ctx.params.url).toEqual(config.baseUri + 'api/entity/catalog-item?id=/parent/id');
+                expect(rest.ctx.params.url).toEqual(config.baseUri + 'api/entity/catalog-item?id=' + encodeURIComponent('/parent/id'));
             }));
         });
     });

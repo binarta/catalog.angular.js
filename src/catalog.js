@@ -203,7 +203,7 @@ function RemoveCatalogPartitionController(config, $scope, $location, scopedRestS
             scope: $scope,
             params: {
                 method: 'DELETE',
-                url: (config.baseUri || '') + 'api/entity/catalog-partition?id=' + self.id,
+                url: (config.baseUri || '') + 'api/entity/catalog-partition?id=' + encodeURIComponent(self.id),
                 withCredentials: true
             },
             success: function () {
@@ -377,7 +377,7 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
             scope: $scope,
             params: {
                 method: 'DELETE',
-                url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + id,
+                url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + encodeURIComponent(id),
                 withCredentials: true
             },
             success: function () {
