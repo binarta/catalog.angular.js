@@ -1,4 +1,4 @@
-angular.module('catalog', [])
+angular.module('catalog', ['ngRoute'])
     .factory('findAllCatalogItemTypes', ['config', '$http', FindAllCatalogItemTypesFactory])
     .factory('findCatalogPartitions', ['config', '$http', FindCatalogPartitionsFactory])
     .factory('findCatalogItemsByPartition', ['config', 'restServiceHandler', FindCatalogItemsByPartitionFactory])
