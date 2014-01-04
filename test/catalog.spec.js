@@ -8,9 +8,14 @@ describe('catalog', function () {
     beforeEach(module('rest.client'));
     beforeEach(module('web.storage'));
 
-    beforeEach(inject(function ($rootScope, $injector, $location, config) {
+    beforeEach(inject(function ($injector, $location, config) {
         config.namespace = 'namespace';
-        scope = $rootScope.$new();
+        scope = {
+            $watch: function (expression, callback) {
+                scope.watches[expression] = callback;
+            },
+            watches: {}
+        };
         payload = [];
         params = {};
         location = $location;
@@ -1102,6 +1107,28 @@ describe('catalog', function () {
 
             it('exposes item on scope', function () {
                 expect(scope.item).toEqual(item);
+            });
+
+            describe('and item change watch has triggered', function () {
+                describe('and item did not change', function () {
+                    beforeEach(function () {
+                        scope.watches['item']();
+                    });
+
+                    it('changed state should be false', function () {
+                        expect(scope.unchanged).toEqual(true);
+                    });
+                });
+
+                describe('and item changed', function () {
+                    beforeEach(function () {
+                        scope.watches['item'](item, {});
+                    });
+
+                    it('changed state should be true', function () {
+                        expect(scope.unchanged).toEqual(false);
+                    });
+                });
             });
 
             describe('on update', function () {

@@ -409,6 +409,10 @@ function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, t
         $scope.item.context = 'update';
     };
 
+    $scope.$watch('item', function (newValue, oldValue) {
+        $scope.unchanged = (newValue == oldValue);
+    }, true);
+
     $scope.update = function () {
         $scope.item.namespace = config.namespace;
         scopedRestServiceHandler({
