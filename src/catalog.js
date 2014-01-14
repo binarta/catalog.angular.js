@@ -1,3 +1,4 @@
+var $routeProviderReference;
 angular.module('catalog', ['ngRoute'])
     .factory('findAllCatalogItemTypes', ['config', '$http', FindAllCatalogItemTypesFactory])
     .factory('findCatalogPartitions', ['config', '$http', FindCatalogPartitionsFactory])
@@ -12,22 +13,30 @@ angular.module('catalog', ['ngRoute'])
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
     .controller('UpdateCatalogItemController', ['config', '$scope', 'scopedRestServiceHandler', 'topicMessageDispatcher', UpdateCatalogItemController])
     .config(['$routeProvider', function ($routeProvider) {
-        [
-            [],
-            [':d0'],
-            [':d0', ':d1'],
-            [':d0', ':d1', ':d2'],
-            [':d0', ':d1', ':d2', ':d3'],
-            [':d0', ':d1', ':d2', ':d3', ':d4'],
-            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5']
-        ].forEach(function (it) {
-                var path = it.length ? '/' + it.join('/') : '';
-                $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController]});
-                $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html', controller: ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', ViewCatalogItemController]});
-                $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController]});
-                $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html', controller: ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', ViewCatalogItemController]});
-            });
-    }]);
+        $routeProviderReference = $routeProvider;
+    }])
+    .run(function(topicRegistry){
+        topicRegistry.subscribe('config.initialized', function (config) {
+            var version = '';
+            if(config.version) version = '?v=' + config.version;
+            [
+                [],
+                [':d0'],
+                [':d0', ':d1'],
+                [':d0', ':d1', ':d2'],
+                [':d0', ':d1', ':d2', ':d3'],
+                [':d0', ':d1', ':d2', ':d3', ':d4'],
+                [':d0', ':d1', ':d2', ':d3', ':d4', ':d5']
+            ].forEach(function (it) {
+                    var path = it.length ? '/' + it.join('/') : '';
+
+                    $routeProviderReference.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html'+version, controller: ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController]});
+                    $routeProviderReference.when('/view' + path, {templateUrl: 'partials/catalog/item.html'+version, controller: ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', ViewCatalogItemController]});
+                    $routeProviderReference.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html'+version, controller: ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController]});
+                    $routeProviderReference.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html'+version, controller: ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', ViewCatalogItemController]});
+                });
+        });
+    });
 
 function FindCatalogPartitionsFactory(config, $http) {
     return function (query, owner, onSuccess) {
