@@ -1170,13 +1170,18 @@ describe('catalog', function () {
     describe('UpdateCatalogItemController', function () {
         var topics, fixture;
 
-        beforeEach(inject(function ($controller, config, scopedRestServiceHandlerMock, topicMessageDispatcherMock) {
+        beforeEach(inject(function ($controller, config, scopedRestServiceHandlerMock, topicMessageDispatcherMock, $rootScope) {
             config.namespace = 'namespace';
             rest = scopedRestServiceHandlerMock;
             topics = topicMessageDispatcherMock;
             fixture = {
                 entity: jasmine.createSpy('entity')
             };
+            scope = $rootScope.$new();
+            scope.$watch = function (expression, callback) {
+                scope.watches[expression] = callback;
+            };
+            scope.watches = [];
             ctrl = $controller(UpdateCatalogItemController, {
                 $scope: scope,
                 findCatalogItemById: fixture.entity
@@ -1198,6 +1203,10 @@ describe('catalog', function () {
                 expect(scope.item).toEqual(item);
             });
 
+            it('unchanged state is true', function () {
+                expect(scope.unchanged).toEqual(true);
+            });
+
             describe('and item change watch has triggered', function () {
                 describe('and item did not change', function () {
                     beforeEach(function () {
@@ -1216,6 +1225,10 @@ describe('catalog', function () {
 
                     it('changed state should be true', function () {
                         expect(scope.unchanged).toEqual(false);
+                    });
+
+                    it('and fires edit.mode.lock event', function () {
+                        expect(topics['edit.mode.lock']).toEqual('add');
                     });
                 });
             });
@@ -1250,6 +1263,10 @@ describe('catalog', function () {
 
                     it('raise catalog.item.updated notification', function () {
                         expect(topics['catalog.item.updated']).toEqual(item.id);
+                    });
+
+                    it('raise edit.mode.lock notification', function () {
+                        expect(topics['edit.mode.lock']).toEqual('remove');
                     });
 
                     it('changed state should be false', function () {
@@ -1296,9 +1313,37 @@ describe('catalog', function () {
                     it('refresh item on scope', function () {
                         expect(scope.items[0]).toEqual(payload);
                     });
+
+                    it('raise edit.mode.lock notification', function () {
+                        expect(topics['edit.mode.lock']).toEqual('remove');
+                    });
                 });
 
             });
+
+            describe('on route change start notification and state is dirty', function () {
+                beforeEach(function () {
+                    scope.unchanged = false;
+                    scope.$broadcast('$routeChangeStart');
+                });
+
+                it('raise edit.mode.lock notification', function () {
+                    expect(topics['edit.mode.lock']).toEqual('remove');
+                });
+            });
+
+            describe('on route change start notification and state is not dirty', function () {
+                beforeEach(function () {
+                    scope.unchanged = true;
+                    scope.$broadcast('$routeChangeStart');
+                });
+
+                it('raise edit.mode.lock notification', function () {
+                    expect(topics['edit.mode.lock']).toBeUndefined();
+                });
+            });
+
+
         });
     });
 });

@@ -438,10 +438,14 @@ function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, t
     $scope.init = function (item) {
         $scope.item = item;
         $scope.item.context = 'update';
+        $scope.unchanged = true;
     };
 
     $scope.$watch('item', function (newValue, oldValue) {
-        $scope.unchanged = (newValue == oldValue);
+        if (newValue != oldValue && $scope.unchanged) {
+            $scope.unchanged = false;
+            topicMessageDispatcher.fire('edit.mode.lock', 'add');
+        }
     }, true);
 
     $scope.cancel = function () {
@@ -453,6 +457,7 @@ function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, t
                 }
             }
         });
+        topicMessageDispatcher.fire('edit.mode.lock', 'remove');
     };
 
     $scope.update = function () {
@@ -471,8 +476,13 @@ function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, t
                     default: 'Catalog item updated!'
                 });
                 topicMessageDispatcher.fire('catalog.item.updated', $scope.item.id);
+                topicMessageDispatcher.fire('edit.mode.lock', 'remove');
                 $scope.unchanged = true;
             }
         });
     }
+
+    $scope.$on('$routeChangeStart', function() {
+        if (!$scope.unchanged) topicMessageDispatcher.fire('edit.mode.lock', 'remove');
+    });
 }
