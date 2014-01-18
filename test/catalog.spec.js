@@ -94,6 +94,48 @@ describe('catalog', function () {
         })
     });
 
+    describe('findCatalogItemById', function () {
+        var fixture;
+
+        beforeEach(inject(function (config, findCatalogItemById, restServiceHandler) {
+            config.namespace = 'namespace';
+            fixture = {
+                config: config,
+                rest: restServiceHandler,
+                usecase: findCatalogItemById
+            };
+            payload = undefined;
+            onSuccess = function (item) {
+                receivedPayload = item;
+            };
+        }));
+
+        it('on execute perform rest call', function () {
+            fixture.usecase('item-id', onSuccess);
+            expect(fixture.rest.calls[0].args[0].params.withCredentials).toEqual(true);
+            expect(fixture.rest.calls[0].args[0].params.method).toEqual('GET');
+            expect(fixture.rest.calls[0].args[0].params.url).toEqual('api/entity/catalog-item?id=item-id');
+        });
+
+        it('on execute with baseUri', function () {
+            fixture.config.baseUri = 'http://host/context/';
+            fixture.usecase('item/id', onSuccess);
+            expect(fixture.rest.calls[0].args[0].params.url).toEqual(fixture.config.baseUri + 'api/entity/catalog-item?id=' + encodeURIComponent('item/id'));
+        });
+
+        it('unexpected responses resolve to an empty set', function () {
+            fixture.usecase('item-id', onSuccess);
+            fixture.rest.calls[0].args[0].error();
+            expect(receivedPayload).toEqual([]);
+        });
+
+        it('response payload is passed to success callback', function () {
+            fixture.usecase('type', onSuccess);
+            fixture.rest.calls[0].args[0].success(payload);
+            expect(receivedPayload).toEqual(payload);
+        });
+    });
+
     describe('findCatalogItemsByPartition', function () {
         var fixture;
 
@@ -139,33 +181,28 @@ describe('catalog', function () {
             fixture.usecase('type', onSuccess);
             fixture.rest.calls[0].args[0].success(payload);
             expect(receivedPayload).toEqual(payload);
-        })
+        });
     });
 
     describe('QueryCatalogController', function () {
         var fixture;
 
-        beforeEach(inject(function ($controller, topicRegistryMock) {
+        beforeEach(inject(function ($controller, topicRegistryMock, $rootScope) {
             notifications = topicRegistryMock;
             fixture = {
-                query: jasmine.createSpy('query')
+                query: jasmine.createSpy('query'),
+                entity: jasmine.createSpy('entity')
             };
+            scope = $rootScope.$new();
             ctrl = $controller(QueryCatalogController, {
                 $scope: scope,
-                findCatalogItemsByPartition: fixture.query
+                findCatalogItemsByPartition: fixture.query,
+                findCatalogItemById: fixture.entity
             });
         }));
 
         it('does not subscribe to app.start notifications at construction time', function () {
             expect(notifications['app.start']).toBeUndefined();
-        });
-
-        it('does not subscribe to catalog.item.updated notifications at construction time', function () {
-            expect(notifications['catalog.item.updated']).toBeUndefined();
-        });
-
-        it('does not subscribe to catalog.item.added notifications at construction time', function () {
-            expect(notifications['catalog.item.added']).toBeUndefined();
         });
 
         describe('given parent partition', function () {
@@ -197,69 +234,109 @@ describe('catalog', function () {
                 });
             });
 
-            describe('and catalog.item.updated notification received', function () {
+            describe('catalog.item.added notification received', function () {
+                var id;
+
                 beforeEach(function () {
-                    notifications['catalog.item.updated']();
+                    id = 'new-item';
+                    scope.items = [];
+                    payload = {
+                        id: id
+                    };
+                    notifications['catalog.item.added'](id);
                 });
 
-                it('request catalog items for that partition', function () {
-                    expect(fixture.query.calls[0].args[0]).toEqual('partition');
+                it('request catalog item for that id', function () {
+                    expect(fixture.entity.calls[0].args[0]).toEqual(id);
                 });
 
-                describe('when catalog items received', function () {
+                describe('when catalog item received', function () {
                     beforeEach(function () {
-                        fixture.query.calls[0].args[1](payload);
+                        fixture.entity.calls[0].args[1](payload);
                     });
 
-                    it('expose items on local scope', function () {
-                        expect(scope.items).toEqual(payload);
+                    it('update item on local scope', function () {
+                        expect(scope.items[0]).toEqual(payload);
                     });
                 });
             });
 
-            describe('and catalog.item.added notification received', function () {
+            describe('catalog.item.updated notification received', function () {
                 beforeEach(function () {
+                    scope.items = [
+                        {id: 'item-1', foo: 'foo'},
+                        {id: 'item-2', foo: 'foo'}
+                    ];
+                    payload = {
+                        id: 'item-2',
+                        foo: 'bar'
+                    };
+                    notifications['catalog.item.updated']('item-2');
+                });
+
+                it('request catalog item for that id', function () {
+                    expect(fixture.entity.calls[0].args[0]).toEqual('item-2');
+                });
+
+                describe('when catalog item received', function () {
+                    beforeEach(function () {
+                        fixture.entity.calls[0].args[1](payload);
+                    });
+
+                    it('update item on local scope', function () {
+                        expect(scope.items[1]).toEqual(payload);
+                    });
+                });
+            });
+
+            it('catalog.item.removed notifications remove the item from the backed list', function () {
+                scope.items = [
+                    {id: 'item-1'},
+                    {id: 'item-2'}
+                ];
+
+                notifications['catalog.item.removed']('item-1');
+
+                expect(scope.items).toEqual([
+                    {id: 'item-2'}
+                ]);
+            });
+
+            describe('and a route change start notification is raised', function () {
+                beforeEach(function () {
+                    scope.items = [];
+
                     notifications['catalog.item.added']();
+                    notifications['catalog.item.updated']();
+                    notifications['catalog.item.removed']();
+
+                    scope.$broadcast('$routeChangeStart');
                 });
 
-                it('request catalog items for that partition', function () {
-                    expect(fixture.query.calls[0].args[0]).toEqual('partition');
+                it('then catalog item added listener should be unsubscribed', function () {
+                    expect(notifications['catalog.item.added']).toBeUndefined();
                 });
 
-                describe('when catalog items received', function () {
-                    beforeEach(function () {
-                        fixture.query.calls[0].args[1](payload);
-                    });
+                it('then catalog item updated listener should be unsubscribed', function () {
+                    expect(notifications['catalog.item.updated']).toBeUndefined();
+                });
 
-                    it('expose items on local scope', function () {
-                        expect(scope.items).toEqual(payload);
-                    });
+                it('then catalog item removed listener should be unsubscribed', function () {
+                    expect(notifications['catalog.item.removed']).toBeUndefined();
                 });
             });
+
         });
-
-        it('catalog.item.removed notifications remove the item from the backed list', function () {
-            scope.items = [
-                {id: 'item-1'},
-                {id: 'item-2'}
-            ];
-
-            notifications['catalog.item.removed']('item-1');
-
-            expect(scope.items).toEqual([
-                {id: 'item-2'}
-            ]);
-        });
-
     });
 
     describe('ListPartitionsController', function () {
         var fixture;
 
-        beforeEach(inject(function ($controller) {
+        beforeEach(inject(function ($controller, $rootScope) {
             fixture = {
                 query: jasmine.createSpy('query')
             };
+            scope = $rootScope.$new();
             ctrl = $controller(ListCatalogPartitionsController, {
                 $scope: scope,
                 findCatalogPartitions: fixture.query
@@ -354,6 +431,25 @@ describe('catalog', function () {
                     });
                 });
 
+            });
+
+            describe('and a route change start notification is raised', function () {
+                beforeEach(function () {
+                    scope.partitions = [];
+
+                    subscribers['catalog.partition.added']('');
+                    subscribers['catalog.partition.removed']();
+
+                    scope.$broadcast('$routeChangeStart');
+                });
+
+                it('then catalog partition added listener should be unsubscribed', function () {
+                    expect(subscribers['catalog.partition.added']).toBeUndefined();
+                });
+
+                it('then catalog partition removed listener should be unsubscribed', function () {
+                    expect(subscribers['catalog.partition.removed']).toBeUndefined();
+                });
             });
         });
 
@@ -660,18 +756,7 @@ describe('catalog', function () {
                         scope.submit();
                         ctx.success({id: 'item-id'});
 
-                        expect(dispatcher['catalog.item.added'].id).toEqual('item-id');
-                        expect(dispatcher['catalog.item.added'].name).toEqual('name');
-                        expect(dispatcher['catalog.item.added'].custom).toEqual('custom-field');
-                    });
-
-                    it('raise item added notification without name', function () {
-                        scope.item.type = 'type';
-
-                        scope.submit();
-                        ctx.success({id: 'item-id'});
-
-                        expect(dispatcher['catalog.item.added'].name).toEqual('item-id');
+                        expect(dispatcher['catalog.item.added']).toEqual('item-id');
                     });
                 });
             });
@@ -1160,7 +1245,11 @@ describe('catalog', function () {
                     });
 
                     it('raise catalog.item.updated notification', function () {
-                        expect(topics['catalog.item.updated']).toEqual(item);
+                        expect(topics['catalog.item.updated']).toEqual(item.id);
+                    });
+
+                    it('changed state should be false', function () {
+                        expect(scope.unchanged).toEqual(true);
                     });
                 });
             });

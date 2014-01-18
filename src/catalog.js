@@ -1,7 +1,7 @@
-var $routeProviderReference;
 angular.module('catalog', ['ngRoute'])
     .factory('findAllCatalogItemTypes', ['config', '$http', FindAllCatalogItemTypesFactory])
     .factory('findCatalogPartitions', ['config', '$http', FindCatalogPartitionsFactory])
+    .factory('findCatalogItemById', ['config', 'restServiceHandler', FindCatalogItemByIdFactory])
     .factory('findCatalogItemsByPartition', ['config', 'restServiceHandler', FindCatalogItemsByPartitionFactory])
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
@@ -9,34 +9,26 @@ angular.module('catalog', ['ngRoute'])
     .controller('AddToCatalogController', ['config', '$scope', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
     .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', 'localStorage', RemoveItemFromCatalogController])
-    .controller('QueryCatalogController', ['$scope', 'topicRegistry', 'findCatalogItemsByPartition', QueryCatalogController])
+    .controller('QueryCatalogController', ['$scope', 'topicRegistry', 'findCatalogItemsByPartition', 'findCatalogItemById', QueryCatalogController])
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
     .controller('UpdateCatalogItemController', ['config', '$scope', 'scopedRestServiceHandler', 'topicMessageDispatcher', UpdateCatalogItemController])
     .config(['$routeProvider', function ($routeProvider) {
-        $routeProviderReference = $routeProvider;
-    }])
-    .run(function(topicRegistry){
-        topicRegistry.subscribe('config.initialized', function (config) {
-            var version = '';
-            if(config.version) version = '?v=' + config.version;
-            [
-                [],
-                [':d0'],
-                [':d0', ':d1'],
-                [':d0', ':d1', ':d2'],
-                [':d0', ':d1', ':d2', ':d3'],
-                [':d0', ':d1', ':d2', ':d3', ':d4'],
-                [':d0', ':d1', ':d2', ':d3', ':d4', ':d5']
-            ].forEach(function (it) {
-                    var path = it.length ? '/' + it.join('/') : '';
-
-                    $routeProviderReference.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html'+version, controller: ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController]});
-                    $routeProviderReference.when('/view' + path, {templateUrl: 'partials/catalog/item.html'+version, controller: ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', ViewCatalogItemController]});
-                    $routeProviderReference.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html'+version, controller: ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController]});
-                    $routeProviderReference.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html'+version, controller: ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', ViewCatalogItemController]});
-                });
-        });
-    });
+        [
+            [],
+            [':d0'],
+            [':d0', ':d1'],
+            [':d0', ':d1', ':d2'],
+            [':d0', ':d1', ':d2', ':d3'],
+            [':d0', ':d1', ':d2', ':d3', ':d4'],
+            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5']
+        ].forEach(function (it) {
+                var path = it.length ? '/' + it.join('/') : '';
+                $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController]});
+                $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html', controller: ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', ViewCatalogItemController]});
+                $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController]});
+                $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html', controller: ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', ViewCatalogItemController]});
+            });
+    }]);
 
 function FindCatalogPartitionsFactory(config, $http) {
     return function (query, owner, onSuccess) {
@@ -49,6 +41,22 @@ function FindCatalogPartitionsFactory(config, $http) {
             namespace: config.namespace,
             owner: owner
         }}).error(onError).success(onSuccess);
+    }
+}
+
+function FindCatalogItemByIdFactory(config, restServiceHandler) {
+    return function (id, onSuccess) {
+        restServiceHandler({
+            params: {
+                method: 'GET',
+                url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + encodeURIComponent(id),
+                withCredentials:true
+            },
+            error: function () {
+                onSuccess([])
+            },
+            success: onSuccess
+        });
     }
 }
 
@@ -144,34 +152,49 @@ function BrowseCatalogController($scope, $routeParams, catalogPathParser) {
     $scope.breadcrumbs = current.breadcrumbs;
 }
 
-function QueryCatalogController($scope, topicRegistry, findCatalogItemsByPartition) {
+function QueryCatalogController($scope, topicRegistry, findCatalogItemsByPartition, findCatalogItemById) {
     $scope.forPartition = function (partition) {
         $scope.partition = partition;
+
+        var updated = function (id) {
+            findCatalogItemById(id, function (item) {
+                for(var i = 0; i < $scope.items.length; i++) {
+                    if ($scope.items[i].id == id) {
+                        $scope.items[i] = item;
+                        break;
+                    }
+                }
+            });
+        };
+
+        var added = function (id) {
+            findCatalogItemById(id, function (item) {
+                $scope.items.push(item);
+            });
+        };
+
+        var removed = function (id) {
+            $scope.items = $scope.items.filter(function (it) {
+                return it.id != id
+            });
+        };
+
+        $scope.$on('$routeChangeStart', function() {
+            topicRegistry.unsubscribe('catalog.item.added', added);
+            topicRegistry.unsubscribe('catalog.item.updated', updated);
+            topicRegistry.unsubscribe('catalog.item.removed', removed);
+        });
+
         topicRegistry.subscribe('app.start', function () {
             findCatalogItemsByPartition(partition, function (items) {
                 $scope.items = items;
             });
         });
 
-        topicRegistry.subscribe('catalog.item.updated', function (item) {
-            findCatalogItemsByPartition(partition, function (items) {
-                $scope.items = items;
-            });
-        });
-
-        topicRegistry.subscribe('catalog.item.added', function (item) {
-            findCatalogItemsByPartition(partition, function (items) {
-                $scope.items = items;
-            });
-        });
+        topicRegistry.subscribe('catalog.item.added', added);
+        topicRegistry.subscribe('catalog.item.updated', updated);
+        topicRegistry.subscribe('catalog.item.removed', removed);
     };
-
-    topicRegistry.subscribe('catalog.item.removed', function (id) {
-        $scope.items = $scope.items.filter(function (it) {
-            return it.id != id
-        });
-    });
-
 }
 
 function ListCatalogPartitionsController($scope, findCatalogPartitions, topicRegistry) {
@@ -190,21 +213,29 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, topicReg
         $scope.partition = partition;
         $scope.parent = partition == '/' ? undefined : self.toParent(partition);
 
+        var added = function (partition) {
+            if (partition.owner == $scope.partition) $scope.partitions.push(partition);
+        };
+
+        var removed = function (id) {
+            $scope.partitions = $scope.partitions.filter(function (it) {
+                return it.id != id
+            });
+        };
+
+        $scope.$on('$routeChangeStart', function() {
+            topicRegistry.unsubscribe('catalog.partition.added', added);
+            topicRegistry.unsubscribe('catalog.partition.removed', removed);
+        });
+
         topicRegistry.subscribe('app.start', function () {
             findCatalogPartitions(query, partition, function (partitions) {
                 $scope.partitions = partitions;
             });
         });
 
-        topicRegistry.subscribe('catalog.partition.added', function (partition) {
-            if (partition.owner == $scope.partition) $scope.partitions.push(partition);
-        });
-
-        topicRegistry.subscribe('catalog.partition.removed', function (id) {
-            $scope.partitions = $scope.partitions.filter(function (it) {
-                return it.id != id
-            });
-        });
+        topicRegistry.subscribe('catalog.partition.added', added);
+        topicRegistry.subscribe('catalog.partition.removed', removed);
     }
 }
 
@@ -266,16 +297,7 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
 
     $scope.submit = function () {
         var onSuccess = function (item) {
-            function raiseAddedNotification(id) {
-                var msg = {id: id};
-                Object.keys($scope.item).forEach(function (it) {
-                    msg[it] = $scope.item[it];
-                });
-                if (!msg.name) msg.name = msg.id;
-                topicMessageDispatcher.fire('catalog.item.added', msg);
-            }
-
-            raiseAddedNotification(item.id);
+            topicMessageDispatcher.fire('catalog.item.added', item.id);
             init();
         };
 
@@ -437,7 +459,8 @@ function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, t
                     code: 'catalog.item.updated',
                     default: 'Catalog item updated!'
                 });
-                topicMessageDispatcher.fire('catalog.item.updated', $scope.item);
+                topicMessageDispatcher.fire('catalog.item.updated', $scope.item.id);
+                $scope.unchanged = true;
             }
         });
     }
