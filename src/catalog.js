@@ -11,7 +11,7 @@ angular.module('catalog', ['ngRoute'])
     .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', 'localStorage', RemoveItemFromCatalogController])
     .controller('QueryCatalogController', ['$scope', 'topicRegistry', 'findCatalogItemsByPartition', 'findCatalogItemById', QueryCatalogController])
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
-    .controller('UpdateCatalogItemController', ['config', '$scope', 'scopedRestServiceHandler', 'topicMessageDispatcher', UpdateCatalogItemController])
+    .controller('UpdateCatalogItemController', ['config', '$scope', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
     .config(['$routeProvider', function ($routeProvider) {
         [
             [],
@@ -432,7 +432,7 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
     }
 }
 
-function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, topicMessageDispatcher) {
+function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, topicMessageDispatcher, findCatalogItemById) {
     var self = this;
 
     $scope.init = function (item) {
@@ -443,6 +443,17 @@ function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, t
     $scope.$watch('item', function (newValue, oldValue) {
         $scope.unchanged = (newValue == oldValue);
     }, true);
+
+    $scope.cancel = function () {
+        findCatalogItemById($scope.item.id, function (item) {
+            for(var i = 0; i < $scope.items.length; i++) {
+                if ($scope.items[i].id == $scope.item.id) {
+                    $scope.items[i] = item;
+                    break;
+                }
+            }
+        });
+    };
 
     $scope.update = function () {
         $scope.item.namespace = config.namespace;

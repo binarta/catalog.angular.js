@@ -1168,15 +1168,19 @@ describe('catalog', function () {
         });
 
     describe('UpdateCatalogItemController', function () {
-        var topics;
+        var topics, fixture;
 
         beforeEach(inject(function ($controller, config, scopedRestServiceHandlerMock, topicMessageDispatcherMock) {
             config.namespace = 'namespace';
             rest = scopedRestServiceHandlerMock;
             topics = topicMessageDispatcherMock;
+            fixture = {
+                entity: jasmine.createSpy('entity')
+            };
             ctrl = $controller(UpdateCatalogItemController, {
-                $scope: scope
-            })
+                $scope: scope,
+                findCatalogItemById: fixture.entity
+            });
         }));
 
         describe('initialized with catalog item', function () {
@@ -1263,6 +1267,37 @@ describe('catalog', function () {
                 it('uses baseUri in POST request', inject(function (config) {
                     expect(rest.context.params.url).toEqual(config.baseUri + 'api/entity/catalog-item');
                 }));
+            });
+
+            describe('on cancel', function () {
+                beforeEach(function () {
+                    scope.items = [{
+                        id: 'item-id',
+                        customField: 'custom-value'
+                    }];
+                    payload = {
+                        id: 'item-id',
+                        customField: 'custom-value'
+                    };
+                    scope.cancel();
+                });
+
+                it('request catalog item for that id', function () {
+                    expect(fixture.entity.calls[0].args[0]).toEqual(scope.item.id);
+                });
+
+                describe('when catalog item received', function () {
+                    beforeEach(function () {
+                        scope.items[0].customField = 'modified';
+
+                        fixture.entity.calls[0].args[1](payload);
+                    });
+
+                    it('refresh item on scope', function () {
+                        expect(scope.items[0]).toEqual(payload);
+                    });
+                });
+
             });
         });
     });
