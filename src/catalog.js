@@ -426,6 +426,7 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
                     default: 'Item removed!'
                 });
                 topicMessageDispatcher.fire('catalog.item.removed', id);
+                topicMessageDispatcher.fire('edit.mode.unlock', id);
                 if (isRedirectEnabled()) redirectTo(current.parent);
             }
         });
@@ -444,7 +445,7 @@ function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, t
     $scope.$watch('item', function (newValue, oldValue) {
         if (newValue != oldValue && $scope.unchanged) {
             $scope.unchanged = false;
-            topicMessageDispatcher.fire('edit.mode.lock', 'add');
+            topicMessageDispatcher.fire('edit.mode.lock', $scope.item.id);
         }
     }, true);
 
@@ -457,7 +458,7 @@ function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, t
                 }
             }
         });
-        topicMessageDispatcher.fire('edit.mode.lock', 'remove');
+        topicMessageDispatcher.fire('edit.mode.unlock', $scope.item.id);
     };
 
     $scope.update = function () {
@@ -476,13 +477,13 @@ function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, t
                     default: 'Catalog item updated!'
                 });
                 topicMessageDispatcher.fire('catalog.item.updated', $scope.item.id);
-                topicMessageDispatcher.fire('edit.mode.lock', 'remove');
+                topicMessageDispatcher.fire('edit.mode.unlock', $scope.item.id);
                 $scope.unchanged = true;
             }
         });
     }
 
     $scope.$on('$routeChangeStart', function() {
-        if (!$scope.unchanged) topicMessageDispatcher.fire('edit.mode.lock', 'remove');
+        if (!$scope.unchanged) topicMessageDispatcher.fire('edit.mode.unlock', $scope.item.id);
     });
 }

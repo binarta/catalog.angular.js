@@ -997,6 +997,12 @@ describe('catalog', function () {
                     expect(dispatcher['catalog.item.removed']).toEqual('item-id');
                 });
 
+                it('raise edit.mode.unlock notification', function () {
+                    scope.submit('item-id');
+                    rest.ctx.success();
+                    expect(dispatcher['edit.mode.unlock']).toEqual('item-id');
+                });
+
                 it('switch to browse the parent partition', function () {
                     expectRedirectTo('/browse/parent/');
                 });
@@ -1228,7 +1234,7 @@ describe('catalog', function () {
                     });
 
                     it('and fires edit.mode.lock event', function () {
-                        expect(topics['edit.mode.lock']).toEqual('add');
+                        expect(topics['edit.mode.lock']).toEqual(scope.item.id);
                     });
                 });
             });
@@ -1265,8 +1271,8 @@ describe('catalog', function () {
                         expect(topics['catalog.item.updated']).toEqual(item.id);
                     });
 
-                    it('raise edit.mode.lock notification', function () {
-                        expect(topics['edit.mode.lock']).toEqual('remove');
+                    it('raise edit.mode.unlock notification', function () {
+                        expect(topics['edit.mode.unlock']).toEqual(scope.item.id);
                     });
 
                     it('changed state should be false', function () {
@@ -1314,8 +1320,8 @@ describe('catalog', function () {
                         expect(scope.items[0]).toEqual(payload);
                     });
 
-                    it('raise edit.mode.lock notification', function () {
-                        expect(topics['edit.mode.lock']).toEqual('remove');
+                    it('raise edit.mode.unlock notification', function () {
+                        expect(topics['edit.mode.unlock']).toEqual(scope.item.id);
                     });
                 });
 
@@ -1327,8 +1333,8 @@ describe('catalog', function () {
                     scope.$broadcast('$routeChangeStart');
                 });
 
-                it('raise edit.mode.lock notification', function () {
-                    expect(topics['edit.mode.lock']).toEqual('remove');
+                it('raise edit.mode.unlock notification', function () {
+                    expect(topics['edit.mode.unlock']).toEqual(scope.item.id);
                 });
             });
 
@@ -1339,7 +1345,7 @@ describe('catalog', function () {
                 });
 
                 it('raise edit.mode.lock notification', function () {
-                    expect(topics['edit.mode.lock']).toBeUndefined();
+                    expect(topics['edit.mode.unlock']).toBeUndefined();
                 });
             });
 
