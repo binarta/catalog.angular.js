@@ -284,6 +284,7 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
         $scope.item.name = '';
         $scope.typeSelected = $routeParams.type;
         if ($routeParams.partition) $scope.partition = $routeParams.partition;
+        if($scope.form) $scope.form.$setPristine();
     };
 
     $scope.noredirect = function (partition, type) {

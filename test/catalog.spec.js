@@ -758,6 +758,19 @@ describe('catalog', function () {
 
                         expect(dispatcher['catalog.item.added']).toEqual('item-id');
                     });
+
+                    it('on submit clear form dirty state', function () {
+                        var pristine = false;
+                        scope.form = {
+                            $setPristine: function() {
+                                pristine = true;
+                            }
+                        };
+                        scope.submit();
+                        ctx.success({id: 'item-id'});
+
+                        expect(pristine).toEqual(true);
+                    });
                 });
             });
         });
