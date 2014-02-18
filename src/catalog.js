@@ -174,8 +174,8 @@ function QueryCatalogController($scope, topicRegistry, findCatalogItemsByPartiti
         };
 
         var removed = function (id) {
-            $scope.items = $scope.items.filter(function (it) {
-                return it.id != id
+            $scope.items.forEach(function(it) {
+                if(it.id == id) $scope.items.splice($scope.items.indexOf(it), 1);
             });
         };
 
@@ -218,8 +218,8 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, topicReg
         };
 
         var removed = function (id) {
-            $scope.partitions = $scope.partitions.filter(function (it) {
-                return it.id != id
+            $scope.partitions.forEach(function(it) {
+                if(it.id == id) $scope.partitions.splice($scope.partitions.indexOf(it), 1);
             });
         };
 
