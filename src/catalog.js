@@ -12,6 +12,8 @@ angular.module('catalog', ['ngRoute'])
     .controller('QueryCatalogController', ['$scope', 'topicRegistry', 'findCatalogItemsByPartition', 'findCatalogItemById', QueryCatalogController])
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
     .controller('UpdateCatalogItemController', ['config', '$scope', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
+    .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
+    .controller('ViewCatalogItemController', ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
     .config(['$routeProvider', function ($routeProvider) {
         [
             [],
@@ -23,10 +25,10 @@ angular.module('catalog', ['ngRoute'])
             [':d0', ':d1', ':d2', ':d3', ':d4', ':d5']
         ].forEach(function (it) {
                 var path = it.length ? '/' + it.join('/') : '';
-                $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController]});
-                $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html', controller: ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', ViewCatalogItemController]});
-                $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController]});
-                $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html', controller: ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', ViewCatalogItemController]});
+                $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: BrowseCatalogController});
+                $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html', controller: ViewCatalogItemController});
+                $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: BrowseCatalogController});
+                $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html', controller: ViewCatalogItemController});
             });
     }]);
 
@@ -324,7 +326,7 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
     });
 }
 
-function ViewCatalogItemController(config, $scope, $http, $routeParams, catalogPathParser, topicRegistry) {
+function ViewCatalogItemController(config, $scope, $http, $routeParams, catalogPathParser, topicRegistry, findCatalogItemById) {
     var current = catalogPathParser($routeParams, 'file');
 
     $scope.path = current.path;
@@ -338,6 +340,12 @@ function ViewCatalogItemController(config, $scope, $http, $routeParams, catalogP
     };
 
     var applyItemToScope = function (item) {
+        addItemToScope(item);
+        $scope.item = item;
+    };
+
+    // @deprecated instead put item on $scope.item
+    function addItemToScope (item) {
         Object.keys(item).forEach(function (key) {
             $scope[key] = item[key];
         });
@@ -352,6 +360,18 @@ function ViewCatalogItemController(config, $scope, $http, $routeParams, catalogP
                     {headers: {'x-namespace': config.namespace}}).success(applyItemToScope);
         });
     }
+
+    var updated = function(id) {
+        findCatalogItemById(id, function (item) {
+            $scope.item = item;
+        });
+    };
+
+    topicRegistry.subscribe('catalog.item.updated', updated);
+
+    $scope.$on('$destroy', function() {
+        topicRegistry.unsubscribe('catalog.item.updated', updated);
+    });
 }
 
 function AddPartitionToCatalogController(config, $scope, $location, $routeParams, restServiceHandler, topicMessageDispatcher) {
@@ -435,29 +455,29 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
 }
 
 function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, topicMessageDispatcher, findCatalogItemById) {
-    var self = this;
+    var unbindWatch;
 
     $scope.init = function (item) {
-        $scope.item = item;
+        $scope.item = angular.copy(item);
         $scope.item.context = 'update';
         $scope.unchanged = true;
+        if($scope.form) $scope.form.$setPristine();
+        bindWatch();
     };
 
-    $scope.$watch('item', function (newValue, oldValue) {
-        if (newValue != oldValue && $scope.unchanged) {
-            $scope.unchanged = false;
-            topicMessageDispatcher.fire('edit.mode.lock', $scope.item.id);
-        }
-    }, true);
+    function bindWatch() {
+        if (unbindWatch) unbindWatch();
+        unbindWatch = $scope.$watch('item', function (newValue, oldValue) {
+            if (newValue != oldValue && $scope.unchanged) {
+                $scope.unchanged = false;
+                topicMessageDispatcher.fire('edit.mode.lock', $scope.item.id);
+            }
+        }, true);
+    }
 
     $scope.cancel = function () {
         findCatalogItemById($scope.item.id, function (item) {
-            for(var i = 0; i < $scope.items.length; i++) {
-                if ($scope.items[i].id == $scope.item.id) {
-                    $scope.items[i] = item;
-                    break;
-                }
-            }
+            $scope.init(item);
         });
         topicMessageDispatcher.fire('edit.mode.unlock', $scope.item.id);
     };
@@ -480,6 +500,7 @@ function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, t
                 topicMessageDispatcher.fire('catalog.item.updated', $scope.item.id);
                 topicMessageDispatcher.fire('edit.mode.unlock', $scope.item.id);
                 $scope.unchanged = true;
+                if($scope.form) $scope.form.$setPristine();
             }
         });
     }

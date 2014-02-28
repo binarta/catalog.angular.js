@@ -14,7 +14,11 @@ describe('catalog', function () {
             $watch: function (expression, callback) {
                 scope.watches[expression] = callback;
             },
-            watches: {}
+            watches: {},
+            $on: function (event, callback) {
+                scope.on[event] = callback;
+            },
+            on: {}
         };
         payload = [];
         params = {};
@@ -777,10 +781,21 @@ describe('catalog', function () {
     });
 
     describe("ViewCatalogItemController", function () {
-        beforeEach(inject(function ($controller, config) {
+        var fixture;
+
+        beforeEach(inject(function ($controller, config, topicRegistryMock) {
             config.namespace = 'namespace';
             params = {};
-            ctrl = $controller(ViewCatalogItemController, {$scope: scope, $routeParams: params});
+            notifications = topicRegistryMock;
+            fixture = {
+                query: jasmine.createSpy('query'),
+                entity: jasmine.createSpy('entity')
+            };
+            ctrl = $controller(ViewCatalogItemController, {
+                $scope: scope,
+                $routeParams: params,
+                findCatalogItemById: fixture.entity
+            });
         }));
 
         [
@@ -824,8 +839,56 @@ describe('catalog', function () {
                 expect(scope.name).toEqual('name');
             });
 
+            it('expose item on scope', function () {
+                expect(scope.item.id).toEqual('id');
+                expect(scope.item.type).toEqual('type');
+                expect(scope.item.name).toEqual('name');
+            });
+
             it('generates a template url based on type', function () {
                 expect(scope.templateUri()).toEqual('partials/catalog/item/type.html');
+            });
+        });
+
+        describe('catalog.item.updated notification received', function () {
+            beforeEach(function () {
+                scope.item = {
+                    id: 'item-1',
+                    foo: 'foo'
+                };
+                payload = {
+                    id: 'item-2',
+                    foo: 'bar'
+                };
+                notifications['catalog.item.updated']('item-2');
+            });
+
+            it('request catalog item for that id', function () {
+                expect(fixture.entity.calls[0].args[0]).toEqual('item-2');
+            });
+
+            describe('when catalog item received', function () {
+                beforeEach(function () {
+                    fixture.entity.calls[0].args[1](payload);
+                });
+
+                it('update item on local scope', function () {
+                    expect(scope.item).toEqual(payload);
+                });
+            });
+        });
+
+        it('and scope listens to destroy event', function () {
+            expect(scope.on['$destroy']).toBeDefined();
+        });
+
+        describe('and scope is destroyed', function () {
+            beforeEach(function () {
+                scope.on['$destroy']();
+            });
+
+            it('should unsubscribe catalog.item.updated', function () {
+                expect(notifications['catalog.item.updated']).toBeUndefined();
             });
         });
     });
@@ -1084,14 +1147,14 @@ describe('catalog', function () {
             var path = '/' + parts.join('/') + (parts.length > 0 ? '/' : '');
 
             describe('with catalog path', function () {
-                beforeEach(function () {
-                    scope = {};
+                beforeEach(inject(function ($rootScope) {
+                    scope = $rootScope.$new();
                     params = {};
                     parts.reduce(function (p, c, i) {
                         p['d' + i] = c;
                         return p;
                     }, params);
-                });
+                }));
 
                 function assertPathDetailsExposedOnScope(path) {
                     it('exposes path on scope', function () {
@@ -1187,7 +1250,7 @@ describe('catalog', function () {
         });
 
     describe('UpdateCatalogItemController', function () {
-        var topics, fixture;
+        var topics, fixture, unbindWatchCalled;
 
         beforeEach(inject(function ($controller, config, scopedRestServiceHandlerMock, topicMessageDispatcherMock, $rootScope) {
             config.namespace = 'namespace';
@@ -1199,6 +1262,9 @@ describe('catalog', function () {
             scope = $rootScope.$new();
             scope.$watch = function (expression, callback) {
                 scope.watches[expression] = callback;
+                return function() {
+                    unbindWatchCalled = true;
+                }
             };
             scope.watches = [];
             ctrl = $controller(UpdateCatalogItemController, {
@@ -1208,22 +1274,32 @@ describe('catalog', function () {
         }));
 
         describe('initialized with catalog item', function () {
-            var item;
+            var item, pristine;
 
             beforeEach(function () {
                 item = {
                     id: 'item-id',
                     customField: 'custom-value'
                 };
+                scope.form = {
+                    $setPristine: function() {
+                        pristine = true;
+                    }
+                };
                 scope.init(item);
             });
 
             it('exposes item on scope', function () {
-                expect(scope.item).toEqual(item);
+                expect(scope.item.id).toEqual(item.id);
+                expect(scope.item.customField).toEqual(item.customField);
             });
 
             it('unchanged state is true', function () {
                 expect(scope.unchanged).toEqual(true);
+            });
+
+            it('set form to pristine state', function () {
+                expect(pristine).toEqual(true);
             });
 
             describe('and item change watch has triggered', function () {
@@ -1270,6 +1346,7 @@ describe('catalog', function () {
 
                 describe('success', function () {
                     beforeEach(function () {
+                        pristine = false;
                         rest.context.success();
                     });
 
@@ -1290,6 +1367,10 @@ describe('catalog', function () {
 
                     it('changed state should be false', function () {
                         expect(scope.unchanged).toEqual(true);
+                    });
+
+                    it('set form to pristine state', function () {
+                        expect(pristine).toEqual(true);
                     });
                 });
             });
@@ -1324,13 +1405,22 @@ describe('catalog', function () {
 
                 describe('when catalog item received', function () {
                     beforeEach(function () {
-                        scope.items[0].customField = 'modified';
+                        scope.item.customField = 'modified';
 
                         fixture.entity.calls[0].args[1](payload);
                     });
 
                     it('refresh item on scope', function () {
-                        expect(scope.items[0]).toEqual(payload);
+                        expect(scope.item.id).toEqual(payload.id);
+                        expect(scope.item.customField).toEqual(payload.customField);
+                    });
+
+                    it('item should be unchanged', function () {
+                        expect(scope.unchanged).toEqual(true);
+                    });
+
+                    it('item watch should be reset', function () {
+                        expect(unbindWatchCalled).toEqual(true);
                     });
 
                     it('raise edit.mode.unlock notification', function () {
