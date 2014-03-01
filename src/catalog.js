@@ -63,15 +63,19 @@ function FindCatalogItemByIdFactory(config, restServiceHandler) {
 }
 
 function FindCatalogItemsByPartitionFactory(config, restServiceHandler) {
-    return function (id, onSuccess) {
+    return function (ctx, onSuccess) {
+        var args = {
+            namespace: config.namespace,
+            partition: ctx.partition
+        };
+        if(ctx.sortBy) args.sortBy = ctx.sortBy;
+        if(ctx.sortOrder) args.sortOrder = ctx.sortOrder;
+
         restServiceHandler({
             params: {
                 method: 'POST',
                 url: (config.baseUri || '') + 'api/query/catalog-item/findByPartition',
-                data: {args: {
-                    namespace: config.namespace,
-                    partition: id
-                }},
+                data: {args: args},
                 withCredentials:true
             },
             error: function () {
@@ -155,7 +159,7 @@ function BrowseCatalogController($scope, $routeParams, catalogPathParser) {
 }
 
 function QueryCatalogController($scope, topicRegistry, findCatalogItemsByPartition, findCatalogItemById) {
-    $scope.forPartition = function (partition) {
+    $scope.forPartition = function (partition, config) {
         $scope.partition = partition;
 
         var updated = function (id) {
@@ -171,7 +175,8 @@ function QueryCatalogController($scope, topicRegistry, findCatalogItemsByPartiti
 
         var added = function (id) {
             findCatalogItemById(id, function (item) {
-                $scope.items.push(item);
+                if(config.onAddition == 'prepend') $scope.items.unshift(item);
+                else $scope.items.push(item);
             });
         };
 
@@ -188,7 +193,13 @@ function QueryCatalogController($scope, topicRegistry, findCatalogItemsByPartiti
         });
 
         topicRegistry.subscribe('app.start', function () {
-            findCatalogItemsByPartition(partition, function (items) {
+            var args = {partition: partition};
+            if(config) {
+                args.sortBy = config.sortBy;
+                args.sortOrder = config.sortOrder;
+            }
+
+            findCatalogItemsByPartition(args, function (items) {
                 $scope.items = items;
             });
         });
@@ -427,8 +438,8 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
         return !self.config.noredirect;
     }
 
-    function redirectTo(partition) {
-        $location.path((localStorage.locale ? localStorage.locale : '') + '/browse' + partition).search({});
+    function toParent(current) {
+        return (localStorage.locale ? localStorage.locale : '') + '/browse' + current.parent;
     }
 
     $scope.submit = function (id) {
@@ -448,7 +459,7 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
                 });
                 topicMessageDispatcher.fire('catalog.item.removed', id);
                 topicMessageDispatcher.fire('edit.mode.unlock', id);
-                if (isRedirectEnabled()) redirectTo(current.parent);
+                if (isRedirectEnabled()) $location.path(self.config.redirect || toParent(current)).search({});
             }
         });
     }

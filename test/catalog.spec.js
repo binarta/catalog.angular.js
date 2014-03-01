@@ -157,7 +157,7 @@ describe('catalog', function () {
         }));
 
         it('on execute perform rest call', inject(function (config) {
-            fixture.usecase('partition-id', onSuccess);
+            fixture.usecase({partition:'partition-id'}, onSuccess);
             expect(fixture.rest.calls[0].args[0].params.withCredentials).toEqual(true);
             expect(fixture.rest.calls[0].args[0].params.method).toEqual('POST');
             expect(fixture.rest.calls[0].args[0].params.url).toEqual('api/query/catalog-item/findByPartition');
@@ -165,6 +165,19 @@ describe('catalog', function () {
                 args: {
                     namespace: config.namespace,
                     partition: 'partition-id'
+                }
+            });
+        }));
+
+        it('on execute with sorting info', inject(function (config) {
+            fixture.usecase({partition:'partition-id', sortBy:'creationTime', sortOrder:'desc'}, onSuccess);
+            expect(fixture.rest.calls[0].args[0].params.url).toEqual('api/query/catalog-item/findByPartition');
+            expect(fixture.rest.calls[0].args[0].params.data).toEqual({
+                args: {
+                    namespace: config.namespace,
+                    partition: 'partition-id',
+                    sortBy:'creationTime',
+                    sortOrder:'desc'
                 }
             });
         }));
@@ -210,8 +223,11 @@ describe('catalog', function () {
         });
 
         describe('given parent partition', function () {
+            var config;
+
             beforeEach(function () {
-                scope.forPartition('partition');
+                config = {};
+                scope.forPartition('partition', config);
             });
 
             it('expose the parent partition on local scope', function () {
@@ -224,7 +240,7 @@ describe('catalog', function () {
                 });
 
                 it('request catalog items for that partition', function () {
-                    expect(fixture.query.calls[0].args[0]).toEqual('partition');
+                    expect(fixture.query.calls[0].args[0]).toEqual({partition:'partition'});
                 });
 
                 describe('when catalog items received', function () {
@@ -243,7 +259,7 @@ describe('catalog', function () {
 
                 beforeEach(function () {
                     id = 'new-item';
-                    scope.items = [];
+                    scope.items = ['first'];
                     payload = {
                         id: id
                     };
@@ -260,7 +276,23 @@ describe('catalog', function () {
                     });
 
                     it('update item on local scope', function () {
-                        expect(scope.items[0]).toEqual(payload);
+                        expect(scope.items[1]).toEqual(payload);
+                    });
+                });
+
+                describe('when marked to prepend items on addition', function() {
+                    beforeEach(function() {
+                        config.onAddition = 'prepend';
+                    });
+
+                    describe('when catalog item received', function () {
+                        beforeEach(function () {
+                            fixture.entity.calls[0].args[1](payload);
+                        });
+
+                        it('prepend item on local scope', function () {
+                            expect(scope.items[0]).toEqual(payload);
+                        });
                     });
                 });
             });
@@ -329,7 +361,22 @@ describe('catalog', function () {
                     expect(notifications['catalog.item.removed']).toBeUndefined();
                 });
             });
+        });
 
+        describe('given partition with sort info', function() {
+            beforeEach(function () {
+                scope.forPartition('partition', {sortBy:'creationTime', sortOrder:'desc'});
+            });
+
+            describe('and app.start notification received', function () {
+                beforeEach(function () {
+                    notifications['app.start']();
+                });
+
+                it('request catalog items for that partition', function () {
+                    expect(fixture.query.calls[0].args[0]).toEqual({partition:'partition', sortBy:'creationTime', sortOrder:'desc'});
+                });
+            });
         });
     });
 
@@ -1088,6 +1135,12 @@ describe('catalog', function () {
                 scope.init({noredirect: true});
                 triggerSuccess();
                 expect(location.path()).toEqual('/');
+            });
+
+            it('success with redirect to custom path', function () {
+                scope.init({redirect: '/path/'});
+                triggerSuccess();
+                expect(location.path()).toEqual('/path/');
             });
 
             describe('with locale', function () {
