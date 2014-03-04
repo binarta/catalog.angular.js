@@ -161,6 +161,7 @@ function BrowseCatalogController($scope, $routeParams, catalogPathParser) {
 function QueryCatalogController($scope, topicRegistry, findCatalogItemsByPartition, findCatalogItemById) {
     $scope.forPartition = function (partition, config) {
         $scope.partition = partition;
+        if(!config) config = {};
 
         var updated = function (id) {
             findCatalogItemById(id, function (item) {

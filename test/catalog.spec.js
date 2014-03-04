@@ -157,7 +157,7 @@ describe('catalog', function () {
         }));
 
         it('on execute perform rest call', inject(function (config) {
-            fixture.usecase({partition:'partition-id'}, onSuccess);
+            fixture.usecase({partition: 'partition-id'}, onSuccess);
             expect(fixture.rest.calls[0].args[0].params.withCredentials).toEqual(true);
             expect(fixture.rest.calls[0].args[0].params.method).toEqual('POST');
             expect(fixture.rest.calls[0].args[0].params.url).toEqual('api/query/catalog-item/findByPartition');
@@ -170,14 +170,14 @@ describe('catalog', function () {
         }));
 
         it('on execute with sorting info', inject(function (config) {
-            fixture.usecase({partition:'partition-id', sortBy:'creationTime', sortOrder:'desc'}, onSuccess);
+            fixture.usecase({partition: 'partition-id', sortBy: 'creationTime', sortOrder: 'desc'}, onSuccess);
             expect(fixture.rest.calls[0].args[0].params.url).toEqual('api/query/catalog-item/findByPartition');
             expect(fixture.rest.calls[0].args[0].params.data).toEqual({
                 args: {
                     namespace: config.namespace,
                     partition: 'partition-id',
-                    sortBy:'creationTime',
-                    sortOrder:'desc'
+                    sortBy: 'creationTime',
+                    sortOrder: 'desc'
                 }
             });
         }));
@@ -240,7 +240,7 @@ describe('catalog', function () {
                 });
 
                 it('request catalog items for that partition', function () {
-                    expect(fixture.query.calls[0].args[0]).toEqual({partition:'partition'});
+                    expect(fixture.query.calls[0].args[0]).toEqual({partition: 'partition'});
                 });
 
                 describe('when catalog items received', function () {
@@ -280,8 +280,8 @@ describe('catalog', function () {
                     });
                 });
 
-                describe('when marked to prepend items on addition', function() {
-                    beforeEach(function() {
+                describe('when marked to prepend items on addition', function () {
+                    beforeEach(function () {
                         config.onAddition = 'prepend';
                     });
 
@@ -363,9 +363,44 @@ describe('catalog', function () {
             });
         });
 
-        describe('given partition with sort info', function() {
+        describe('given partition without config', function () {
             beforeEach(function () {
-                scope.forPartition('partition', {sortBy:'creationTime', sortOrder:'desc'});
+                scope.forPartition('partition');
+            });
+
+            describe('and app.start notification received', function () {
+                beforeEach(function () {
+                    notifications['app.start']();
+                });
+
+                describe('catalog.item.added notification received', function () {
+                    var id;
+
+                    beforeEach(function () {
+                        id = 'new-item';
+                        scope.items = ['first'];
+                        payload = {
+                            id: id
+                        };
+                        notifications['catalog.item.added'](id);
+                    });
+
+                    describe('when catalog item received', function () {
+                        beforeEach(function () {
+                            fixture.entity.calls[0].args[1](payload);
+                        });
+
+                        it('append item on local scope', function () {
+                            expect(scope.items[1]).toEqual(payload);
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('given partition with sort info', function () {
+            beforeEach(function () {
+                scope.forPartition('partition', {sortBy: 'creationTime', sortOrder: 'desc'});
             });
 
             describe('and app.start notification received', function () {
@@ -374,7 +409,7 @@ describe('catalog', function () {
                 });
 
                 it('request catalog items for that partition', function () {
-                    expect(fixture.query.calls[0].args[0]).toEqual({partition:'partition', sortBy:'creationTime', sortOrder:'desc'});
+                    expect(fixture.query.calls[0].args[0]).toEqual({partition: 'partition', sortBy: 'creationTime', sortOrder: 'desc'});
                 });
             });
         });
@@ -813,7 +848,7 @@ describe('catalog', function () {
                     it('on submit clear form dirty state', function () {
                         var pristine = false;
                         scope.form = {
-                            $setPristine: function() {
+                            $setPristine: function () {
                                 pristine = true;
                             }
                         };
@@ -1315,7 +1350,7 @@ describe('catalog', function () {
             scope = $rootScope.$new();
             scope.$watch = function (expression, callback) {
                 scope.watches[expression] = callback;
-                return function() {
+                return function () {
                     unbindWatchCalled = true;
                 }
             };
@@ -1335,7 +1370,7 @@ describe('catalog', function () {
                     customField: 'custom-value'
                 };
                 scope.form = {
-                    $setPristine: function() {
+                    $setPristine: function () {
                         pristine = true;
                     }
                 };
@@ -1441,10 +1476,12 @@ describe('catalog', function () {
 
             describe('on cancel', function () {
                 beforeEach(function () {
-                    scope.items = [{
-                        id: 'item-id',
-                        customField: 'custom-value'
-                    }];
+                    scope.items = [
+                        {
+                            id: 'item-id',
+                            customField: 'custom-value'
+                        }
+                    ];
                     payload = {
                         id: 'item-id',
                         customField: 'custom-value'
