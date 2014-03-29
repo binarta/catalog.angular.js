@@ -14,6 +14,7 @@ angular.module('catalog', ['ngRoute'])
     .controller('UpdateCatalogItemController', ['config', '$scope', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
     .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
     .controller('ViewCatalogItemController', ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
+    .directive('splitInRows', splitInRowsDirectiveFactory)
     .config(['$routeProvider', function ($routeProvider) {
         [
             [],
@@ -361,7 +362,7 @@ function ViewCatalogItemController(config, $scope, $http, $routeParams, catalogP
         Object.keys(item).forEach(function (key) {
             $scope[key] = item[key];
         });
-    };
+    }
 
     $scope.init = function (path) {
         topicRegistry.subscribe('app.start', function () {
@@ -371,7 +372,7 @@ function ViewCatalogItemController(config, $scope, $http, $routeParams, catalogP
                 $http.get((config.baseUri || '') + 'api/entity/catalog-item?id=' + path,
                     {headers: {'x-namespace': config.namespace}}).success(applyItemToScope);
         });
-    }
+    };
 
     var updated = function(id) {
         findCatalogItemById(id, function (item) {
@@ -515,9 +516,28 @@ function UpdateCatalogItemController(config, $scope, scopedRestServiceHandler, t
                 if($scope.form) $scope.form.$setPristine();
             }
         });
-    }
+    };
 
     $scope.$on('$routeChangeStart', function() {
         if (!$scope.unchanged) topicMessageDispatcher.fire('edit.mode.unlock', $scope.item.id);
     });
+}
+
+function splitInRowsDirectiveFactory() {
+    return function ($scope, el, attrs) {
+        function splitInRows(items, columns) {
+            var rows = [];
+            var columnCount = parseInt(columns);
+            if (columnCount > 0) {
+                for (var i = 0; i <= (items.length - 1); i = i + columnCount) {
+                    rows.push(items.slice(i, i + columnCount));
+                }
+            }
+            return rows;
+        }
+
+        $scope.$watchCollection(attrs.splitInRows, function (newItems) {
+            if(newItems) $scope.rows = splitInRows(newItems, attrs.columns);
+        });
+    }
 }

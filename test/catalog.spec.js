@@ -1545,4 +1545,59 @@ describe('catalog', function () {
 
         });
     });
+
+    describe('splitInRows directive', function () {
+        var element, html, scope;
+
+        beforeEach(inject(function ($rootScope, $compile) {
+            scope = $rootScope.$new();
+            scope.collection = [1,2,3,4,5,6,7,8,9,10];
+            html = '<div split-in-rows="collection" columns="3"></div>';
+            element = angular.element(html);
+            $compile(element)(scope);
+        }));
+
+        [
+            {columns: 0, expected: []},
+            {columns: 1, expected: [[1],[2],[3],[4],[5],[6],[7],[8],[9],[10]]},
+            {columns: 2, expected: [[1,2],[3,4],[5,6],[7,8],[9,10]]},
+            {columns: 3, expected: [[1,2,3],[4,5,6],[7,8,9],[10]]},
+            {columns: 4, expected: [[1,2,3,4],[5,6,7,8],[9,10]]},
+            {columns: 5, expected: [[1,2,3,4,5],[6,7,8,9,10]]},
+            {columns: 6, expected: [[1,2,3,4,5,6],[7,8,9,10]]},
+            {columns: 7, expected: [[1,2,3,4,5,6,7],[8,9,10]]},
+            {columns: 8, expected: [[1,2,3,4,5,6,7,8],[9,10]]},
+            {columns: 9, expected: [[1,2,3,4,5,6,7,8,9],[10]]},
+            {columns: 10, expected: [[1,2,3,4,5,6,7,8,9,10]]}
+        ].forEach(function (value) {
+            describe('creates rows for collection', function () {
+                beforeEach(inject(function ($rootScope, $compile) {
+                    html = '<div split-in-rows="collection" columns="' + value.columns + '"></div>';
+                    element = angular.element(html);
+                    $compile(element)(scope);
+                    scope.$digest();
+                }));
+
+                it('given column count ' + value.columns, function () {
+                    expect(scope.rows).toEqual(value.expected);
+                });
+            });
+        });
+
+        it('when the collection is undefined', function () {
+            scope.collection = undefined;
+            scope.$digest();
+
+            expect(scope.rows).toBeUndefined();
+        });
+
+        it('when the collection changes', function () {
+            scope.collection.push(11);
+            scope.collection.push(12);
+            scope.collection.push(13);
+            scope.$digest();
+
+            expect(scope.rows).toEqual([[1,2,3],[4,5,6],[7,8,9],[10,11,12],[13]]);
+        });
+    });
 });
