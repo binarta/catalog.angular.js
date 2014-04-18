@@ -6,7 +6,7 @@ angular.module('catalog', ['ngRoute'])
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'topicRegistry', ListCatalogPartitionsController])
-    .controller('AddToCatalogController', ['config', '$scope', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', AddToCatalogController])
+    .controller('AddToCatalogController', ['config', '$scope', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', '$location', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
     .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', 'localStorage', RemoveItemFromCatalogController])
     .controller('QueryCatalogController', ['$scope', 'topicRegistry', 'findCatalogItemsByPartition', 'findCatalogItemById', QueryCatalogController])
@@ -288,11 +288,11 @@ function FindAllCatalogItemTypesFactory(config, $http) {
     }
 }
 
-function AddToCatalogController(config, $scope, $routeParams, topicRegistry, topicMessageDispatcher, findAllCatalogItemTypes, restServiceHandler) {
+function AddToCatalogController(config, $scope, $routeParams, topicRegistry, topicMessageDispatcher, findAllCatalogItemTypes, restServiceHandler, $location) {
     var self = this;
 
     var preselectedType;
-    var init = function () {
+    var reset = function () {
         $scope.partition = $scope.partition || $routeParams.partition || '';
         $scope.item = {};
         $scope.item.type = $routeParams.type || preselectedType || '';
@@ -302,9 +302,18 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
         if($scope.form) $scope.form.$setPristine();
     };
 
+    var redirect = function () {
+        $location.path($scope.redirectTo);
+    };
+
     $scope.noredirect = function (partition, type) {
-        if (partition) $scope.partition = partition;
-        if (type) preselectedType = type;
+        $scope.init({partition: partition, type: type});
+    };
+
+    $scope.init = function (params) {
+        if (params.partition)  $scope.partition = params.partition;
+        if (params.type) preselectedType = params.type;
+        if (params.redirectTo) $scope.redirectTo = params.redirectTo;
     };
 
     $scope.templateUri = function () {
@@ -314,7 +323,8 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
     $scope.submit = function () {
         var onSuccess = function (item) {
             topicMessageDispatcher.fire('catalog.item.added', item.id);
-            init();
+            reset();
+            if ($scope.redirectTo) redirect();
         };
 
         $scope.item.namespace = config.namespace;
@@ -334,7 +344,7 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
     topicRegistry.subscribe('app.start', function () {
         findAllCatalogItemTypes(function (types) {
             $scope.types = types;
-            init();
+            reset();
         });
     });
 }

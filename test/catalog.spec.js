@@ -860,6 +860,21 @@ describe('catalog', function () {
                 });
             });
         });
+
+        describe('init with redirectTo param', function () {
+            beforeEach(inject(function () {
+                params.redirectTo = '/path';
+                subscriptions['app.start']();
+                itemTypesLoaded(payload);
+            }));
+
+            it('on submit success redirect to path', function () {
+                scope.init(params);
+                scope.submit();
+                ctx.success({id: 'item-id'});
+                expect(location.path()).toEqual('/path');
+            });
+        });
     });
 
     describe("ViewCatalogItemController", function () {
