@@ -376,14 +376,37 @@ describe('catalog', function () {
                     beforeEach(function() {
                         scope.items = [
                             {id:'I1', priority:1},
-                            {id:'I2', priority:2}
+                            {id:'I2', priority:2},
+                            {id:'I3', priority:3}
                         ];
-                        notifications['catalog.item.paste']({id:'I1', priority:2});
                     });
 
-                    it('then swap affected items', function() {
+                    it('first to middle', function() {
+                        notifications['catalog.item.paste']({id:'I1', priority:2});
                         expect(scope.items[0]).toEqual({id:'I2', priority:1});
                         expect(scope.items[1]).toEqual({id:'I1', priority:2});
+                        expect(scope.items[2]).toEqual({id:'I3', priority:3});
+                    });
+
+                    it('first to last', function() {
+                        notifications['catalog.item.paste']({id:'I1', priority:3});
+                        expect(scope.items[0]).toEqual({id:'I2', priority:1});
+                        expect(scope.items[1]).toEqual({id:'I3', priority:2});
+                        expect(scope.items[2]).toEqual({id:'I1', priority:3});
+                    });
+
+                    it('last to first', function() {
+                        notifications['catalog.item.paste']({id:'I3', priority:1});
+                        expect(scope.items[0]).toEqual({id:'I3', priority:1});
+                        expect(scope.items[1]).toEqual({id:'I1', priority:2});
+                        expect(scope.items[2]).toEqual({id:'I2', priority:3});
+                    });
+
+                    it('to self', function() {
+                        notifications['catalog.item.paste']({id:'I2', priority:2});
+                        expect(scope.items[0]).toEqual({id:'I1', priority:1});
+                        expect(scope.items[1]).toEqual({id:'I2', priority:2});
+                        expect(scope.items[2]).toEqual({id:'I3', priority:3});
                     });
                 });
             });

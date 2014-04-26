@@ -206,18 +206,23 @@ function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItems
             var fromIdx = $scope.items.reduce(function (p, c, i) {
                 return c.id == evt.id ? i : p;
             }, undefined);
+            var from = $scope.items[fromIdx];
+
             var toIdx = $scope.items.reduce(function (p, c, i) {
                 return c.priority == evt.priority ? i : p;
             }, undefined);
+            var to = $scope.items[toIdx];
 
-            if (fromIdx != undefined && toIdx != undefined && fromIdx != toIdx) {
-                var from = $scope.items[fromIdx];
-                var to = $scope.items[toIdx];
-                to.priority = from.priority;
-                from.priority = evt.priority;
-                $scope.items[fromIdx] = to;
-                $scope.items[toIdx] = from;
-            }
+            $scope.items.forEach(function (it) {
+                it.priority += (it.priority <= evt.priority && it.priority > from.priority ? -1 : 0);
+                it.priority += (it.priority >= evt.priority && it.priority < from.priority ? 1 : 0);
+            });
+
+            from.priority = evt.priority;
+
+            $scope.items.sort(function(x, y) {
+                return x.priority - y.priority
+            });
         });
     };
 }
