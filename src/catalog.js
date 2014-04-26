@@ -554,18 +554,19 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
         var ctx = usecaseAdapterFactory($scope);
         ctx.data = {
             context: 'updatePriority',
-            id: sessionStorage.moveCatalogItemClipboard
+            id: sessionStorage.moveCatalogItemClipboard,
+            priority: self.item.priority
         };
-        ctx.success = function() {
-            topicMessageDispatcher.fire('catalog.item.paste', {id:sessionStorage.moveCatalogItemClipboard, priority:self.item.priority});
+        ctx.success = function () {
+            topicMessageDispatcher.fire('catalog.item.paste', {id: sessionStorage.moveCatalogItemClipboard, priority: self.item.priority});
         };
         updateCatalogItem(ctx);
     };
 
-    ngRegisterTopicHandler($scope, 'catalog.item.cut', function() {
+    ngRegisterTopicHandler($scope, 'catalog.item.cut', function () {
         $scope.idle = false;
     });
-    ngRegisterTopicHandler($scope, 'catalog.item.paste', function() {
+    ngRegisterTopicHandler($scope, 'catalog.item.paste', function () {
         $scope.idle = true;
     });
 }
