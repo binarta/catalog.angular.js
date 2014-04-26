@@ -337,30 +337,6 @@ describe('catalog', function () {
                     {id: 'item-2'}
                 ]);
             });
-
-            describe('and a route change start notification is raised', function () {
-                beforeEach(function () {
-                    scope.items = [];
-
-                    notifications['catalog.item.added']();
-                    notifications['catalog.item.updated']();
-                    notifications['catalog.item.removed']();
-
-                    scope.$broadcast('$routeChangeStart');
-                });
-
-                it('then catalog item added listener should be unsubscribed', function () {
-                    expect(notifications['catalog.item.added']).toBeUndefined();
-                });
-
-                it('then catalog item updated listener should be unsubscribed', function () {
-                    expect(notifications['catalog.item.updated']).toBeUndefined();
-                });
-
-                it('then catalog item removed listener should be unsubscribed', function () {
-                    expect(notifications['catalog.item.removed']).toBeUndefined();
-                });
-            });
         });
 
         describe('given partition without config', function () {
@@ -393,6 +369,21 @@ describe('catalog', function () {
                         it('append item on local scope', function () {
                             expect(scope.items[1]).toEqual(payload);
                         });
+                    });
+                });
+
+                describe('catalog.item.paste notification received', function() {
+                    beforeEach(function() {
+                        scope.items = [
+                            {id:'I1', priority:1},
+                            {id:'I2', priority:2}
+                        ];
+                        notifications['catalog.item.paste']({id:'I1', priority:2});
+                    });
+
+                    it('then swap affected items', function() {
+                        expect(scope.items[0]).toEqual({id:'I2', priority:1});
+                        expect(scope.items[1]).toEqual({id:'I1', priority:2});
                     });
                 });
             });

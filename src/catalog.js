@@ -10,9 +10,9 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'angular.usecase.adapt
     .controller('AddToCatalogController', ['config', '$scope', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', '$location', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
     .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', 'localStorage', RemoveItemFromCatalogController])
-    .controller('QueryCatalogController', ['$scope', 'topicRegistry', 'findCatalogItemsByPartition', 'findCatalogItemById', QueryCatalogController])
+    .controller('QueryCatalogController', ['$scope', 'ngRegisterTopicHandler', 'findCatalogItemsByPartition', 'findCatalogItemById', QueryCatalogController])
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
-    .controller('UpdateCatalogItemController', ['config', '$scope', 'updateCatalogItem', 'usecaseAdapterFactory', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
+    .controller('UpdateCatalogItemController', ['config', '$scope', 'updateCatalogItem', 'usecaseAdapterFactory', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
     .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
     .controller('ViewCatalogItemController', ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
@@ -161,42 +161,12 @@ function BrowseCatalogController($scope, $routeParams, catalogPathParser) {
     $scope.breadcrumbs = current.breadcrumbs;
 }
 
-function QueryCatalogController($scope, topicRegistry, findCatalogItemsByPartition, findCatalogItemById) {
+function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItemsByPartition, findCatalogItemById) {
     $scope.forPartition = function (partition, config) {
         $scope.partition = partition;
         if (!config) config = {};
 
-        var updated = function (id) {
-            findCatalogItemById(id, function (item) {
-                for (var i = 0; i < $scope.items.length; i++) {
-                    if ($scope.items[i].id == id) {
-                        $scope.items[i] = item;
-                        break;
-                    }
-                }
-            });
-        };
-
-        var added = function (id) {
-            findCatalogItemById(id, function (item) {
-                if (config.onAddition == 'prepend') $scope.items.unshift(item);
-                else $scope.items.push(item);
-            });
-        };
-
-        var removed = function (id) {
-            $scope.items.forEach(function (it) {
-                if (it.id == id) $scope.items.splice($scope.items.indexOf(it), 1);
-            });
-        };
-
-        $scope.$on('$routeChangeStart', function () {
-            topicRegistry.unsubscribe('catalog.item.added', added);
-            topicRegistry.unsubscribe('catalog.item.updated', updated);
-            topicRegistry.unsubscribe('catalog.item.removed', removed);
-        });
-
-        topicRegistry.subscribe('app.start', function () {
+        ngRegisterTopicHandler($scope, 'app.start', function () {
             var args = {partition: partition};
             if (config) {
                 args.sortBy = config.sortBy;
@@ -208,9 +178,47 @@ function QueryCatalogController($scope, topicRegistry, findCatalogItemsByPartiti
             });
         });
 
-        topicRegistry.subscribe('catalog.item.added', added);
-        topicRegistry.subscribe('catalog.item.updated', updated);
-        topicRegistry.subscribe('catalog.item.removed', removed);
+        ngRegisterTopicHandler($scope, 'catalog.item.added', function (id) {
+            findCatalogItemById(id, function (item) {
+                if (config.onAddition == 'prepend') $scope.items.unshift(item);
+                else $scope.items.push(item);
+            });
+        });
+
+        ngRegisterTopicHandler($scope, 'catalog.item.updated', function (id) {
+            findCatalogItemById(id, function (item) {
+                for (var i = 0; i < $scope.items.length; i++) {
+                    if ($scope.items[i].id == id) {
+                        $scope.items[i] = item;
+                        break;
+                    }
+                }
+            });
+        });
+
+        ngRegisterTopicHandler($scope, 'catalog.item.removed', function (id) {
+            $scope.items.forEach(function (it) {
+                if (it.id == id) $scope.items.splice($scope.items.indexOf(it), 1);
+            });
+        });
+
+        ngRegisterTopicHandler($scope, 'catalog.item.paste', function (evt) {
+            var fromIdx = $scope.items.reduce(function (p, c, i) {
+                return c.id == evt.id ? i : p;
+            }, undefined);
+            var toIdx = $scope.items.reduce(function (p, c, i) {
+                return c.priority == evt.priority ? i : p;
+            }, undefined);
+
+            if (fromIdx != undefined && toIdx != undefined && fromIdx != toIdx) {
+                var from = $scope.items[fromIdx];
+                var to = $scope.items[toIdx];
+                to.priority = from.priority;
+                from.priority = evt.priority;
+                $scope.items[fromIdx] = to;
+                $scope.items[toIdx] = from;
+            }
+        });
     };
 }
 
@@ -479,7 +487,7 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
     }
 }
 
-function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseAdapterFactory, scopedRestServiceHandler, topicMessageDispatcher, findCatalogItemById) {
+function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseAdapterFactory, topicMessageDispatcher, findCatalogItemById) {
     var unbindWatch;
 
     $scope.init = function (item) {
