@@ -1309,7 +1309,7 @@ describe('catalog', function () {
 
                             it('and app.start notification received', inject(function (config, topicRegistryMock) {
                                 if (filePath) {
-                                    $httpBackend.expect('GET', 'api/entity/catalog-item?id=' + filePath, null,function (headers) {
+                                    $httpBackend.expect('GET', 'api/entity/catalog-item?id=' + filePath, null, function (headers) {
                                         return headers['x-namespace'] == config.namespace
                                     }).respond(200, {});
                                     topicRegistryMock['app.start']();
@@ -1324,7 +1324,7 @@ describe('catalog', function () {
 
                                 it('and app.start notification received with baseUri', inject(function (config, topicRegistryMock) {
                                     if (filePath) {
-                                        $httpBackend.expect('GET', config.baseUri + 'api/entity/catalog-item?id=' + filePath, null,function (headers) {
+                                        $httpBackend.expect('GET', config.baseUri + 'api/entity/catalog-item?id=' + filePath, null, function (headers) {
                                             return headers['x-namespace'] == config.namespace
                                         }).respond(200, {});
                                         topicRegistryMock['app.start']();
@@ -1353,9 +1353,10 @@ describe('catalog', function () {
         });
 
     describe('UpdateCatalogItemController', function () {
-        var topics, fixture, unbindWatchCalled;
+        var topics, fixture, unbindWatchCalled, writer;
 
-        beforeEach(inject(function ($controller, config, scopedRestServiceHandlerMock, topicMessageDispatcherMock, $rootScope) {
+        beforeEach(inject(function ($controller, config, scopedRestServiceHandlerMock, topicMessageDispatcherMock, $rootScope, updateCatalogItemWriterSpy) {
+            writer = updateCatalogItemWriterSpy;
             config.namespace = 'namespace';
             rest = scopedRestServiceHandlerMock;
             topics = topicMessageDispatcherMock;
@@ -1436,32 +1437,17 @@ describe('catalog', function () {
                     scope.update();
                 });
 
-                it('perform rest call', function () {
-                    expect(rest.context.scope).toEqual(scope);
-                    expect(rest.context.params.withCredentials).toEqual(true);
-                    expect(rest.context.params.method).toEqual('POST');
-                    expect(rest.context.params.url).toEqual('api/entity/catalog-item');
-                    expect(rest.context.params.data.context).toEqual('update');
-                    expect(rest.context.params.data.namespace).toEqual('namespace');
-                    expect(rest.context.params.data.id).toEqual(item.id);
-                    expect(rest.context.params.data.customField).toEqual(item.customField);
+                it('perform write call', function () {
+                    expect(writer.data().context).toEqual('update');
+                    expect(writer.data().namespace).toEqual('namespace');
+                    expect(writer.data().id).toEqual(item.id);
+                    expect(writer.data().customField).toEqual(item.customField);
                 });
 
                 describe('success', function () {
                     beforeEach(function () {
                         pristine = false;
-                        rest.context.success();
-                    });
-
-                    it('raise system.success notification', function () {
-                        expect(topics['system.success']).toEqual({
-                            code: 'catalog.item.updated',
-                            default: 'Catalog item updated!'
-                        });
-                    });
-
-                    it('raise catalog.item.updated notification', function () {
-                        expect(topics['catalog.item.updated']).toEqual(item.id);
+                        writer.success();
                     });
 
                     it('raise edit.mode.unlock notification', function () {
@@ -1476,17 +1462,6 @@ describe('catalog', function () {
                         expect(pristine).toEqual(true);
                     });
                 });
-            });
-
-            describe('on update with baseUri', function () {
-                beforeEach(inject(function (config) {
-                    config.baseUri = 'http://host/context/';
-                    scope.update();
-                }));
-
-                it('uses baseUri in POST request', inject(function (config) {
-                    expect(rest.context.params.url).toEqual(config.baseUri + 'api/entity/catalog-item');
-                }));
             });
 
             describe('on cancel', function () {
@@ -1561,12 +1536,141 @@ describe('catalog', function () {
         });
     });
 
+    describe('MoveCatalogItemController', function () {
+        var session, writer, topics;
+
+        beforeEach(inject(function (sessionStorage, updateCatalogItemWriterSpy, topicRegistryMock, topicMessageDispatcherMock) {
+            session = sessionStorage;
+            writer = updateCatalogItemWriterSpy;
+            topics = topicRegistryMock;
+            dispatcher = topicMessageDispatcherMock;
+        }));
+
+        describe('given at least 2 controllers initialized with their own item', function () {
+            var ctrl1, ctrl2, scope1, scope2, onCutEventHandlers, onPasteEventHandlers;
+
+            beforeEach(inject(function ($controller) {
+                onCutEventHandlers = [];
+                onPasteEventHandlers = [];
+                scope1 = {};
+                scope2 = {};
+                ctrl1 = $controller(MoveCatalogItemController, {$scope: scope1});
+                onCutEventHandlers.push(topics['catalog.item.cut']);
+                onPasteEventHandlers.push(topics['catalog.item.paste']);
+                ctrl2 = $controller(MoveCatalogItemController, {$scope: scope2});
+                onCutEventHandlers.push(topics['catalog.item.cut']);
+                onPasteEventHandlers.push(topics['catalog.item.paste']);
+                scope1.init({id: 'item-1', priority:1});
+                scope2.init({id: 'item-2', priority:2});
+            }));
+
+            it('then controllers are in idle mode', function() {
+                expect(scope1.idle).toEqual(true);
+                expect(scope2.idle).toEqual(true);
+            });
+
+            describe('when cutting an item', function () {
+                beforeEach(function () {
+                    scope1.cut();
+                });
+
+                it('then the item id is kept in session storage', function () {
+                    expect(session.moveCatalogItemClipboard).toEqual('item-1');
+                });
+
+                it('raise catalog.item.cut', function() {
+                    expect(dispatcher['catalog.item.cut']).toEqual('ok');
+                });
+
+                it('on catalog.item.cut exit idle mode', function() {
+                    onCutEventHandlers.forEach(function(it) {it();});
+                    expect(scope1.idle).toEqual(false);
+                    expect(scope2.idle).toEqual(false);
+                });
+
+                describe('and pasting it on another', function() {
+                    beforeEach(function() {
+                        scope2.paste();
+                    });
+
+                    it('then priority is updated', function() {
+                        expect(writer.data().context).toEqual('updatePriority');
+                        expect(writer.data().id).toEqual('item-1');
+                    });
+
+                    it('no catalog.item.paste should be raised yet', function() {
+                        expect(dispatcher['catalog.item.paste']).toBeUndefined()
+                    });
+
+                    describe('on success', function() {
+                        beforeEach(function() {
+                            writer.success();
+                        });
+
+                        it('raise catalog.item.paste event', function() {
+                            expect(dispatcher['catalog.item.paste']).toEqual({id:'item-1', priority:2});
+                        });
+
+                        it('on catalog.item.paste enter idle mode', function() {
+                            onPasteEventHandlers.forEach(function(it) {it();});
+                            expect(scope1.idle).toEqual(true);
+                            expect(scope2.idle).toEqual(true);
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    describe('on update catalog item', function () {
+        var writer, onSuccessSpy;
+        var args = {
+            data: {
+                id: 'item-id',
+                context: 'update-id'
+            }
+        };
+
+        beforeEach(inject(function (updateCatalogItem, updateCatalogItemWriterSpy, topicMessageDispatcherMock) {
+            onSuccessSpy = jasmine.createSpy('onSuccessSpy');
+            args.success = onSuccessSpy;
+            writer = updateCatalogItemWriterSpy;
+            dispatcher = topicMessageDispatcherMock;
+            updateCatalogItem(args);
+        }));
+
+        it('invoke writer', function() {
+            writer.invokedFor(args);
+        });
+
+        describe('on write success', function() {
+            beforeEach(function() {
+                writer.success();
+            });
+
+            it('raise system success', function() {
+                expect(dispatcher['system.success']).toEqual({
+                    code: 'catalog.item.updated',
+                    default: 'Catalog item updated!'
+                });
+            });
+
+            it('raise catalog item updated', function() {
+                expect(dispatcher['catalog.item.updated']).toEqual(args.data.id);
+            });
+
+            it('execute on success handler', function() {
+                expect(onSuccessSpy.calls[0]).toBeTruthy();
+            });
+        });
+    });
+
     describe('splitInRows directive', function () {
         var element, html, scope;
 
         beforeEach(inject(function ($rootScope, $compile) {
             scope = $rootScope.$new();
-            scope.collection = [1,2,3,4,5,6,7,8,9,10];
+            scope.collection = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
             html = '<div split-in-rows="collection" columns="3"></div>';
             element = angular.element(html);
             $compile(element)(scope);
@@ -1574,30 +1678,73 @@ describe('catalog', function () {
 
         [
             {columns: 0, expected: []},
-            {columns: 1, expected: [[1],[2],[3],[4],[5],[6],[7],[8],[9],[10]]},
-            {columns: 2, expected: [[1,2],[3,4],[5,6],[7,8],[9,10]]},
-            {columns: 3, expected: [[1,2,3],[4,5,6],[7,8,9],[10]]},
-            {columns: 4, expected: [[1,2,3,4],[5,6,7,8],[9,10]]},
-            {columns: 5, expected: [[1,2,3,4,5],[6,7,8,9,10]]},
-            {columns: 6, expected: [[1,2,3,4,5,6],[7,8,9,10]]},
-            {columns: 7, expected: [[1,2,3,4,5,6,7],[8,9,10]]},
-            {columns: 8, expected: [[1,2,3,4,5,6,7,8],[9,10]]},
-            {columns: 9, expected: [[1,2,3,4,5,6,7,8,9],[10]]},
-            {columns: 10, expected: [[1,2,3,4,5,6,7,8,9,10]]}
+            {columns: 1, expected: [
+                [1],
+                [2],
+                [3],
+                [4],
+                [5],
+                [6],
+                [7],
+                [8],
+                [9],
+                [10]
+            ]},
+            {columns: 2, expected: [
+                [1, 2],
+                [3, 4],
+                [5, 6],
+                [7, 8],
+                [9, 10]
+            ]},
+            {columns: 3, expected: [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9],
+                [10]
+            ]},
+            {columns: 4, expected: [
+                [1, 2, 3, 4],
+                [5, 6, 7, 8],
+                [9, 10]
+            ]},
+            {columns: 5, expected: [
+                [1, 2, 3, 4, 5],
+                [6, 7, 8, 9, 10]
+            ]},
+            {columns: 6, expected: [
+                [1, 2, 3, 4, 5, 6],
+                [7, 8, 9, 10]
+            ]},
+            {columns: 7, expected: [
+                [1, 2, 3, 4, 5, 6, 7],
+                [8, 9, 10]
+            ]},
+            {columns: 8, expected: [
+                [1, 2, 3, 4, 5, 6, 7, 8],
+                [9, 10]
+            ]},
+            {columns: 9, expected: [
+                [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                [10]
+            ]},
+            {columns: 10, expected: [
+                [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            ]}
         ].forEach(function (value) {
-            describe('creates rows for collection', function () {
-                beforeEach(inject(function ($rootScope, $compile) {
-                    html = '<div split-in-rows="collection" columns="' + value.columns + '"></div>';
-                    element = angular.element(html);
-                    $compile(element)(scope);
-                    scope.$digest();
-                }));
+                describe('creates rows for collection', function () {
+                    beforeEach(inject(function ($rootScope, $compile) {
+                        html = '<div split-in-rows="collection" columns="' + value.columns + '"></div>';
+                        element = angular.element(html);
+                        $compile(element)(scope);
+                        scope.$digest();
+                    }));
 
-                it('given column count ' + value.columns, function () {
-                    expect(scope.rows).toEqual(value.expected);
+                    it('given column count ' + value.columns, function () {
+                        expect(scope.rows).toEqual(value.expected);
+                    });
                 });
             });
-        });
 
         it('when the collection is undefined', function () {
             scope.collection = undefined;
@@ -1612,7 +1759,13 @@ describe('catalog', function () {
             scope.collection.push(13);
             scope.$digest();
 
-            expect(scope.rows).toEqual([[1,2,3],[4,5,6],[7,8,9],[10,11,12],[13]]);
+            expect(scope.rows).toEqual([
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9],
+                [10, 11, 12],
+                [13]
+            ]);
         });
     });
 });
