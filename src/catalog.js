@@ -554,7 +554,7 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
         var ctx = usecaseAdapterFactory($scope);
         ctx.data = {
             context: 'updatePriority',
-            id: sessionStorage.moveCatalogItemClipboard,
+            id: {id: sessionStorage.moveCatalogItemClipboard},
             priority: self.item.priority
         };
         ctx.success = function () {

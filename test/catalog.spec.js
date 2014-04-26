@@ -1595,7 +1595,7 @@ describe('catalog', function () {
 
                     it('then priority is updated', function() {
                         expect(writer.data().context).toEqual('updatePriority');
-                        expect(writer.data().id).toEqual('item-1');
+                        expect(writer.data().id.id).toEqual('item-1');
                         expect(writer.data().priority).toEqual(2);
                     });
 
