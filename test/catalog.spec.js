@@ -7,6 +7,7 @@ describe('catalog', function () {
     beforeEach(module('notifications'));
     beforeEach(module('rest.client'));
     beforeEach(module('web.storage'));
+    beforeEach(module('i18n'));
 
     beforeEach(inject(function ($injector, $location, config) {
         config.namespace = 'namespace';
@@ -889,6 +890,17 @@ describe('catalog', function () {
                 expect(location.path()).toEqual('/path');
             });
         });
+
+        it('init with redirect to view', function() {
+            params.redirectToView = true;
+            params.partition = '/partition/';
+            subscriptions['app.start']();
+            itemTypesLoaded();
+            scope.init(params);
+            scope.submit();
+            ctx.success({id:'/item-id'});
+            expect(location.path()).toEqual('/lang/view/item-id');
+        });
     });
 
     describe("ViewCatalogItemController", function () {
@@ -1205,6 +1217,14 @@ describe('catalog', function () {
                 scope.init({redirect: '/path/'});
                 triggerSuccess();
                 expect(location.path()).toEqual('/path/');
+            });
+
+            it('when initialised with on success handler execute it after item removal', function() {
+                var executed = false;
+                scope.init({success:function() {executed = true;}});
+                scope.submit('item-id');
+                rest.ctx.success();
+                expect(executed).toEqual(true);
             });
 
             describe('with locale', function () {

@@ -7,7 +7,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'angular.usecase.adapt
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'topicRegistry', ListCatalogPartitionsController])
-    .controller('AddToCatalogController', ['config', '$scope', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', '$location', AddToCatalogController])
+    .controller('AddToCatalogController', ['config', '$scope', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', '$location', 'localeResolver', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
     .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', 'localStorage', RemoveItemFromCatalogController])
     .controller('QueryCatalogController', ['$scope', 'ngRegisterTopicHandler', 'findCatalogItemsByPartition', 'findCatalogItemById', QueryCatalogController])
@@ -220,7 +220,7 @@ function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItems
 
             from.priority = evt.priority;
 
-            $scope.items.sort(function(x, y) {
+            $scope.items.sort(function (x, y) {
                 return x.priority - y.priority
             });
         });
@@ -303,7 +303,7 @@ function FindAllCatalogItemTypesFactory(config, $http) {
     }
 }
 
-function AddToCatalogController(config, $scope, $routeParams, topicRegistry, topicMessageDispatcher, findAllCatalogItemTypes, restServiceHandler, $location) {
+function AddToCatalogController(config, $scope, $routeParams, topicRegistry, topicMessageDispatcher, findAllCatalogItemTypes, restServiceHandler, $location, localeResolver) {
     var self = this;
 
     var preselectedType;
@@ -317,8 +317,8 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
         if ($scope.form) $scope.form.$setPristine();
     };
 
-    var redirect = function () {
-        $location.path($scope.redirectTo);
+    var redirect = function (to) {
+        $location.path(to);
     };
 
     $scope.noredirect = function (partition, type) {
@@ -326,6 +326,7 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
     };
 
     $scope.init = function (params) {
+        $scope.config = params;
         if (params.partition)  $scope.partition = params.partition;
         if (params.type) preselectedType = params.type;
         if (params.redirectTo) $scope.redirectTo = params.redirectTo;
@@ -339,7 +340,8 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
         var onSuccess = function (item) {
             topicMessageDispatcher.fire('catalog.item.added', item.id);
             reset();
-            if ($scope.redirectTo) redirect();
+            if ($scope.redirectTo) redirect($scope.redirectTo);
+            if ($scope.config && $scope.config.redirectToView) redirect('/' + localeResolver() + '/view' + item.id);
         };
 
         $scope.item.namespace = config.namespace;
@@ -465,6 +467,14 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
         return !self.config.noredirect;
     }
 
+    function isSuccessHandlerPresent() {
+        return self.config.success;
+    }
+
+    function executeSuccessHandler() {
+        self.config.success()
+    }
+
     function toParent(current) {
         return (localStorage.locale ? localStorage.locale : '') + '/browse' + current.parent;
     }
@@ -487,6 +497,7 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
                 topicMessageDispatcher.fire('catalog.item.removed', id);
                 topicMessageDispatcher.fire('edit.mode.unlock', id);
                 if (isRedirectEnabled()) $location.path(self.config.redirect || toParent(current)).search({});
+                if (isSuccessHandlerPresent()) executeSuccessHandler();
             }
         });
     }
