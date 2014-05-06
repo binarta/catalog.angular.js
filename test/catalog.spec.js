@@ -1495,6 +1495,33 @@ describe('catalog', function () {
                     it('set form to pristine state', function () {
                         expect(pristine).toEqual(true);
                     });
+
+                    describe('with registered success handler', function() {
+                        var updatedItem;
+
+                        beforeEach(function() {
+                            scope.init(item, {success:function(args){updatedItem = args}});
+                            writer.success();
+                        });
+
+                        describe('look up item by id', function() {
+                            it('with id from scoped item', inject(function() {
+                                expect(fixture.entity.calls[0].args[0]).toEqual(scope.item.id);
+                            }));
+
+                            describe('on find by id callback', function() {
+                                var refreshedItem = {name:'item-id-1'};
+
+                                beforeEach(function() {
+                                    fixture.entity.calls[0].args[1](refreshedItem);
+                                });
+
+                                it('test', inject(function() {
+                                    expect(updatedItem).toEqual(refreshedItem);
+                                }));
+                            });
+                        });
+                    });
                 });
             });
 

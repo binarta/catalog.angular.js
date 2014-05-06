@@ -505,14 +505,27 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
 
 function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseAdapterFactory, topicMessageDispatcher, findCatalogItemById) {
     var unbindWatch;
+    var self = this;
+    self.config = {};
 
-    $scope.init = function (item) {
+    $scope.init = function (item, config) {
         $scope.item = angular.copy(item);
         $scope.item.context = 'update';
         $scope.unchanged = true;
         if ($scope.form) $scope.form.$setPristine();
         bindWatch();
+        self.config = config || {};
     };
+
+    function isSuccessHandlerPresent() {
+        return self.config.success;
+    }
+
+    function executeSuccessHandler() {
+        findCatalogItemById($scope.item.id, function(item) {
+            self.config.success(item);
+        });
+    }
 
     function bindWatch() {
         if (unbindWatch) unbindWatch();
@@ -539,6 +552,7 @@ function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseA
             topicMessageDispatcher.fire('edit.mode.unlock', $scope.item.id);
             $scope.unchanged = true;
             if ($scope.form) $scope.form.$setPristine();
+            if (isSuccessHandlerPresent()) executeSuccessHandler();
         };
         updateCatalogItem(ctx);
     };
