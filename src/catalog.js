@@ -644,6 +644,7 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
     });
 }
 
+// @deprecated use binarta.angularx instead
 function splitInRowsDirectiveFactory() {
     return function ($scope, el, attrs) {
         function splitInRows(items, columns) {
