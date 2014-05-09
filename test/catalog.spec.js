@@ -62,7 +62,7 @@ describe('catalog', function () {
 
         [undefined, ''].forEach(function (el) {
             it('when no owner selected an empty set of partitions is returned', function () {
-                usecase('query-name', el, onSuccess);
+                usecase({query:'query-name', filters:{owner:el}, success:onSuccess});
                 expect(receivedPayload).toEqual([]);
             });
         });
@@ -73,27 +73,49 @@ describe('catalog', function () {
                 namespace: config.namespace,
                 owner: 'owner-id'
             }}).respond(200);
-            usecase('query-name', 'owner-id', onSuccess);
+            usecase({query:'query-name', filters:{owner:'owner-id'}, success:onSuccess});
+            $httpBackend.flush();
+        }));
+
+        it('with sortings', inject(function (config) {
+            config.namespace = 'namespace';
+            $httpBackend.expect('POST', 'api/query/catalog-partition/query-name', {args: {
+                namespace: config.namespace,
+                owner: 'owner-id',
+                sortings:'sortings'
+            }}).respond(200);
+            usecase({query:'query-name', filters:{owner:'owner-id'}, sortings:'sortings', success:onSuccess});
+            $httpBackend.flush();
+        }));
+
+        it('with sub set', inject(function (config) {
+            config.namespace = 'namespace';
+            $httpBackend.expect('POST', 'api/query/catalog-partition/query-name', {args: {
+                namespace: config.namespace,
+                owner: 'owner-id',
+                subset:'subset'
+            }}).respond(200);
+            usecase({query:'query-name', filters:{owner:'owner-id'}, subset:'subset', success:onSuccess});
             $httpBackend.flush();
         }));
 
         it('on execute with baseUri perform rest call', inject(function (config) {
             config.baseUri = 'http://host/context';
             $httpBackend.expect('POST', config.baseUri + 'api/query/catalog-partition/query-name').respond(200);
-            usecase('query-name', 'owner-id', onSuccess);
+            usecase({query:'query-name', filters:{owner:'owner-id'}, success:onSuccess});
             $httpBackend.flush();
         }));
 
         it('unexpected responses resolve to an empty set', function () {
             $httpBackend.expect('POST', /.*/).respond(0);
-            usecase('query-name', 'owner-id', onSuccess);
+            usecase({query:'query-name', filters:{owner:'owner-id'}, success:onSuccess});
             $httpBackend.flush();
             expect(receivedPayload).toEqual([]);
         });
 
         it('response payload is passed to success callback', function () {
             $httpBackend.expect('POST', /.*/).respond(200, payload);
-            usecase('query-name', 'owner-id', onSuccess);
+            usecase({query:'query-name', filters:{owner:'owner-id'}, success:onSuccess});
             $httpBackend.flush();
             expect(receivedPayload).toEqual(payload);
         })
@@ -431,26 +453,87 @@ describe('catalog', function () {
     });
 
     describe('ListPartitionsController', function () {
-        var fixture;
+        var fixture, subscribers;
 
-        beforeEach(inject(function ($controller, $rootScope) {
+        beforeEach(inject(function ($controller, $rootScope, topicRegistryMock) {
             fixture = {
                 query: jasmine.createSpy('query')
             };
             scope = $rootScope.$new();
+            subscribers = topicRegistryMock;
             ctrl = $controller(ListCatalogPartitionsController, {
                 $scope: scope,
                 findCatalogPartitions: fixture.query
             });
         }));
 
-        describe('when initialized', function () {
-            var subscribers;
+        function request() {
+            return fixture.query.calls[0].args[0];
+        }
 
-            beforeEach(inject(function (topicRegistryMock) {
-                subscribers = topicRegistryMock;
+        it('simple search', function() {
+            scope.init({query:'ownedBy', owner:'/parent/'});
+            subscribers['app.start']();
+            expect(request().query).toEqual('ownedBy');
+            expect(request().filters.owner).toEqual('/parent/');
+        });
+
+        it('with sortings', function() {
+            scope.init({query:'ownedBy', owner:'/parent/', sortings:[{on:'name', orientation:'asc'}]});
+            subscribers['app.start']();
+            expect(request().sortings).toEqual([{on:'name', orientation:'asc'}]);
+        });
+
+        it('with sub set', function() {
+            scope.init({query:'ownedBy', owner:'/parent/', subset:{offset:0, count:2}});
+            subscribers['app.start']();
+            expect(request().subset).toEqual({offset:0, count:2});
+        });
+
+        describe('on search results', function() {
+            beforeEach(function() {
+                scope.init({query:'ownedBy', owner:'/parent/', subset:{offset:0, count:2}});
+                subscribers['app.start']();
+                request().success([{id:1}]);
+            });
+
+            it('expose results on scope', function() {
+                expect(scope.partitions.length).toEqual(1);
+                expect(scope.partitions[0].id).toEqual(1);
+            });
+
+            it('increment offset with count', function() {
+                expect(request().subset).toEqual({offset:1, count:2});
+            });
+
+            describe('when searching for more', function() {
+                beforeEach(function() {
+                    fixture.query.reset();
+                    scope.searchForMore();
+                    request().success([{id:2}]);
+                });
+
+                it('increment offset with count', function() {
+                    expect(request().subset).toEqual({offset:2, count:2});
+                });
+
+                it('extends the results', function() {
+                    expect(scope.partitions.length).toEqual(2);
+                    expect(scope.partitions[0].id).toEqual(1);
+                    expect(scope.partitions[1].id).toEqual(2);
+                });
+            });
+
+            it('search results can be removed from the view', function() {
+                scope.partitions[0].remove();
+                expect(scope.partitions).toEqual([]);
+            });
+        });
+
+        describe('with deprecated initializer', function () {
+            beforeEach(function () {
                 scope.init('ownedBy', '/parent/');
-            }));
+            });
 
             it('wait for app.start notification', function () {
                 expect(fixture.query).not.toHaveBeenCalled();
@@ -467,8 +550,8 @@ describe('catalog', function () {
                 });
 
                 it('request partitions', function () {
-                    expect(fixture.query.calls[0].args[0]).toEqual('ownedBy');
-                    expect(fixture.query.calls[0].args[1]).toEqual('/parent/');
+                    expect(fixture.query.calls[0].args[0].query).toEqual('ownedBy');
+                    expect(fixture.query.calls[0].args[0].filters.owner).toEqual('/parent/');
                 });
 
                 describe('and partitions received', function () {
@@ -477,7 +560,7 @@ describe('catalog', function () {
                             {id: '/parent/path/'},
                             {id: '/parent/another/'}
                         ];
-                        fixture.query.calls[0].args[2](payload);
+                        fixture.query.calls[0].args[0].success(payload);
                     });
 
                     it('mark the current partition with css class active', function () {
@@ -532,25 +615,6 @@ describe('catalog', function () {
                     });
                 });
 
-            });
-
-            describe('and a route change start notification is raised', function () {
-                beforeEach(function () {
-                    scope.partitions = [];
-
-                    subscribers['catalog.partition.added']('');
-                    subscribers['catalog.partition.removed']();
-
-                    scope.$broadcast('$routeChangeStart');
-                });
-
-                it('then catalog partition added listener should be unsubscribed', function () {
-                    expect(subscribers['catalog.partition.added']).toBeUndefined();
-                });
-
-                it('then catalog partition removed listener should be unsubscribed', function () {
-                    expect(subscribers['catalog.partition.removed']).toBeUndefined();
-                });
             });
         });
 

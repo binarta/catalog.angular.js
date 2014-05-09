@@ -6,7 +6,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'angular.usecase.adapt
     .factory('findCatalogItemsByPartition', ['config', 'restServiceHandler', FindCatalogItemsByPartitionFactory])
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
-    .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'topicRegistry', ListCatalogPartitionsController])
+    .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
     .controller('AddToCatalogController', ['config', '$scope', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', '$location', 'localeResolver', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
     .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', 'localStorage', RemoveItemFromCatalogController])
@@ -36,16 +36,22 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'angular.usecase.adapt
     }]);
 
 function FindCatalogPartitionsFactory(config, $http) {
-    return function (query, owner, onSuccess) {
+    return function (args) {
+        var onSuccess = args.success;
         var onError = function () {
             onSuccess([]);
         };
 
-        if (!owner) onSuccess([]);
-        else $http.post((config.baseUri || '') + 'api/query/catalog-partition/' + query, {args: {
-            namespace: config.namespace,
-            owner: owner
-        }}).error(onError).success(onSuccess);
+        if (!args.filters.owner) onSuccess([]);
+        else {
+            var ctx = {
+                namespace: config.namespace,
+                owner: args.filters.owner
+            };
+            if(args.sortings) ctx.sortings = args.sortings;
+            if(args.subset) ctx.subset = args.subset;
+            $http.post((config.baseUri || '') + 'api/query/catalog-partition/' + args.query, {args: ctx}).error(onError).success(onSuccess);
+        }
     }
 }
 
@@ -227,7 +233,7 @@ function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItems
     };
 }
 
-function ListCatalogPartitionsController($scope, findCatalogPartitions, topicRegistry) {
+function ListCatalogPartitionsController($scope, findCatalogPartitions, ngRegisterTopicHandler) {
     var self = this;
 
     this.toParent = function (path) {
@@ -240,8 +246,44 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, topicReg
     };
 
     $scope.init = function (query, partition) {
-        $scope.partition = partition;
-        $scope.parent = partition == '/' ? undefined : self.toParent(partition);
+        var args;
+
+        if(query && partition) {
+            args = {query:query, owner:partition}
+        } else {
+            args = query;
+        }
+
+        var defaultSubset;
+        if(args.subset) defaultSubset = args.subset;
+
+        var ctx = {
+            query:args.query,
+            filters:{owner:args.owner}
+        };
+        function executeQuery() {
+            ctx.success = function (partitions) {
+                if(ctx.subset) ctx.subset.offset += partitions.length;
+                partitions.forEach(function(it) {
+                    it.remove = function() {
+                        $scope.partitions.splice($scope.partitions.indexOf(it), 1);
+                    };
+                    $scope.partitions.push(it);
+                });
+            };
+            if(args.sortings) ctx.sortings = args.sortings;
+            if(!ctx.subset && defaultSubset) {
+                ctx.subset = {offset:defaultSubset.offset, count:defaultSubset.count};
+            }
+            findCatalogPartitions(ctx);
+        }
+
+        $scope.partitions = [];
+        $scope.partition = args.owner;
+        $scope.parent = $scope.partition == '/' ? undefined : self.toParent($scope.partition);
+        $scope.searchForMore = function() {
+            executeQuery();
+        };
 
         var added = function (partition) {
             if (partition.owner == $scope.partition) $scope.partitions.push(partition);
@@ -253,19 +295,12 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, topicReg
             });
         };
 
-        $scope.$on('$routeChangeStart', function () {
-            topicRegistry.unsubscribe('catalog.partition.added', added);
-            topicRegistry.unsubscribe('catalog.partition.removed', removed);
+        ngRegisterTopicHandler($scope, 'app.start', function () {
+            executeQuery();
         });
 
-        topicRegistry.subscribe('app.start', function () {
-            findCatalogPartitions(query, partition, function (partitions) {
-                $scope.partitions = partitions;
-            });
-        });
-
-        topicRegistry.subscribe('catalog.partition.added', added);
-        topicRegistry.subscribe('catalog.partition.removed', removed);
+        ngRegisterTopicHandler($scope, 'catalog.partition.added', added);
+        ngRegisterTopicHandler($scope, 'catalog.partition.removed', removed);
     }
 }
 
