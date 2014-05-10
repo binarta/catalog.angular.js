@@ -72,13 +72,8 @@ function FindCatalogItemByIdFactory(config, restServiceHandler) {
 }
 
 function FindCatalogItemsByPartitionFactory(config, restServiceHandler) {
-    return function (ctx, onSuccess) {
-        var args = {
-            namespace: config.namespace,
-            partition: ctx.partition
-        };
-        if (ctx.sortBy) args.sortBy = ctx.sortBy;
-        if (ctx.sortOrder) args.sortOrder = ctx.sortOrder;
+    return function (args) {
+        args.namespace = config.namespace;
 
         restServiceHandler({
             params: {
@@ -88,9 +83,9 @@ function FindCatalogItemsByPartitionFactory(config, restServiceHandler) {
                 withCredentials: true
             },
             error: function () {
-                onSuccess([])
+                args.success([])
             },
-            success: onSuccess
+            success: args.success
         });
     }
 }
@@ -168,25 +163,42 @@ function BrowseCatalogController($scope, $routeParams, catalogPathParser) {
 }
 
 function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItemsByPartition, findCatalogItemById) {
-    $scope.forPartition = function (partition, config) {
+    $scope.forPartition = function (partition, args) {
         $scope.partition = partition;
-        if (!config) config = {};
+        $scope.items = [];
+        if (!args) args = {};
+        var ctx = {
+            partition: partition
+        };
+
+        if (args.sortBy) ctx.sortBy = args.sortBy;
+        if (args.sortOrder) ctx.sortOrder = args.sortOrder;
+        if (args.subset) {
+            ctx.offset = args.subset.offset || 0;
+            ctx.count = args.subset.count;
+        }
+        ctx.success = function (items) {
+            if(args.subset) ctx.offset += items.length;
+            items.forEach(function(it) {
+                $scope.items.push(it);
+            });
+        };
+
+        function executeQuery() {
+            findCatalogItemsByPartition(ctx);
+        }
 
         ngRegisterTopicHandler($scope, 'app.start', function () {
-            var args = {partition: partition};
-            if (config) {
-                args.sortBy = config.sortBy;
-                args.sortOrder = config.sortOrder;
-            }
-
-            findCatalogItemsByPartition(args, function (items) {
-                $scope.items = items;
-            });
+            executeQuery();
         });
+
+        $scope.searchForMore = function() {
+            executeQuery();
+        };
 
         ngRegisterTopicHandler($scope, 'catalog.item.added', function (id) {
             findCatalogItemById(id, function (item) {
-                if (config.onAddition == 'prepend') $scope.items.unshift(item);
+                if (args.onAddition == 'prepend') $scope.items.unshift(item);
                 else $scope.items.push(item);
             });
         });
@@ -265,9 +277,6 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, ngRegist
             ctx.success = function (partitions) {
                 if(ctx.subset) ctx.subset.offset += partitions.length;
                 partitions.forEach(function(it) {
-                    it.remove = function() {
-                        $scope.partitions.splice($scope.partitions.indexOf(it), 1);
-                    };
                     $scope.partitions.push(it);
                 });
             };

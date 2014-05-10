@@ -212,13 +212,13 @@ describe('catalog', function () {
         }));
 
         it('unexpected responses resolve to an empty set', function () {
-            fixture.usecase('partition-id', onSuccess);
+            fixture.usecase({partition: 'partition-id', success: onSuccess});
             fixture.rest.calls[0].args[0].error();
             expect(receivedPayload).toEqual([]);
         });
 
         it('response payload is passed to success callback', function () {
-            fixture.usecase('type', onSuccess);
+            fixture.usecase({partition: 'type', success: onSuccess});
             fixture.rest.calls[0].args[0].success(payload);
             expect(receivedPayload).toEqual(payload);
         });
@@ -263,12 +263,12 @@ describe('catalog', function () {
                 });
 
                 it('request catalog items for that partition', function () {
-                    expect(fixture.query.calls[0].args[0]).toEqual({partition: 'partition'});
+                    expect(fixture.query.calls[0].args[0]).toEqual({partition: 'partition', success: jasmine.any(Function)});
                 });
 
                 describe('when catalog items received', function () {
                     beforeEach(function () {
-                        fixture.query.calls[0].args[1](payload);
+                        fixture.query.calls[0].args[0].success(payload);
                     });
 
                     it('expose items on local scope', function () {
@@ -446,7 +446,80 @@ describe('catalog', function () {
                 });
 
                 it('request catalog items for that partition', function () {
-                    expect(fixture.query.calls[0].args[0]).toEqual({partition: 'partition', sortBy: 'creationTime', sortOrder: 'desc'});
+                    expect(fixture.query.calls[0].args[0]).toEqual({
+                        partition: 'partition',
+                        sortBy: 'creationTime',
+                        sortOrder: 'desc',
+                        success: jasmine.any(Function)
+                    });
+                });
+            });
+        });
+
+        describe('given partition with paging info', function () {
+            function request() {
+                return fixture.query.calls[0].args[0];
+            }
+
+            beforeEach(function () {
+                scope.forPartition('partition', {subset: {offset: 0, count: 2}});
+            });
+
+            describe('and app.start notification received', function () {
+                beforeEach(function () {
+                    notifications['app.start']();
+                });
+
+                it('request catalog items for that partition', function () {
+                    expect(request().offset).toEqual(0);
+                    expect(request().count).toEqual(2);
+                });
+
+                describe('on search results', function() {
+                    beforeEach(function () {
+                        request().success([{id:1}]);
+                    });
+
+                    it('expose results on scope', function() {
+                        expect(scope.items.length).toEqual(1);
+                        expect(scope.items[0].id).toEqual(1);
+                    });
+
+                    it('increment offset with count', function() {
+                        expect(request().offset).toEqual(1);
+                        expect(request().count).toEqual(2);
+                    });
+
+                    describe('when searching for more', function() {
+                        beforeEach(function() {
+                            fixture.query.reset();
+                            scope.searchForMore();
+                            request().success([{id:2}]);
+                        });
+
+                        it('increment offset with count', function() {
+                            expect(request().offset).toEqual(2);
+                            expect(request().count).toEqual(2);
+                        });
+
+                        it('extends the results', function() {
+                            expect(scope.items.length).toEqual(2);
+                            expect(scope.items[0].id).toEqual(1);
+                            expect(scope.items[1].id).toEqual(2);
+                        });
+                    });
+                });
+            });
+
+            describe('when no offset is given', function () {
+                beforeEach(function () {
+                    scope.forPartition('partition', {subset: {count: 2}});
+                    notifications['app.start']();
+                });
+
+                it('request catalog items for that partition', function () {
+                    expect(request().offset).toEqual(0);
+                    expect(request().count).toEqual(2);
                 });
             });
         });
@@ -522,11 +595,6 @@ describe('catalog', function () {
                     expect(scope.partitions[0].id).toEqual(1);
                     expect(scope.partitions[1].id).toEqual(2);
                 });
-            });
-
-            it('search results can be removed from the view', function() {
-                scope.partitions[0].remove();
-                expect(scope.partitions).toEqual([]);
             });
         });
 
