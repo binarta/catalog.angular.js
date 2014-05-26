@@ -1724,8 +1724,18 @@ describe('catalog', function () {
                     expect(topics['edit.mode.unlock']).toBeUndefined();
                 });
             });
+        });
 
+        it('specify update command to execute', function() {
+            scope.init({}, {context:'update-command-id'});
+            scope.update();
+            expect(writer.data().context).toEqual('update-command-id');
+        });
 
+        it('mark payload should be treated as input', function() {
+            scope.init({}, {treatInputAsId:true});
+            scope.update();
+            expect(writer.data().treatInputAsId).toEqual(true);
         });
     });
 

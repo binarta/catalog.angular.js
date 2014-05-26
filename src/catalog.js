@@ -553,9 +553,11 @@ function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseA
     self.config = {};
 
     $scope.init = function (item, config) {
+        if(config == undefined) config = {};
         $scope.item = angular.copy(item);
-        $scope.item.context = 'update';
+        $scope.item.context = config.context || 'update';
         $scope.unchanged = true;
+        if(config.treatInputAsId) $scope.item.treatInputAsId = true;
         if ($scope.form) $scope.form.$setPristine();
         bindWatch();
         self.config = config || {};
