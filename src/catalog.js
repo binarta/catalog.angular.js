@@ -48,8 +48,8 @@ function FindCatalogPartitionsFactory(config, $http) {
                 namespace: config.namespace,
                 owner: args.filters.owner
             };
-            if(args.sortings) ctx.sortings = args.sortings;
-            if(args.subset) ctx.subset = args.subset;
+            if (args.sortings) ctx.sortings = args.sortings;
+            if (args.subset) ctx.subset = args.subset;
             $http.post((config.baseUri || '') + 'api/query/catalog-partition/' + args.query, {args: ctx}).error(onError).success(onSuccess);
         }
     }
@@ -178,8 +178,8 @@ function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItems
             ctx.count = args.subset.count;
         }
         ctx.success = function (items) {
-            if(args.subset) ctx.offset += items.length;
-            items.forEach(function(it) {
+            if (args.subset) ctx.offset += items.length;
+            items.forEach(function (it) {
                 $scope.items.push(it);
             });
         };
@@ -192,7 +192,7 @@ function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItems
             executeQuery();
         });
 
-        $scope.searchForMore = function() {
+        $scope.searchForMore = function () {
             executeQuery();
         };
 
@@ -260,29 +260,30 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, ngRegist
     $scope.init = function (query, partition) {
         var args;
 
-        if(query && partition) {
-            args = {query:query, owner:partition}
+        if (query && partition) {
+            args = {query: query, owner: partition}
         } else {
             args = query;
         }
 
         var defaultSubset;
-        if(args.subset) defaultSubset = args.subset;
+        if (args.subset) defaultSubset = args.subset;
 
         var ctx = {
-            query:args.query,
-            filters:{owner:args.owner}
+            query: args.query,
+            filters: {owner: args.owner}
         };
+
         function executeQuery() {
             ctx.success = function (partitions) {
-                if(ctx.subset) ctx.subset.offset += partitions.length;
-                partitions.forEach(function(it) {
+                if (ctx.subset) ctx.subset.offset += partitions.length;
+                partitions.forEach(function (it) {
                     $scope.partitions.push(it);
                 });
             };
-            if(args.sortings) ctx.sortings = args.sortings;
-            if(!ctx.subset && defaultSubset) {
-                ctx.subset = {offset:defaultSubset.offset, count:defaultSubset.count};
+            if (args.sortings) ctx.sortings = args.sortings;
+            if (!ctx.subset && defaultSubset) {
+                ctx.subset = {offset: defaultSubset.offset, count: defaultSubset.count};
             }
             findCatalogPartitions(ctx);
         }
@@ -290,7 +291,7 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, ngRegist
         $scope.partitions = [];
         $scope.partition = args.owner;
         $scope.parent = $scope.partition == '/' ? undefined : self.toParent($scope.partition);
-        $scope.searchForMore = function() {
+        $scope.searchForMore = function () {
             executeQuery();
         };
 
@@ -553,11 +554,13 @@ function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseA
     self.config = {};
 
     $scope.init = function (item, config) {
-        if(config == undefined) config = {};
+        if (config == undefined) config = {};
         $scope.item = angular.copy(item);
-        $scope.item.context = config.context || 'update';
+        $scope.item.context = 'update';
         $scope.unchanged = true;
-        if(config.treatInputAsId) $scope.item.treatInputAsId = true;
+        if (config.mask) Object.keys(config.mask).forEach(function (it) {
+            $scope.item[it] = config.mask[it];
+        });
         if ($scope.form) $scope.form.$setPristine();
         bindWatch();
         self.config = config || {};
@@ -568,7 +571,7 @@ function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseA
     }
 
     function executeSuccessHandler() {
-        findCatalogItemById($scope.item.id, function(item) {
+        findCatalogItemById($scope.item.id, function (item) {
             self.config.success(item);
         });
     }

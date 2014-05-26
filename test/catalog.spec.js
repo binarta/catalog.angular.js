@@ -1726,16 +1726,15 @@ describe('catalog', function () {
             });
         });
 
-        it('specify update command to execute', function() {
-            scope.init({}, {context:'update-command-id'});
+        it('masking fields on payload', function() {
+            scope.init(
+                {unmasked:'original',masked1:'original', masked2:'original'},
+                {mask:{masked1:'masked', masked2:'masked'}}
+            );
             scope.update();
-            expect(writer.data().context).toEqual('update-command-id');
-        });
-
-        it('mark payload should be treated as input', function() {
-            scope.init({}, {treatInputAsId:true});
-            scope.update();
-            expect(writer.data().treatInputAsId).toEqual(true);
+            expect(writer.data().unmasked).toEqual('original');
+            expect(writer.data().masked1).toEqual('masked');
+            expect(writer.data().masked2).toEqual('masked');
         });
     });
 
