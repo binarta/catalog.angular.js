@@ -183,7 +183,7 @@ function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItems
                 $scope.items.push(it);
             });
             if ($scope.items.length > 0 && items.length == 0)
-                topicMessageDispatcher.fire('system.success', {
+                topicMessageDispatcher.fire('system.info', {
                     code: 'no.more.results.found',
                     default: 'No more results found.'
                 });
