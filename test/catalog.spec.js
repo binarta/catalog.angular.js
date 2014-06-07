@@ -237,7 +237,8 @@ describe('catalog', function () {
             ctrl = $controller(QueryCatalogController, {
                 $scope: scope,
                 findCatalogItemsByPartition: fixture.query,
-                findCatalogItemById: fixture.entity
+                findCatalogItemById: fixture.entity,
+                topicMessageDispatcher: dispatcher
             });
         }));
 
@@ -506,6 +507,36 @@ describe('catalog', function () {
                             expect(scope.items.length).toEqual(2);
                             expect(scope.items[0].id).toEqual(1);
                             expect(scope.items[1].id).toEqual(2);
+                        });
+
+                        it('no notification sent', function () {
+                            expect(dispatcher['system.success']).toBeUndefined();
+                        });
+                    });
+
+                    describe('when no more are found', function () {
+                        beforeEach(function() {
+                            fixture.query.reset();
+                            scope.searchForMore();
+                            request().success([]);
+                        });
+
+                        it('send notification', function () {
+                            expect(dispatcher['system.success']).toEqual({
+                                code: 'no.more.results.found',
+                                default: 'No more results found.'
+                            });
+                        });
+                    });
+
+                    describe('when no items on scope', function () {
+                        beforeEach(function () {
+                            scope.items = [];
+                            request().success([]);
+                        });
+
+                        it('no notification sent', function () {
+                            expect(dispatcher['system.success']).toBeUndefined();
                         });
                     });
                 });
