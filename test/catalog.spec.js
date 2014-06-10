@@ -1629,6 +1629,17 @@ describe('catalog', function () {
                 });
             });
 
+            describe('and lockEditModeOnDirty is on config', function () {
+                beforeEach(function () {
+                    scope.watches = [];
+                    scope.init(item, {lockEditModeOnDirty: false});
+                });
+
+                it('do not watch for changes', function () {
+                    expect(scope.watches).toEqual([]);
+                });
+            });
+
             describe('on update', function () {
                 beforeEach(function () {
                     scope.update();
@@ -1684,6 +1695,36 @@ describe('catalog', function () {
                                 }));
                             });
                         });
+                    });
+                });
+            });
+
+            describe('on update with params', function () {
+                var params, beforeUpdate, success;
+
+                beforeEach(function () {
+                    params = {
+                        beforeUpdate: function (items) {
+                            beforeUpdate = items;
+                        },
+                        success: function (items) {
+                            success = items;
+                        }
+                    };
+                    scope.update(params);
+                });
+
+                it('beforeUpdate is called', function () {
+                    expect(beforeUpdate.customField).toEqual(item.customField);
+                });
+
+                describe('success', function () {
+                    beforeEach(function () {
+                        writer.success();
+                    });
+
+                    it('success is called', function () {
+                        expect(success.customField).toEqual(item.customField);
                     });
                 });
             });

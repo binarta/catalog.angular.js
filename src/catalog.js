@@ -567,7 +567,7 @@ function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseA
             $scope.item[it] = config.mask[it];
         });
         if ($scope.form) $scope.form.$setPristine();
-        bindWatch();
+        if (config.lockEditModeOnDirty || config.lockEditModeOnDirty == undefined) bindWatch();
         self.config = config || {};
     };
 
@@ -598,11 +598,13 @@ function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseA
         topicMessageDispatcher.fire('edit.mode.unlock', $scope.item.id);
     };
 
-    $scope.update = function () {
+    $scope.update = function (params) {
+        if (params && params.beforeUpdate) params.beforeUpdate($scope.item);
         $scope.item.namespace = config.namespace;
         var ctx = usecaseAdapterFactory($scope);
         ctx.data = $scope.item;
         ctx.success = function () {
+            if (params && params.success) params.success($scope.item);
             topicMessageDispatcher.fire('edit.mode.unlock', $scope.item.id);
             $scope.unchanged = true;
             if ($scope.form) $scope.form.$setPristine();
