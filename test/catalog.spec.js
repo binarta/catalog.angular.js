@@ -1064,6 +1064,17 @@ describe('catalog', function () {
             ctx.success({id:'/item-id'});
             expect(location.path()).toEqual('/lang/view/item-id');
         });
+
+        it('on success then registered success handler gets executed', function() {
+            var successWasCalled = undefined;
+            var item = {};
+            subscriptions['app.start']();
+            itemTypesLoaded();
+            scope.success = function(item) {successWasCalled = item; };
+            scope.submit();
+            ctx.success(item);
+            expect(successWasCalled).toEqual(item);
+        })
     });
 
     describe("ViewCatalogItemController", function () {

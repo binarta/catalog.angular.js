@@ -388,6 +388,7 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
 
     $scope.submit = function () {
         var onSuccess = function (item) {
+            if ($scope.success) $scope.success(item);
             topicMessageDispatcher.fire('catalog.item.added', item.id);
             reset();
             if ($scope.redirectTo) redirect($scope.redirectTo);
