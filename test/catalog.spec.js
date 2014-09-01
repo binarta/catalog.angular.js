@@ -242,6 +242,34 @@ describe('catalog', function () {
             });
         }));
 
+        describe('exposes decorator', function() {
+            it('items get added to items array', function() {
+                scope.decorator({id:'I'});
+                expect(scope.items).toEqual([{id:'I'}]);
+            })
+        });
+
+        describe('exposes filters customizer', function() {
+            var promise;
+            var filters = {};
+            var subset = {offset:10, count:5};
+            var promiseWasResolved = false;
+
+            beforeEach(function() {
+                promise = scope.filtersCustomizer({filters:filters, subset:subset})
+            });
+
+            it('subset is copied onto filters', function() {
+                promise.then(function() {
+                    promiseWasResolved = true;
+                });
+                scope.$root.$digest();
+                expect(filters.offset).toEqual(subset.offset);
+                expect(filters.count).toEqual(subset.count);
+                expect(promiseWasResolved).toBeTruthy();
+            })
+        });
+
         it('does not subscribe to app.start notifications at construction time', function () {
             expect(notifications['app.start']).toBeUndefined();
         });
@@ -256,26 +284,6 @@ describe('catalog', function () {
 
             it('expose the parent partition on local scope', function () {
                 expect(scope.partition).toEqual('partition');
-            });
-
-            describe('and app.start notification received', function () {
-                beforeEach(function () {
-                    notifications['app.start']();
-                });
-
-                it('request catalog items for that partition', function () {
-                    expect(fixture.query.calls[0].args[0]).toEqual({partition: 'partition', success: jasmine.any(Function)});
-                });
-
-                describe('when catalog items received', function () {
-                    beforeEach(function () {
-                        fixture.query.calls[0].args[0].success(payload);
-                    });
-
-                    it('expose items on local scope', function () {
-                        expect(scope.items).toEqual(payload);
-                    });
-                });
             });
 
             describe('catalog.item.added notification received', function () {
@@ -368,189 +376,64 @@ describe('catalog', function () {
                 scope.forPartition('partition');
             });
 
-            describe('and app.start notification received', function () {
+            describe('catalog.item.added notification received', function () {
+                var id;
+
                 beforeEach(function () {
-                    notifications['app.start']();
+                    id = 'new-item';
+                    scope.items = ['first'];
+                    payload = {
+                        id: id
+                    };
+                    notifications['catalog.item.added'](id);
                 });
 
-                describe('catalog.item.added notification received', function () {
-                    var id;
-
+                describe('when catalog item received', function () {
                     beforeEach(function () {
-                        id = 'new-item';
-                        scope.items = ['first'];
-                        payload = {
-                            id: id
-                        };
-                        notifications['catalog.item.added'](id);
+                        fixture.entity.calls[0].args[1](payload);
                     });
 
-                    describe('when catalog item received', function () {
-                        beforeEach(function () {
-                            fixture.entity.calls[0].args[1](payload);
-                        });
-
-                        it('append item on local scope', function () {
-                            expect(scope.items[1]).toEqual(payload);
-                        });
-                    });
-                });
-
-                describe('catalog.item.paste notification received', function() {
-                    beforeEach(function() {
-                        scope.items = [
-                            {id:'I1', priority:1},
-                            {id:'I2', priority:2},
-                            {id:'I3', priority:3}
-                        ];
-                    });
-
-                    it('first to middle', function() {
-                        notifications['catalog.item.paste']({id:'I1', priority:2});
-                        expect(scope.items[0]).toEqual({id:'I2', priority:1});
-                        expect(scope.items[1]).toEqual({id:'I1', priority:2});
-                        expect(scope.items[2]).toEqual({id:'I3', priority:3});
-                    });
-
-                    it('first to last', function() {
-                        notifications['catalog.item.paste']({id:'I1', priority:3});
-                        expect(scope.items[0]).toEqual({id:'I2', priority:1});
-                        expect(scope.items[1]).toEqual({id:'I3', priority:2});
-                        expect(scope.items[2]).toEqual({id:'I1', priority:3});
-                    });
-
-                    it('last to first', function() {
-                        notifications['catalog.item.paste']({id:'I3', priority:1});
-                        expect(scope.items[0]).toEqual({id:'I3', priority:1});
-                        expect(scope.items[1]).toEqual({id:'I1', priority:2});
-                        expect(scope.items[2]).toEqual({id:'I2', priority:3});
-                    });
-
-                    it('to self', function() {
-                        notifications['catalog.item.paste']({id:'I2', priority:2});
-                        expect(scope.items[0]).toEqual({id:'I1', priority:1});
-                        expect(scope.items[1]).toEqual({id:'I2', priority:2});
-                        expect(scope.items[2]).toEqual({id:'I3', priority:3});
-                    });
-                });
-            });
-        });
-
-        describe('given partition with sort info', function () {
-            beforeEach(function () {
-                scope.forPartition('partition', {sortBy: 'creationTime', sortOrder: 'desc'});
-            });
-
-            describe('and app.start notification received', function () {
-                beforeEach(function () {
-                    notifications['app.start']();
-                });
-
-                it('request catalog items for that partition', function () {
-                    expect(fixture.query.calls[0].args[0]).toEqual({
-                        partition: 'partition',
-                        sortBy: 'creationTime',
-                        sortOrder: 'desc',
-                        success: jasmine.any(Function)
-                    });
-                });
-            });
-        });
-
-        describe('given partition with paging info', function () {
-            function request() {
-                return fixture.query.calls[0].args[0];
-            }
-
-            beforeEach(function () {
-                scope.forPartition('partition', {subset: {offset: 0, count: 2}});
-            });
-
-            describe('and app.start notification received', function () {
-                beforeEach(function () {
-                    notifications['app.start']();
-                });
-
-                it('request catalog items for that partition', function () {
-                    expect(request().offset).toEqual(0);
-                    expect(request().count).toEqual(2);
-                });
-
-                describe('on search results', function() {
-                    beforeEach(function () {
-                        request().success([{id:1}]);
-                    });
-
-                    it('expose results on scope', function() {
-                        expect(scope.items.length).toEqual(1);
-                        expect(scope.items[0].id).toEqual(1);
-                    });
-
-                    it('increment offset with count', function() {
-                        expect(request().offset).toEqual(1);
-                        expect(request().count).toEqual(2);
-                    });
-
-                    describe('when searching for more', function() {
-                        beforeEach(function() {
-                            fixture.query.reset();
-                            scope.searchForMore();
-                            request().success([{id:2}]);
-                        });
-
-                        it('increment offset with count', function() {
-                            expect(request().offset).toEqual(2);
-                            expect(request().count).toEqual(2);
-                        });
-
-                        it('extends the results', function() {
-                            expect(scope.items.length).toEqual(2);
-                            expect(scope.items[0].id).toEqual(1);
-                            expect(scope.items[1].id).toEqual(2);
-                        });
-
-                        it('no notification sent', function () {
-                            expect(dispatcher['system.success']).toBeUndefined();
-                        });
-                    });
-
-                    describe('when no more are found', function () {
-                        beforeEach(function() {
-                            fixture.query.reset();
-                            scope.searchForMore();
-                            request().success([]);
-                        });
-
-                        it('send notification', function () {
-                            expect(dispatcher['system.info']).toEqual({
-                                code: 'no.more.results.found',
-                                default: 'No more results found.'
-                            });
-                        });
-                    });
-
-                    describe('when no items on scope', function () {
-                        beforeEach(function () {
-                            scope.items = [];
-                            request().success([]);
-                        });
-
-                        it('no notification sent', function () {
-                            expect(dispatcher['system.info']).toBeUndefined();
-                        });
+                    it('append item on local scope', function () {
+                        expect(scope.items[1]).toEqual(payload);
                     });
                 });
             });
 
-            describe('when no offset is given', function () {
-                beforeEach(function () {
-                    scope.forPartition('partition', {subset: {count: 2}});
-                    notifications['app.start']();
+            describe('catalog.item.paste notification received', function() {
+                beforeEach(function() {
+                    scope.items = [
+                        {id:'I1', priority:1},
+                        {id:'I2', priority:2},
+                        {id:'I3', priority:3}
+                    ];
                 });
 
-                it('request catalog items for that partition', function () {
-                    expect(request().offset).toEqual(0);
-                    expect(request().count).toEqual(2);
+                it('first to middle', function() {
+                    notifications['catalog.item.paste']({id:'I1', priority:2});
+                    expect(scope.items[0]).toEqual({id:'I2', priority:1});
+                    expect(scope.items[1]).toEqual({id:'I1', priority:2});
+                    expect(scope.items[2]).toEqual({id:'I3', priority:3});
+                });
+
+                it('first to last', function() {
+                    notifications['catalog.item.paste']({id:'I1', priority:3});
+                    expect(scope.items[0]).toEqual({id:'I2', priority:1});
+                    expect(scope.items[1]).toEqual({id:'I3', priority:2});
+                    expect(scope.items[2]).toEqual({id:'I1', priority:3});
+                });
+
+                it('last to first', function() {
+                    notifications['catalog.item.paste']({id:'I3', priority:1});
+                    expect(scope.items[0]).toEqual({id:'I3', priority:1});
+                    expect(scope.items[1]).toEqual({id:'I1', priority:2});
+                    expect(scope.items[2]).toEqual({id:'I2', priority:3});
+                });
+
+                it('to self', function() {
+                    notifications['catalog.item.paste']({id:'I2', priority:2});
+                    expect(scope.items[0]).toEqual({id:'I1', priority:1});
+                    expect(scope.items[1]).toEqual({id:'I2', priority:2});
+                    expect(scope.items[2]).toEqual({id:'I3', priority:3});
                 });
             });
         });

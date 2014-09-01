@@ -10,7 +10,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'angular.usecase.adapt
     .controller('AddToCatalogController', ['config', '$scope', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', '$location', 'localeResolver', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
     .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', 'localStorage', RemoveItemFromCatalogController])
-    .controller('QueryCatalogController', ['$scope', 'ngRegisterTopicHandler', 'findCatalogItemsByPartition', 'findCatalogItemById', 'topicMessageDispatcher', QueryCatalogController])
+    .controller('QueryCatalogController', ['$scope', 'ngRegisterTopicHandler', 'findCatalogItemsByPartition', 'findCatalogItemById', 'topicMessageDispatcher', '$q', QueryCatalogController])
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
     .controller('UpdateCatalogItemController', ['config', '$scope', 'updateCatalogItem', 'usecaseAdapterFactory', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
     .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
@@ -162,44 +162,24 @@ function BrowseCatalogController($scope, $routeParams, catalogPathParser) {
     $scope.breadcrumbs = current.breadcrumbs;
 }
 
-function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItemsByPartition, findCatalogItemById, topicMessageDispatcher) {
+function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItemsByPartition, findCatalogItemById, topicMessageDispatcher, $q) {
+    $scope.items = [];
+
+    $scope.decorator = function(item) {
+        $scope.items.push(item);
+    };
+
+    $scope.filtersCustomizer = function(args) {
+        var deferred = $q.defer();
+        args.filters.offset = args.subset.offset;
+        args.filters.count = args.subset.count;
+        deferred.resolve();
+        return deferred.promise;
+    };
+
     $scope.forPartition = function (partition, args) {
         $scope.partition = partition;
-        $scope.items = [];
         if (!args) args = {};
-        var ctx = {
-            partition: partition
-        };
-
-        if (args.sortBy) ctx.sortBy = args.sortBy;
-        if (args.sortOrder) ctx.sortOrder = args.sortOrder;
-        if (args.subset) {
-            ctx.offset = args.subset.offset || 0;
-            ctx.count = args.subset.count;
-        }
-        ctx.success = function (items) {
-            if (args.subset) ctx.offset += items.length;
-            items.forEach(function (it) {
-                $scope.items.push(it);
-            });
-            if ($scope.items.length > 0 && items.length == 0)
-                topicMessageDispatcher.fire('system.info', {
-                    code: 'no.more.results.found',
-                    default: 'No more results found.'
-                });
-        };
-
-        function executeQuery() {
-            findCatalogItemsByPartition(ctx);
-        }
-
-        ngRegisterTopicHandler($scope, 'app.start', function () {
-            executeQuery();
-        });
-
-        $scope.searchForMore = function () {
-            executeQuery();
-        };
 
         ngRegisterTopicHandler($scope, 'catalog.item.added', function (id) {
             findCatalogItemById(id, function (item) {
