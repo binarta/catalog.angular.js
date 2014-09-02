@@ -19,8 +19,8 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'angular.usecase.adapt
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .directive('splitInRows', splitInRowsDirectiveFactory)
     .config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
-        catalogItemUpdatedDecoratorProvider.add('update', function(args) {
-            return {id:args.id};
+        catalogItemUpdatedDecoratorProvider.add('updatePriority', function(args) {
+            return args.id;
         })
     }])
     .config(['$routeProvider', function ($routeProvider) {
@@ -608,7 +608,7 @@ function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseA
 function CatalogItemUpdatedDecoratorsFactory() {
     var decorators = {};
     var defaultDecorator = function(args) {
-        return args.id
+        return args;
     };
     return {
         add: function(context, decorator) {

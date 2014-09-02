@@ -1800,8 +1800,8 @@ describe('catalog', function () {
         }));
 
         describe('when decorating', function() {
-            it('return id by default', function() {
-                expect(decorator({context:'unregistered', id: 'I'})).toEqual('I');
+            it('return args by default', function() {
+                expect(decorator({context:'unregistered', id: 'I'})).toEqual({context:'unregistered', id: 'I'});
             });
 
             describe('with a registered decorator', function() {
@@ -1846,16 +1846,16 @@ describe('catalog', function () {
             });
 
             it('raise catalog item updated', function() {
-                expect(dispatcher['catalog.item.updated']).toEqual(args.data.id);
+                expect(dispatcher['catalog.item.updated']).toEqual(args.data);
             });
 
             it('execute on success handler', function() {
                 expect(onSuccessSpy.calls[0]).toBeTruthy();
             });
 
-            it('test', function() {
-                args.data.context = 'update';
-                args.data.id = 'I';
+            it('support updatePriority context', function() {
+                args.data.context = 'updatePriority';
+                args.data.id = {id:'I'};
                 writer.success();
                 expect(dispatcher['catalog.item.updated']).toEqual({id:'I'});
             })
