@@ -8,6 +8,7 @@ describe('catalog', function () {
     beforeEach(module('rest.client'));
     beforeEach(module('web.storage'));
     beforeEach(module('i18n'));
+    beforeEach(module('test.app'));
 
     beforeEach(inject(function ($injector, $location, config) {
         config.namespace = 'namespace';
@@ -339,7 +340,7 @@ describe('catalog', function () {
                         id: 'item-2',
                         foo: 'bar'
                     };
-                    notifications['catalog.item.updated']('item-2');
+                    notifications['catalog.item.updated']({id:'item-2'});
                 });
 
                 it('request catalog item for that id', function () {
@@ -1040,7 +1041,7 @@ describe('catalog', function () {
                     id: 'item-2',
                     foo: 'bar'
                 };
-                notifications['catalog.item.updated']('item-2');
+                notifications['catalog.item.updated']({id:'item-2'});
             });
 
             it('request catalog item for that id', function () {
@@ -1791,6 +1792,26 @@ describe('catalog', function () {
         });
     });
 
+    describe('CatalogItemUpdatedDecorators', function() {
+        var decorator;
+
+        beforeEach(inject(function(catalogItemUpdatedDecorator) {
+            decorator = catalogItemUpdatedDecorator;
+        }));
+
+        describe('when decorating', function() {
+            it('return id by default', function() {
+                expect(decorator({context:'unregistered', id: 'I'})).toEqual('I');
+            });
+
+            describe('with a registered decorator', function() {
+                it('test', function() {
+                    expect(decorator({context:'context'}).decorated).toBeTruthy();
+                })
+            });
+        });
+    });
+
     describe('on update catalog item', function () {
         var writer, onSuccessSpy;
         var args = {
@@ -1831,6 +1852,13 @@ describe('catalog', function () {
             it('execute on success handler', function() {
                 expect(onSuccessSpy.calls[0]).toBeTruthy();
             });
+
+            it('test', function() {
+                args.data.context = 'update';
+                args.data.id = 'I';
+                writer.success();
+                expect(dispatcher['catalog.item.updated']).toEqual({id:'I'});
+            })
         });
     });
 
@@ -1938,3 +1966,10 @@ describe('catalog', function () {
         });
     });
 });
+
+angular.module('test.app', ['catalog']).config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
+    catalogItemUpdatedDecoratorProvider.add('context', function(args) {
+        args.decorated = true;
+        return args;
+    })
+}]);

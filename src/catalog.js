@@ -1,5 +1,6 @@
 angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'angular.usecase.adapter'])
-    .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', UpdateCatalogItemFactory])
+    .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
+    .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('findAllCatalogItemTypes', ['config', '$http', FindAllCatalogItemTypesFactory])
     .factory('findCatalogPartitions', ['config', '$http', FindCatalogPartitionsFactory])
     .factory('findCatalogItemById', ['config', 'restServiceHandler', FindCatalogItemByIdFactory])
@@ -17,6 +18,11 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'angular.usecase.adapt
     .controller('ViewCatalogItemController', ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .directive('splitInRows', splitInRowsDirectiveFactory)
+    .config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
+        catalogItemUpdatedDecoratorProvider.add('update', function(args) {
+            return {id:args.id};
+        })
+    }])
     .config(['$routeProvider', function ($routeProvider) {
         [
             [],
@@ -188,10 +194,10 @@ function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItems
             });
         });
 
-        ngRegisterTopicHandler($scope, 'catalog.item.updated', function (id) {
-            findCatalogItemById(id, function (item) {
+        ngRegisterTopicHandler($scope, 'catalog.item.updated', function (args) {
+            findCatalogItemById(args.id, function (item) {
                 for (var i = 0; i < $scope.items.length; i++) {
-                    if ($scope.items[i].id == id) {
+                    if ($scope.items[i].id == args.id) {
                         $scope.items[i] = item;
                         break;
                     }
@@ -432,8 +438,8 @@ function ViewCatalogItemController(config, $scope, $http, $routeParams, catalogP
         });
     };
 
-    var updated = function (id) {
-        findCatalogItemById(id, function (item) {
+    var updated = function (args) {
+        findCatalogItemById(args.id, function (item) {
             $scope.item = item;
         });
     };
@@ -599,7 +605,24 @@ function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseA
     });
 }
 
-function UpdateCatalogItemFactory(updateCatalogItemWriter, topicMessageDispatcher) {
+function CatalogItemUpdatedDecoratorsFactory() {
+    var decorators = {};
+    var defaultDecorator = function(args) {
+        return args.id
+    };
+    return {
+        add: function(context, decorator) {
+            decorators[context] = decorator;
+        },
+        $get: function() {
+            return function(args) {
+                return decorators[args.context] ? decorators[args.context](args) : defaultDecorator(args);
+            }
+        }
+    }
+}
+
+function UpdateCatalogItemFactory(updateCatalogItemWriter, topicMessageDispatcher, catalogItemUpdatedDecorator) {
     return function (args) {
         var onSuccess = args.success;
         args.success = function () {
@@ -607,7 +630,7 @@ function UpdateCatalogItemFactory(updateCatalogItemWriter, topicMessageDispatche
                 code: 'catalog.item.updated',
                 default: 'Catalog item updated!'
             });
-            topicMessageDispatcher.fire('catalog.item.updated', args.data.id);
+            topicMessageDispatcher.fire('catalog.item.updated', catalogItemUpdatedDecorator(args.data));
             onSuccess();
         };
         updateCatalogItemWriter(args);
