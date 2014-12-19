@@ -34,10 +34,10 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'angular.usecase.adapt
             [':d0', ':d1', ':d2', ':d3', ':d4', ':d5']
         ].forEach(function (it) {
                 var path = it.length ? '/' + it.join('/') : '';
-                $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: BrowseCatalogController});
-                $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html', controller: ViewCatalogItemController});
-                $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: BrowseCatalogController});
-                $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html', controller: ViewCatalogItemController});
+                $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: 'BrowseCatalogController'});
+                $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html', controller: 'ViewCatalogItemController'});
+                $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: 'BrowseCatalogController'});
+                $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html', controller: 'ViewCatalogItemController'});
             });
     }]);
 
