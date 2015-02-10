@@ -8,7 +8,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'angular.usecase.adapt
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
-    .controller('AddToCatalogController', ['config', '$scope', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', '$location', 'localeResolver', AddToCatalogController])
+    .controller('AddToCatalogController', ['config', '$scope', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', '$location', 'i18nLocation', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
     .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', 'localStorage', RemoveItemFromCatalogController])
     .controller('QueryCatalogController', ['$scope', 'ngRegisterTopicHandler', 'findCatalogItemsByPartition', 'findCatalogItemById', 'topicMessageDispatcher', '$q', QueryCatalogController])
@@ -339,7 +339,7 @@ function FindAllCatalogItemTypesFactory(config, $http) {
     }
 }
 
-function AddToCatalogController(config, $scope, $routeParams, topicRegistry, topicMessageDispatcher, findAllCatalogItemTypes, restServiceHandler, $location, localeResolver) {
+function AddToCatalogController(config, $scope, $routeParams, topicRegistry, topicMessageDispatcher, findAllCatalogItemTypes, restServiceHandler, $location, i18nLocation) {
     var self = this;
 
     var preselectedType;
@@ -378,7 +378,7 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
             topicMessageDispatcher.fire('catalog.item.added', item.id);
             reset();
             if ($scope.redirectTo) redirect($scope.redirectTo);
-            if ($scope.config && $scope.config.redirectToView) redirect('/' + localeResolver() + '/view' + item.id);
+            if ($scope.config && $scope.config.redirectToView) redirect('/' + i18nLocation.path('/view' + item.id));
         };
 
         $scope.item.namespace = config.namespace;

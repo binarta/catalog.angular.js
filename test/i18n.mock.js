@@ -1,6 +1,8 @@
 angular.module('i18n', [])
-    .factory('localeResolver', function() {
-        return function() {
-            return 'lang';
-        }
+    .factory('i18nLocation', function() {
+        return {
+            path: function (path) {
+                return 'lang' + path;
+            }
+        };
     });
