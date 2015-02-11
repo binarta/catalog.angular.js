@@ -1,8 +1,8 @@
 angular.module('i18n', [])
-    .factory('i18nLocation', function() {
+    .factory('i18nLocation', function($location) {
         return {
             path: function (path) {
-                return 'lang' + path;
+                $location.path('/lang' + path);
             }
         };
     });

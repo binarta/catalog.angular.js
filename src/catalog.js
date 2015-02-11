@@ -353,10 +353,6 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
         if ($scope.form) $scope.form.$setPristine();
     };
 
-    var redirect = function (to) {
-        $location.path(to);
-    };
-
     $scope.noredirect = function (partition, type) {
         $scope.init({partition: partition, type: type});
     };
@@ -377,8 +373,8 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
             if ($scope.success) $scope.success(item);
             topicMessageDispatcher.fire('catalog.item.added', item.id);
             reset();
-            if ($scope.redirectTo) redirect($scope.redirectTo);
-            if ($scope.config && $scope.config.redirectToView) redirect('/' + i18nLocation.path('/view' + item.id));
+            if ($scope.redirectTo) $location.path($scope.redirectTo);
+            if ($scope.config && $scope.config.redirectToView) i18nLocation.path('/view' + item.id);
         };
 
         $scope.item.namespace = config.namespace;
