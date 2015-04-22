@@ -1,0 +1,19 @@
+{
+  "msgs":{
+    "default":{
+      "catalog.partition.remove.success": "Partitie verwijderd",
+      "catalog.item.removed": "Artikel verwijderd",
+      "catalog.item.updated": "Artikel bijgewerkt"
+    },
+    "nl":{
+      "catalog.partition.remove.success": "Partitie verwijderd",
+      "catalog.item.removed": "Artikel verwijderd",
+      "catalog.item.updated": "Artikel bijgewerkt"
+    },
+    "en":{
+      "catalog.partition.remove.success": "Partition removed",
+      "catalog.item.removed": "Item removed",
+      "catalog.item.updated": "Item updated"
+    }
+  }
+}
