@@ -1,6 +1,9 @@
 {
     "name": "binarta.catalog.angular",
-    "main": "./src/catalog.js",
+    "main": [
+      "./src/catalog.js",
+      "./metadata.json"
+    ],
     "dependencies": {
       "angular": "1.3.*",
       "angular-route": "1.3.*",
