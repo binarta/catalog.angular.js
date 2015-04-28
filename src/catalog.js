@@ -420,7 +420,7 @@ function ViewCatalogItemController(config, $scope, $http, $routeParams, catalogP
     // @deprecated instead put item on $scope.item
     function addItemToScope(item) {
         Object.keys(item).forEach(function (key) {
-            $scope[key] = item[key];
+            if (key != 'locale') $scope[key] = item[key];
         });
     }
 

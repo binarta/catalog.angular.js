@@ -1006,7 +1006,8 @@ describe('catalog', function () {
                 $httpBackend.expect('GET', /.*/).respond(200, {
                     id: 'id',
                     type: 'type',
-                    name: 'name'
+                    name: 'name',
+                    locale: 'en'
                 });
 
                 scope.init();
@@ -1018,6 +1019,10 @@ describe('catalog', function () {
                 expect(scope.id).toEqual('id');
                 expect(scope.type).toEqual('type');
                 expect(scope.name).toEqual('name');
+            });
+
+            it('do not expose locale on scope', function () {
+                expect(scope.locale).toBeUndefined();
             });
 
             it('expose item on scope', function () {
