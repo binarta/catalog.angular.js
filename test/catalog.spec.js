@@ -988,10 +988,27 @@ describe('catalog', function () {
                             params[key] = el.params[key];
                         });
 
-                        $httpBackend.expect('GET', 'api/entity/catalog-item?' + el.queryString).respond(200, {});
+                        //$httpBackend.expect('GET', 'api/entity/catalog-item?' + el.queryString).respond(200, {});
                         scope.init();
                         topicRegistryMock['app.start']();
-                        $httpBackend.flush();
+                        //$httpBackend.flush();
+                        $httpBackend.verifyNoOutstandingExpectation();
+                        $httpBackend.verifyNoOutstandingRequest();
+                        expect(fixture.entity.calls[0].args[0]).toEqual(el.params.id);
+
+                        fixture.entity.calls[0].args[1]({
+                            id: 'id',
+                            type: 'type',
+                            name: 'name',
+                            locale: 'en'
+                        });
+                        expect(scope.id).toEqual('id');
+                        expect(scope.type).toEqual('type');
+                        expect(scope.name).toEqual('name');
+                        expect(scope.locale).toBeUndefined();
+                        expect(scope.item.id).toEqual('id');
+                        expect(scope.item.type).toEqual('type');
+                        expect(scope.item.name).toEqual('name');
                     }));
                 });
             });
@@ -1003,16 +1020,23 @@ describe('catalog', function () {
         describe('with item', function () {
             beforeEach(inject(function (topicRegistryMock) {
                 params.id = 'id';
-                $httpBackend.expect('GET', /.*/).respond(200, {
+                //$httpBackend.expect('GET', /.*/).respond(200, {
+                //    id: 'id',
+                //    type: 'type',
+                //    name: 'name',
+                //    locale: 'en'
+                //});
+
+                scope.init();
+                topicRegistryMock['app.start']();
+                expect(fixture.entity.calls[0].args[0]).toEqual('id');
+                fixture.entity.calls[0].args[1]({
                     id: 'id',
                     type: 'type',
                     name: 'name',
                     locale: 'en'
                 });
-
-                scope.init();
-                topicRegistryMock['app.start']();
-                $httpBackend.flush();
+                //$httpBackend.flush();
             }));
 
             it('expose details on scope', function () {
@@ -1387,13 +1411,15 @@ describe('catalog', function () {
 
                 describe('view catalog item controller', function () {
                     describe('constructor', function () {
+                        var findItemById = jasmine.createSpy('findItemById');
                         var filePath;
 
                         beforeEach(inject(function ($controller) {
                             filePath = path.slice(0, path.length - 1);
                             ctrl = $controller(ViewCatalogItemController, {
                                 $scope: scope,
-                                $routeParams: params
+                                $routeParams: params,
+                                findCatalogItemById:findItemById
                             });
                         }));
 
@@ -1406,29 +1432,10 @@ describe('catalog', function () {
 
                             it('and app.start notification received', inject(function (config, topicRegistryMock) {
                                 if (filePath) {
-                                    $httpBackend.expect('GET', 'api/entity/catalog-item?id=' + filePath, null, function (headers) {
-                                        return headers['x-namespace'] == config.namespace
-                                    }).respond(200, {});
                                     topicRegistryMock['app.start']();
-                                    $httpBackend.flush();
+                                    expect(findItemById.calls[0].args[0]).toEqual(filePath);
                                 }
                             }));
-
-                            describe('and baseUri is given', function () {
-                                beforeEach(inject(function (config) {
-                                    config.baseUri = 'http://host/context/';
-                                }));
-
-                                it('and app.start notification received with baseUri', inject(function (config, topicRegistryMock) {
-                                    if (filePath) {
-                                        $httpBackend.expect('GET', config.baseUri + 'api/entity/catalog-item?id=' + filePath, null, function (headers) {
-                                            return headers['x-namespace'] == config.namespace
-                                        }).respond(200, {});
-                                        topicRegistryMock['app.start']();
-                                        $httpBackend.flush();
-                                    }
-                                }));
-                            });
                         });
 
                     });

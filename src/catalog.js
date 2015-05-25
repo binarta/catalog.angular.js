@@ -15,7 +15,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
     .controller('UpdateCatalogItemController', ['config', '$scope', 'updateCatalogItem', 'usecaseAdapterFactory', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
     .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
-    .controller('ViewCatalogItemController', ['config', '$scope', '$http', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
+    .controller('ViewCatalogItemController', ['$scope', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .directive('splitInRows', splitInRowsDirectiveFactory)
     .config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
@@ -399,7 +399,7 @@ function AddToCatalogController(config, $scope, $routeParams, topicRegistry, top
     });
 }
 
-function ViewCatalogItemController(config, $scope, $http, $routeParams, catalogPathParser, topicRegistry, findCatalogItemById) {
+function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topicRegistry, findCatalogItemById) {
     var current = catalogPathParser($routeParams, 'file');
 
     $scope.path = current.path;
@@ -426,11 +426,7 @@ function ViewCatalogItemController(config, $scope, $http, $routeParams, catalogP
 
     $scope.init = function (path) {
         topicRegistry.subscribe('app.start', function () {
-            if ($routeParams.id)
-                $http.get('api/entity/catalog-item?id=/' + $routeParams.id).success(applyItemToScope);
-            else
-                $http.get((config.baseUri || '') + 'api/entity/catalog-item?id=' + path,
-                    {headers: {'x-namespace': config.namespace}}).success(applyItemToScope);
+            findCatalogItemById($routeParams.id || path, applyItemToScope);
         });
     };
 
