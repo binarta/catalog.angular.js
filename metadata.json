@@ -1,9 +1,9 @@
 {
   "msgs":{
     "default":{
-      "catalog.partition.remove.success": "Partitie verwijderd",
-      "catalog.item.removed": "Artikel verwijderd",
-      "catalog.item.updated": "Artikel bijgewerkt"
+      "catalog.partition.remove.success": "Partition removed",
+      "catalog.item.removed": "Item removed",
+      "catalog.item.updated": "Item updated"
     },
     "nl":{
       "catalog.partition.remove.success": "Partitie verwijderd",
@@ -14,6 +14,16 @@
       "catalog.partition.remove.success": "Partition removed",
       "catalog.item.removed": "Item removed",
       "catalog.item.updated": "Item updated"
+    },
+    "fr":{
+      "catalog.partition.remove.success": "Partition effacée",
+      "catalog.item.removed": "Article supprimé",
+      "catalog.item.updated": "Article actualisé"
+    },
+    "de":{
+      "catalog.partition.remove.success": "Partition gelöscht",
+      "catalog.item.removed": "Artikel gelöscht",
+      "catalog.item.updated": "Artikel überarbeitet"
     }
   }
 }
