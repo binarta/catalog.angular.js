@@ -2,7 +2,6 @@
     "name": "binarta.catalog.angular",
     "main": [
       "./src/catalog.js",
-      "./metadata.json",
       "./metadata-system.json"
     ],
     "dependencies": {
@@ -12,7 +11,7 @@
       "binarta.notifications.angular":"1.*.*",
       "binarta.config.angular": "0.*.*",
       "binarta.rest.client.angular": "0.*.*",
-      "binarta.i18n.angular": "0.*.*",
+      "binarta.i18n.angular": "1.*.*",
       "binarta.web.storage.angular": "0.*.*",
       "binarta.usecase.adapter.angular": "0.*.*"
     },
