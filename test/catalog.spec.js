@@ -2,6 +2,8 @@ describe('catalog', function () {
     var usecase, ctrl, scope, params, $httpBackend, dispatcher, location, payload, notifications;
     var onSuccess, receivedPayload, rest, i18n;
 
+    angular.module('toggle.edit.mode', []);
+
     beforeEach(module('catalog'));
     beforeEach(module('config'));
     beforeEach(module('notifications'));
@@ -706,6 +708,7 @@ describe('catalog', function () {
 
     describe('AddToCatalogController', function () {
         var ctx, createCtrl, itemTypesLoaded, subscriptions;
+        var editMode;
         var handler = function (it) {
             ctx = it;
         };
@@ -714,6 +717,7 @@ describe('catalog', function () {
         };
 
         beforeEach(inject(function ($controller, config, topicRegistryMock) {
+            editMode = jasmine.createSpyObj('editMode', ['enable'])
             subscriptions = topicRegistryMock;
             config.namespace = 'namespace';
             ctx = {};
@@ -723,7 +727,8 @@ describe('catalog', function () {
                 $routeParams: params,
                 topicMessageDispatcher: dispatcher,
                 findAllCatalogItemTypes: findAllCatalogItemTypes,
-                restServiceHandler: handler
+                restServiceHandler: handler,
+                editMode: editMode
             });
         }));
 
@@ -958,6 +963,17 @@ describe('catalog', function () {
             scope.submit();
             ctx.success(item);
             expect(successWasCalled).toEqual(item);
+        });
+
+        it('init with edit mode enabled', function() {
+            params.editMode = true;
+            params.partition = '/partition/';
+            subscriptions['app.start']();
+            itemTypesLoaded();
+            scope.init(params);
+            scope.submit();
+            ctx.success({id:'/item-id'});
+            expect(editMode.enable).toHaveBeenCalled();
         })
     });
 

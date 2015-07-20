@@ -1,4 +1,4 @@
-angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter'])
+angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode'])
     .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('findAllCatalogItemTypes', ['config', '$http', FindAllCatalogItemTypesFactory])
@@ -8,7 +8,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
-    .controller('AddToCatalogController', ['config', '$scope', 'localeResolver', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', '$location', 'i18nLocation', AddToCatalogController])
+    .controller('AddToCatalogController', ['config', '$scope', 'localeResolver', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', '$location', 'i18nLocation', 'editMode', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
     .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', 'localStorage', RemoveItemFromCatalogController])
     .controller('QueryCatalogController', ['$scope', 'ngRegisterTopicHandler', 'findCatalogItemsByPartition', 'findCatalogItemById', 'topicMessageDispatcher', '$q', QueryCatalogController])
@@ -339,7 +339,7 @@ function FindAllCatalogItemTypesFactory(config, $http) {
     }
 }
 
-function AddToCatalogController(config, $scope, localeResolver, $routeParams, topicRegistry, topicMessageDispatcher, findAllCatalogItemTypes, restServiceHandler, $location, i18nLocation) {
+function AddToCatalogController(config, $scope, localeResolver, $routeParams, topicRegistry, topicMessageDispatcher, findAllCatalogItemTypes, restServiceHandler, $location, i18nLocation, editMode) {
     var self = this;
 
     var preselectedType;
@@ -375,6 +375,7 @@ function AddToCatalogController(config, $scope, localeResolver, $routeParams, to
             reset();
             if ($scope.redirectTo) $location.path($scope.redirectTo);
             if ($scope.config && $scope.config.redirectToView) i18nLocation.path('/view' + item.id);
+            if ($scope.config && $scope.config.editMode) editMode.enable();
         };
 
         $scope.item.namespace = config.namespace;
