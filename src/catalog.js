@@ -248,7 +248,14 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, ngRegist
         } else return '/';
     };
 
-    $scope.init = function (query, partition) {
+    $scope.init = function (q, p) {
+        init(q, p, $scope);
+    };
+    this.init = function (q, p) {
+        init(q, p, self);
+    };
+
+    function init(query, partition, context) {
         var args;
 
         if (query && partition) {
@@ -269,7 +276,7 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, ngRegist
             ctx.success = function (partitions) {
                 if (ctx.subset) ctx.subset.offset += partitions.length;
                 partitions.forEach(function (it) {
-                    $scope.partitions.push(it);
+                    context.partitions.push(it);
                 });
             };
             if (args.sortings) ctx.sortings = args.sortings;
@@ -279,20 +286,20 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, ngRegist
             findCatalogPartitions(ctx);
         }
 
-        $scope.partitions = [];
-        $scope.partition = args.owner;
-        $scope.parent = $scope.partition == '/' ? undefined : self.toParent($scope.partition);
-        $scope.searchForMore = function () {
+        context.partitions = [];
+        context.partition = args.owner;
+        context.parent = context.partition == '/' ? undefined : self.toParent(context.partition);
+        context.searchForMore = function () {
             executeQuery();
         };
 
         var added = function (partition) {
-            if (partition.owner == $scope.partition) $scope.partitions.push(partition);
+            if (partition.owner == context.partition) context.partitions.push(partition);
         };
 
         var removed = function (id) {
-            $scope.partitions.forEach(function (it) {
-                if (it.id == id) $scope.partitions.splice($scope.partitions.indexOf(it), 1);
+            context.partitions.forEach(function (it) {
+                if (it.id == id) context.partitions.splice(context.partitions.indexOf(it), 1);
             });
         };
 

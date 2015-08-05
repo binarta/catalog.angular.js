@@ -461,161 +461,174 @@ describe('catalog', function () {
             return fixture.query.calls[0].args[0];
         }
 
-        it('simple search', function() {
-            scope.init({query:'ownedBy', owner:'/parent/'});
-            subscribers['app.start']();
-            expect(request().query).toEqual('ownedBy');
-            expect(request().filters.owner).toEqual('/parent/');
-        });
-
-        it('with sortings', function() {
-            scope.init({query:'ownedBy', owner:'/parent/', sortings:[{on:'name', orientation:'asc'}]});
-            subscribers['app.start']();
-            expect(request().sortings).toEqual([{on:'name', orientation:'asc'}]);
-        });
-
-        it('with sub set', function() {
-            scope.init({query:'ownedBy', owner:'/parent/', subset:{offset:0, count:2}});
-            subscribers['app.start']();
-            expect(request().subset).toEqual({offset:0, count:2});
-        });
-
-        describe('on search results', function() {
-            beforeEach(function() {
-                scope.init({query:'ownedBy', owner:'/parent/', subset:{offset:0, count:2}});
-                subscribers['app.start']();
-                request().success([{id:1}]);
-            });
-
-            it('expose results on scope', function() {
-                expect(scope.partitions.length).toEqual(1);
-                expect(scope.partitions[0].id).toEqual(1);
-            });
-
-            it('increment offset with count', function() {
-                expect(request().subset).toEqual({offset:1, count:2});
-            });
-
-            describe('when searching for more', function() {
-                beforeEach(function() {
-                    fixture.query.reset();
-                    scope.searchForMore();
-                    request().success([{id:2}]);
-                });
-
-                it('increment offset with count', function() {
-                    expect(request().subset).toEqual({offset:2, count:2});
-                });
-
-                it('extends the results', function() {
-                    expect(scope.partitions.length).toEqual(2);
-                    expect(scope.partitions[0].id).toEqual(1);
-                    expect(scope.partitions[1].id).toEqual(2);
-                });
-            });
-        });
-
-        describe('with deprecated initializer', function () {
-            beforeEach(function () {
-                scope.init('ownedBy', '/parent/');
-            });
-
-            it('wait for app.start notification', function () {
-                expect(fixture.query).not.toHaveBeenCalled();
-            });
-
-            it('expose partition and parent on scope', function () {
-                expect(scope.partition).toEqual('/parent/');
-                expect(scope.parent).toEqual('/');
-            });
-
-            describe('when app.start notification received', function () {
-                beforeEach(function () {
-                    subscribers['app.start']();
-                });
-
-                it('request partitions', function () {
-                    expect(fixture.query.calls[0].args[0].query).toEqual('ownedBy');
-                    expect(fixture.query.calls[0].args[0].filters.owner).toEqual('/parent/');
-                });
-
-                describe('and partitions received', function () {
-                    beforeEach(function () {
-                        payload = [
-                            {id: '/parent/path/'},
-                            {id: '/parent/another/'}
-                        ];
-                        fixture.query.calls[0].args[0].success(payload);
-                    });
-
-                    it('mark the current partition with css class active', function () {
-                        expect(scope.partitions).toEqual(payload);
-                    });
-
-                    describe('on catalog.partition.added notification', function () {
-                        var partition;
-
-                        function raiseForPath(path) {
-                            return function () {
-                                partition = {
-                                    owner: path,
-                                    name: 'name'
-                                };
-                                subscribers['catalog.partition.added'](partition);
-                            }
-                        }
-
-                        beforeEach(function () {
-                            scope.partitions = [];
-                        });
-
-                        describe('and partition exists in listed path', function () {
-                            beforeEach(raiseForPath('/parent/'));
-
-                            it('payload is added to the partition list', function () {
-                                expect(scope.partitions).toEqual([partition]);
-                            });
-                        });
-
-                        describe('and partition does not exist in listed path', function () {
-                            beforeEach(raiseForPath('/another/'));
-
-                            it('payload is not added to the partition list', function () {
-                                expect(scope.partitions).toEqual([]);
-                            });
-                        });
-                    });
-
-                    it('catalog.partition.removed notification removes the partition', function () {
-                        scope.partitions = [
-                            {id: 'partition-1'},
-                            {id: 'partition-2'}
-                        ];
-
-                        subscribers['catalog.partition.removed']('partition-1');
-
-                        expect(scope.partitions).toEqual([
-                            {id: 'partition-2'}
-                        ]);
-                    });
-                });
-
-            });
-        });
-
         [
-            {path: '/', parent: undefined},
-            {path: '/sub/', parent: '/'},
-            {path: '/parent/sub/', parent: '/parent/'}
-        ].forEach(function (el) {
-                describe('on init with path=' + el.path, function () {
+            'scope',
+            'controller'
+        ].forEach(function (c) {
+                describe('with ' + c, function () {
+                    var ctx;
+
                     beforeEach(function () {
-                        scope.init('query-name', el.path);
+                        ctx = (c == 'scope') ? scope : ctrl;
                     });
 
-                    it('exposes parent field', function () {
-                        expect(scope.parent).toEqual(el.parent);
+                    it('simple search', function() {
+                        ctx.init({query:'ownedBy', owner:'/parent/'});
+                        subscribers['app.start']();
+                        expect(request().query).toEqual('ownedBy');
+                        expect(request().filters.owner).toEqual('/parent/');
                     });
+
+                    it('with sortings', function() {
+                        ctx.init({query:'ownedBy', owner:'/parent/', sortings:[{on:'name', orientation:'asc'}]});
+                        subscribers['app.start']();
+                        expect(request().sortings).toEqual([{on:'name', orientation:'asc'}]);
+                    });
+
+                    it('with sub set', function() {
+                        ctx.init({query:'ownedBy', owner:'/parent/', subset:{offset:0, count:2}});
+                        subscribers['app.start']();
+                        expect(request().subset).toEqual({offset:0, count:2});
+                    });
+
+                    describe('on search results', function() {
+                        beforeEach(function() {
+                            ctx.init({query:'ownedBy', owner:'/parent/', subset:{offset:0, count:2}});
+                            subscribers['app.start']();
+                            request().success([{id:1}]);
+                        });
+
+                        it('expose results on scope', function() {
+                            expect(ctx.partitions.length).toEqual(1);
+                            expect(ctx.partitions[0].id).toEqual(1);
+                        });
+
+                        it('increment offset with count', function() {
+                            expect(request().subset).toEqual({offset:1, count:2});
+                        });
+
+                        describe('when searching for more', function() {
+                            beforeEach(function() {
+                                fixture.query.reset();
+                                ctx.searchForMore();
+                                request().success([{id:2}]);
+                            });
+
+                            it('increment offset with count', function() {
+                                expect(request().subset).toEqual({offset:2, count:2});
+                            });
+
+                            it('extends the results', function() {
+                                expect(ctx.partitions.length).toEqual(2);
+                                expect(ctx.partitions[0].id).toEqual(1);
+                                expect(ctx.partitions[1].id).toEqual(2);
+                            });
+                        });
+                    });
+
+                    describe('with deprecated initializer', function () {
+                        beforeEach(function () {
+                            ctx.init('ownedBy', '/parent/');
+                        });
+
+                        it('wait for app.start notification', function () {
+                            expect(fixture.query).not.toHaveBeenCalled();
+                        });
+
+                        it('expose partition and parent on scope', function () {
+                            expect(ctx.partition).toEqual('/parent/');
+                            expect(ctx.parent).toEqual('/');
+                        });
+
+                        describe('when app.start notification received', function () {
+                            beforeEach(function () {
+                                subscribers['app.start']();
+                            });
+
+                            it('request partitions', function () {
+                                expect(fixture.query.calls[0].args[0].query).toEqual('ownedBy');
+                                expect(fixture.query.calls[0].args[0].filters.owner).toEqual('/parent/');
+                            });
+
+                            describe('and partitions received', function () {
+                                beforeEach(function () {
+                                    payload = [
+                                        {id: '/parent/path/'},
+                                        {id: '/parent/another/'}
+                                    ];
+                                    fixture.query.calls[0].args[0].success(payload);
+                                });
+
+                                it('mark the current partition with css class active', function () {
+                                    expect(ctx.partitions).toEqual(payload);
+                                });
+
+                                describe('on catalog.partition.added notification', function () {
+                                    var partition;
+
+                                    function raiseForPath(path) {
+                                        return function () {
+                                            partition = {
+                                                owner: path,
+                                                name: 'name'
+                                            };
+                                            subscribers['catalog.partition.added'](partition);
+                                        }
+                                    }
+
+                                    beforeEach(function () {
+                                        ctx.partitions = [];
+                                    });
+
+                                    describe('and partition exists in listed path', function () {
+                                        beforeEach(raiseForPath('/parent/'));
+
+                                        it('payload is added to the partition list', function () {
+                                            expect(ctx.partitions).toEqual([partition]);
+                                        });
+                                    });
+
+                                    describe('and partition does not exist in listed path', function () {
+                                        beforeEach(raiseForPath('/another/'));
+
+                                        it('payload is not added to the partition list', function () {
+                                            expect(ctx.partitions).toEqual([]);
+                                        });
+                                    });
+                                });
+
+                                it('catalog.partition.removed notification removes the partition', function () {
+                                    ctx.partitions = [
+                                        {id: 'partition-1'},
+                                        {id: 'partition-2'}
+                                    ];
+
+                                    subscribers['catalog.partition.removed']('partition-1');
+
+                                    expect(ctx.partitions).toEqual([
+                                        {id: 'partition-2'}
+                                    ]);
+                                });
+                            });
+
+                        });
+                    });
+
+                    [
+                        {path: '/', parent: undefined},
+                        {path: '/sub/', parent: '/'},
+                        {path: '/parent/sub/', parent: '/parent/'}
+                    ].forEach(function (el) {
+                            describe('on init with path=' + el.path, function () {
+                                beforeEach(function () {
+                                    ctx.init('query-name', el.path);
+                                });
+
+                                it('exposes parent field', function () {
+                                    expect(ctx.parent).toEqual(el.parent);
+                                });
+                            });
+                        });
                 });
             });
     });
