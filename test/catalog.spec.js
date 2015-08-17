@@ -730,7 +730,7 @@ describe('catalog', function () {
         };
 
         beforeEach(inject(function ($controller, config, topicRegistryMock) {
-            editMode = jasmine.createSpyObj('editMode', ['enable'])
+            editMode = jasmine.createSpyObj('editMode', ['enable']);
             subscriptions = topicRegistryMock;
             config.namespace = 'namespace';
             ctx = {};
@@ -800,20 +800,47 @@ describe('catalog', function () {
                 });
 
                 describe('on submit', function () {
-                    beforeEach(function () {
-                        scope.item = {
-                            type: 'type',
-                            name: 'name'
-                        };
-                        scope.submit();
+                    describe('with violation on form', function () {
+                        beforeEach(function () {
+                            scope.catalogItemAddForm = {
+                                defaultName: {
+                                    $invalid: true
+                                }
+                            };
+                            scope.item = {
+                                type: 'type',
+                                name: 'name'
+                            };
+                            scope.submit();
+                        });
+
+                        it('set violations on scope', function () {
+                            expect(scope.violations).toEqual({
+                                defaultName: ['required']
+                            });
+                        });
+
+                        it('do not perform rest request', function () {
+                            expect(ctx.params).toBeUndefined();
+                        });
                     });
 
-                    it('perform rest call', function () {
-                        expect(ctx.scope).toEqual(scope);
-                        expect(ctx.params.method).toEqual('PUT');
-                        expect(ctx.params.url).toEqual('api/entity/catalog-item');
-                        expect(ctx.params.data).toEqual({type: 'type', name: 'name', namespace: 'namespace', partition: 'partition', locale: 'l'});
-                        expect(ctx.params.withCredentials).toEqual(true);
+                    describe('without violation', function () {
+                        beforeEach(function () {
+                            scope.item = {
+                                type: 'type',
+                                name: 'name'
+                            };
+                            scope.submit();
+                        });
+
+                        it('perform rest call', function () {
+                            expect(ctx.scope).toEqual(scope);
+                            expect(ctx.params.method).toEqual('PUT');
+                            expect(ctx.params.url).toEqual('api/entity/catalog-item');
+                            expect(ctx.params.data).toEqual({type: 'type', name: 'name', namespace: 'namespace', partition: 'partition', locale: 'l'});
+                            expect(ctx.params.withCredentials).toEqual(true);
+                        });
                     });
                 });
 

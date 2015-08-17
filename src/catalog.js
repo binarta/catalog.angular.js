@@ -392,19 +392,26 @@ function AddToCatalogController(config, $scope, localeResolver, $routeParams, to
             if ($scope.config && $scope.config.editMode) editMode.enable();
         };
 
-        $scope.item.namespace = config.namespace;
-        $scope.item.partition = $scope.partition;
-        $scope.item.locale = localeResolver();
-        restServiceHandler({
-            scope: $scope,
-            params: {
-                method: 'PUT',
-                url: (config.baseUri || '') + 'api/entity/catalog-item',
-                data: $scope.item,
-                withCredentials: true
-            },
-            success: onSuccess
-        });
+        if ($scope.catalogItemAddForm && $scope.catalogItemAddForm.defaultName.$invalid) {
+            $scope.violations = {
+                defaultName: ['required']
+            };
+        }
+        if (!$scope.violations) {
+            $scope.item.namespace = config.namespace;
+            $scope.item.partition = $scope.partition;
+            $scope.item.locale = localeResolver();
+            restServiceHandler({
+                scope: $scope,
+                params: {
+                    method: 'PUT',
+                    url: (config.baseUri || '') + 'api/entity/catalog-item',
+                    data: $scope.item,
+                    withCredentials: true
+                },
+                success: onSuccess
+            });
+        }
     };
 
     topicRegistry.subscribe('app.start', function () {
