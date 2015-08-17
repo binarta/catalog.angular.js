@@ -34,10 +34,10 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
             [':d0', ':d1', ':d2', ':d3', ':d4', ':d5']
         ].forEach(function (it) {
                 var path = it.length ? '/' + it.join('/') : '';
-                $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: 'BrowseCatalogController'});
-                $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html', controller: 'ViewCatalogItemController'});
-                $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: 'BrowseCatalogController'});
-                $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html', controller: 'ViewCatalogItemController'});
+                $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: 'BrowseCatalogController as catalog'});
+                $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html', controller: 'ViewCatalogItemController as catalog'});
+                $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: 'BrowseCatalogController as catalog'});
+                $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html', controller: 'ViewCatalogItemController as catalog'});
             });
     }]);
 
@@ -166,6 +166,12 @@ function BrowseCatalogController($scope, $routeParams, catalogPathParser) {
     $scope.name = current.name;
     $scope.parent = current.parent;
     $scope.breadcrumbs = current.breadcrumbs;
+
+    this.path = current.path;
+    this.head = current.head;
+    this.name = current.name;
+    this.parent = current.parent;
+    this.breadcrumbs = current.breadcrumbs;
 }
 
 function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItemsByPartition, findCatalogItemById, topicMessageDispatcher, $q) {
@@ -409,6 +415,7 @@ function AddToCatalogController(config, $scope, localeResolver, $routeParams, to
 }
 
 function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topicRegistry, findCatalogItemById) {
+    var self = this;
     var current = catalogPathParser($routeParams, 'file');
 
     $scope.path = current.path;
@@ -417,13 +424,28 @@ function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topi
     $scope.parent = current.parent;
     $scope.breadcrumbs = current.breadcrumbs;
 
+    this.path = current.path;
+    this.head = current.head;
+    this.name = current.name;
+    this.parent = current.parent;
+    this.breadcrumbs = current.breadcrumbs;
+
     $scope.templateUri = function () {
-        return 'partials/catalog/item/' + ($scope.type == undefined ? 'default' : $scope.type) + '.html';
+        return templateUri($scope);
     };
+
+    this.templateUri = function () {
+        return templateUri(self);
+    };
+
+    function templateUri(ctx) {
+        return 'partials/catalog/item/' + (!ctx.item || ctx.item.type == undefined ? 'default' : ctx.item.type) + '.html';
+    }
 
     var applyItemToScope = function (item) {
         addItemToScope(item);
         $scope.item = item;
+        self.item = item;
     };
 
     // @deprecated instead put item on $scope.item
@@ -433,11 +455,14 @@ function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topi
         });
     }
 
-    $scope.init = function (path) {
+    $scope.init = init;
+    this.init = init;
+
+    function init(path) {
         topicRegistry.subscribe('app.start', function () {
             findCatalogItemById($routeParams.id || path, applyItemToScope);
         });
-    };
+    }
 
     var updated = function (args) {
         findCatalogItemById(args.id, function (item) {

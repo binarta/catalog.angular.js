@@ -1044,6 +1044,7 @@ describe('catalog', function () {
 
         it('generates a default template url', function () {
             expect(scope.templateUri()).toEqual('partials/catalog/item/default.html');
+            expect(ctrl.templateUri()).toEqual('partials/catalog/item/default.html');
         });
 
         describe('with item', function () {
@@ -1084,8 +1085,15 @@ describe('catalog', function () {
                 expect(scope.item.name).toEqual('name');
             });
 
+            it('expose item on controller', function () {
+                expect(ctrl.item.id).toEqual('id');
+                expect(ctrl.item.type).toEqual('type');
+                expect(ctrl.item.name).toEqual('name');
+            });
+
             it('generates a template url based on type', function () {
                 expect(scope.templateUri()).toEqual('partials/catalog/item/type.html');
+                expect(ctrl.templateUri()).toEqual('partials/catalog/item/type.html');
             });
         });
 
@@ -1438,6 +1446,35 @@ describe('catalog', function () {
                     });
                 }
 
+                function assertPathDetailsExposedOnController(path) {
+                    it('exposes path on ctrl', function () {
+                        expect(ctrl.path).toEqual(path);
+                    });
+
+                    it('exposes head on ctrl', function () {
+                        expect(ctrl.head).toEqual(el.head);
+                    });
+
+                    it('exposes name on ctrl', function () {
+                        expect(ctrl.name).toEqual(el.name);
+                    });
+
+                    it('exposes parent on ctrl', function () {
+                        expect(ctrl.parent).toEqual(el.parent);
+                    });
+
+                    it('exposes breadcrumbs on ctrl', function () {
+                        expect(ctrl.breadcrumbs).toEqual(parts.map(function (it, idx) {
+                            var active = idx + 1 == scope.breadcrumbs.length;
+                            return {
+                                path: '/' + parts.slice(0, idx + 1).join('/') + (path.slice(-1) != '/' && active ? '' : '/'),
+                                name: it,
+                                active: active
+                            };
+                        }));
+                    });
+                }
+
                 describe('view catalog item controller', function () {
                     describe('constructor', function () {
                         var findItemById = jasmine.createSpy('findItemById');
@@ -1453,10 +1490,24 @@ describe('catalog', function () {
                         }));
 
                         assertPathDetailsExposedOnScope(path.slice(0, path.length - 1));
+                        assertPathDetailsExposedOnController(path.slice(0, path.length - 1));
 
-                        describe('on init', function () {
+                        describe('on init using scope', function () {
                             beforeEach(function () {
                                 scope.init(filePath)
+                            });
+
+                            it('and app.start notification received', inject(function (config, topicRegistryMock) {
+                                if (filePath) {
+                                    topicRegistryMock['app.start']();
+                                    expect(findItemById.calls[0].args[0]).toEqual(filePath);
+                                }
+                            }));
+                        });
+
+                        describe('on init using controller', function () {
+                            beforeEach(function () {
+                                ctrl.init(filePath)
                             });
 
                             it('and app.start notification received', inject(function (config, topicRegistryMock) {
@@ -1480,6 +1531,7 @@ describe('catalog', function () {
                         }));
 
                         assertPathDetailsExposedOnScope(path);
+                        assertPathDetailsExposedOnController(path);
                     });
                 });
             });
