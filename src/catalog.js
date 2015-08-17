@@ -34,10 +34,10 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
             [':d0', ':d1', ':d2', ':d3', ':d4', ':d5']
         ].forEach(function (it) {
                 var path = it.length ? '/' + it.join('/') : '';
-                $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: 'BrowseCatalogController as catalog'});
-                $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html', controller: 'ViewCatalogItemController as catalog'});
-                $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: 'BrowseCatalogController as catalog'});
-                $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html', controller: 'ViewCatalogItemController as catalog'});
+                $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: 'BrowseCatalogController as catalogCtrl'});
+                $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html', controller: 'ViewCatalogItemController as catalogCtrl'});
+                $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: 'BrowseCatalogController as catalogCtrl'});
+                $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html', controller: 'ViewCatalogItemController as catalogCtrl'});
             });
     }]);
 
