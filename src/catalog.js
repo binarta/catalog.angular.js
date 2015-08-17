@@ -280,6 +280,8 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, ngRegist
 
         function executeQuery() {
             ctx.success = function (partitions) {
+                if (!context.partitions) context.partitions = [];
+
                 if (ctx.subset) ctx.subset.offset += partitions.length;
                 partitions.forEach(function (it) {
                     context.partitions.push(it);
@@ -292,7 +294,6 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, ngRegist
             findCatalogPartitions(ctx);
         }
 
-        context.partitions = [];
         context.partition = args.owner;
         context.parent = context.partition == '/' ? undefined : self.toParent(context.partition);
         context.searchForMore = function () {
