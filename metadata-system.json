@@ -1,21 +1,33 @@
 {
   "msgs":{
     "nl":{
-      "catalog.partition.remove.success": "Partitie verwijderd",
       "catalog.item.removed": "Artikel verwijderd",
-      "catalog.item.updated": "Artikel bijgewerkt"
+      "catalog.item.updated": "Artikel bijgewerkt",
+      "catalog.partition.name.required": "Verplicht",
+      "catalog.partition.name.whitelist": "Ongeldig formaat",
+      "catalog.partition.name.upperbound": "Te lang",
+      "catalog.partition.remove.success": "Categorie verwijderd"
     }, "en":{
-      "catalog.partition.remove.success": "Partition removed",
       "catalog.item.removed": "Item removed",
-      "catalog.item.updated": "Item updated"
+      "catalog.item.updated": "Item updated",
+      "catalog.partition.name.required": "Required",
+      "catalog.partition.name.whitelist": "Invalid format",
+      "catalog.partition.name.upperbound": "Too long",
+      "catalog.partition.remove.success": "Category removed"
     }, "fr":{
-      "catalog.partition.remove.success": "Partition effacée",
       "catalog.item.removed": "Article supprimé",
-      "catalog.item.updated": "Article actualisé"
+      "catalog.item.updated": "Article actualisé",
+      "catalog.partition.name.required": "Required",
+      "catalog.partition.name.whitelist": "Invalid format",
+      "catalog.partition.name.upperbound": "Too long",
+      "catalog.partition.remove.success": "Catégorie effacée"
     }, "de":{
-      "catalog.partition.remove.success": "Partition gelöscht",
       "catalog.item.removed": "Artikel gelöscht",
-      "catalog.item.updated": "Artikel überarbeitet"
+      "catalog.item.updated": "Artikel überarbeitet",
+      "catalog.partition.name.required": "Required",
+      "catalog.partition.name.whitelist": "Invalid format",
+      "catalog.partition.name.upperbound": "Too long",
+      "catalog.partition.remove.success": "Kategorie gelöscht"
     }
   }
 }
