@@ -392,6 +392,7 @@ function AddToCatalogController(config, $scope, localeResolver, $routeParams, to
             if ($scope.config && $scope.config.editMode) editMode.enable();
         };
 
+        $scope.violations = undefined;
         if ($scope.catalogItemAddForm && $scope.catalogItemAddForm.defaultName.$invalid) {
             $scope.violations = {
                 defaultName: ['required']

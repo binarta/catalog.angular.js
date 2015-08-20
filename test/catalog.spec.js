@@ -800,6 +800,24 @@ describe('catalog', function () {
                 });
 
                 describe('on submit', function () {
+                    function assertSubmit() {
+                        beforeEach(function () {
+                            scope.item = {
+                                type: 'type',
+                                name: 'name'
+                            };
+                            scope.submit();
+                        });
+
+                        it('perform rest call', function () {
+                            expect(ctx.scope).toEqual(scope);
+                            expect(ctx.params.method).toEqual('PUT');
+                            expect(ctx.params.url).toEqual('api/entity/catalog-item');
+                            expect(ctx.params.data).toEqual({type: 'type', name: 'name', namespace: 'namespace', partition: 'partition', locale: 'l'});
+                            expect(ctx.params.withCredentials).toEqual(true);
+                        });
+                    }
+
                     describe('with violation on form', function () {
                         beforeEach(function () {
                             scope.catalogItemAddForm = {
@@ -826,21 +844,15 @@ describe('catalog', function () {
                     });
 
                     describe('without violation', function () {
+                        assertSubmit();
+                    });
+
+                    describe('with previous violation', function () {
                         beforeEach(function () {
-                            scope.item = {
-                                type: 'type',
-                                name: 'name'
-                            };
-                            scope.submit();
+                            scope.violations = {};
                         });
 
-                        it('perform rest call', function () {
-                            expect(ctx.scope).toEqual(scope);
-                            expect(ctx.params.method).toEqual('PUT');
-                            expect(ctx.params.url).toEqual('api/entity/catalog-item');
-                            expect(ctx.params.data).toEqual({type: 'type', name: 'name', namespace: 'namespace', partition: 'partition', locale: 'l'});
-                            expect(ctx.params.withCredentials).toEqual(true);
-                        });
+                        assertSubmit();
                     });
                 });
 
