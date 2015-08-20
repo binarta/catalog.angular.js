@@ -1991,6 +1991,111 @@ describe('catalog', function () {
         });
     });
 
+    describe('catalogItemPrice directive', function () {
+        var element, html, scope, isolateScope, editMode, editModeRenderer, writer;
+
+        beforeEach(inject(function ($rootScope, $compile, _editMode_, _editModeRenderer_, updateCatalogItemWriterSpy) {
+            editMode = _editMode_;
+            editModeRenderer = _editModeRenderer_;
+            writer = updateCatalogItemWriterSpy;
+            scope = $rootScope.$new();
+            scope.item = {
+                price: 10
+            };
+            html = '<div catalog-item-price="item">{{item.price}}</div>';
+            element = angular.element(html);
+            $compile(element)(scope);
+            isolateScope = element.isolateScope();
+        }));
+
+        it('item is passed to directive', function () {
+            expect(isolateScope.item).toEqual(scope.item);
+        });
+
+        it('edit mode is bound', function () {
+            expect(editMode.bindEvent).toHaveBeenCalledWith({
+                scope: isolateScope,
+                element: element,
+                permission: 'catalog.item.update',
+                onClick: jasmine.any(Function)
+            });
+        });
+
+        describe('on click', function () {
+            beforeEach(function () {
+                editMode.bindEvent.mostRecentCall.args[0].onClick();
+            });
+
+            it('editModeRenderer is opended', function () {
+                expect(editModeRenderer.open).toHaveBeenCalled();
+            });
+
+            describe('with editModeRenderer scope', function () {
+                var rendererScope;
+
+                beforeEach(function () {
+                    rendererScope = editModeRenderer.open.mostRecentCall.args[0].scope;
+                });
+
+                it('item is on scope', function () {
+                    expect(rendererScope.item).toEqual(scope.item);
+                });
+
+                describe('on update with valid form', function () {
+                    beforeEach(function () {
+                        rendererScope.catalogItemPriceForm = {
+                            catalogItemPrice: {
+                                $invalid: false
+                            },
+                            $valid: true
+                        };
+                        rendererScope.item.price = 20;
+                        rendererScope.update();
+                    });
+
+                    it('invoke writer', function() {
+                        expect(writer.data()).toEqual({
+                            price: 20,
+                            context: 'update'
+                        });
+                    });
+
+                    it('on success', function () {
+                        writer.success();
+
+                        expect(scope.item.price).toEqual(20);
+                        expect(editModeRenderer.close).toHaveBeenCalled();
+                    });
+                });
+
+                describe('on update with invalid form', function () {
+                    beforeEach(function () {
+                        rendererScope.catalogItemPriceForm = {
+                            catalogItemPrice: {
+                                $invalid: true
+                            },
+                            $valid: false
+                        };
+
+                        rendererScope.update();
+                    });
+
+                    it('put violation on scope', function () {
+                        expect(rendererScope.violations).toEqual({
+                            price: ['invalid']
+                        });
+                    });
+                });
+
+                it('on close', function () {
+                    rendererScope.close();
+
+                    expect(editModeRenderer.close).toHaveBeenCalled();
+                });
+            });
+        });
+    });
+
     describe('splitInRows directive', function () {
         var element, html, scope;
 

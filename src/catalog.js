@@ -17,6 +17,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
     .controller('ViewCatalogItemController', ['$scope', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
+    .directive('catalogItemPrice', ['editMode', 'editModeRenderer', 'updateCatalogItem', 'usecaseAdapterFactory', CatalogItemPriceDirective])
     .directive('splitInRows', splitInRowsDirectiveFactory)
     .config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function(args) {
@@ -702,6 +703,67 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
     ngRegisterTopicHandler($scope, 'catalog.item.paste', function () {
         $scope.idle = true;
     });
+}
+
+function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem, usecaseAdapterFactory) {
+    return {
+        restrict: 'A',
+        scope: {
+            item: '=catalogItemPrice'
+        },
+        link: function (scope, element) {
+            editMode.bindEvent({
+                scope: scope,
+                element: element,
+                permission: 'catalog.item.update',
+                onClick: open
+            });
+
+            function open() {
+                var rendererScope = angular.extend(scope.$new(), {
+                    close: function () {
+                        editModeRenderer.close();
+                    },
+                    update: function () {
+                        if (rendererScope.catalogItemPriceForm.catalogItemPrice.$invalid)
+                            rendererScope.violations = {
+                                price: ['invalid']
+                            };
+
+                        if (rendererScope.catalogItemPriceForm.$valid) {
+                            var ctx = usecaseAdapterFactory(rendererScope);
+                            ctx.data = rendererScope.item;
+                            ctx.data.context = 'update';
+                            ctx.success = function () {
+                                rendererScope.close();
+                                scope.item.price = ctx.data.price;
+                            };
+                            updateCatalogItem(ctx);
+                        }
+                    },
+                    item: angular.copy(scope.item)
+                });
+
+                editModeRenderer.open({
+                    template: '<form name="catalogItemPriceForm" ng-submit="update()">' +
+                    '<div class="form-group">' +
+                    '<label for="catalogItemPrice" i18n code="catalog.item.price.label" read-only>{{::var}}</label>' +
+                    '<input type="number" name="catalogItemPrice" id="catalogItemPrice" ng-model="item.price">' +
+                    '<div class="help-block text-danger" ng-repeat="v in violations[\'price\']"' +
+                    'i18n code="catalog.menu.item.price.{{v}}" default="{{v}}" read-only ng-bind="var">' +
+                    '</div>' +
+                    '</div>' +
+
+                    '<div class="dropdown-menu-buttons">' +
+                    '<button type="submit" class="btn btn-primary" i18n code="clerk.menu.save.button" read-only>{{var}}</button>' +
+                    '<button type="reset" class="btn btn-default" ng-click="close()" i18n code="clerk.menu.cancel.button" read-only>{{var}}</button>' +
+                    '</div>' +
+                    '</form>',
+                    scope: rendererScope
+                });
+            }
+        }
+    }
 }
 
 // @deprecated use binarta.angularx instead
