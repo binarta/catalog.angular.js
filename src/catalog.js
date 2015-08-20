@@ -10,7 +10,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
     .controller('AddToCatalogController', ['config', '$scope', 'localeResolver', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', '$location', 'i18nLocation', 'editMode', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
-    .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', 'localStorage', RemoveItemFromCatalogController])
+    .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', '$routeParams', RemoveItemFromCatalogController])
     .controller('QueryCatalogController', ['$scope', 'ngRegisterTopicHandler', 'findCatalogItemsByPartition', 'findCatalogItemById', 'topicMessageDispatcher', '$q', QueryCatalogController])
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
     .controller('UpdateCatalogItemController', ['config', '$scope', 'updateCatalogItem', 'usecaseAdapterFactory', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
@@ -526,7 +526,7 @@ function AddPartitionToCatalogController(config, $scope, $location, $routeParams
     };
 }
 
-function RemoveItemFromCatalogController(config, $scope, $location, catalogPathProcessor, topicMessageDispatcher, scopedRestServiceHandler, localStorage) {
+function RemoveItemFromCatalogController(config, $scope, $location, catalogPathProcessor, topicMessageDispatcher, scopedRestServiceHandler, $routeParams) {
     var self = this;
     self.config = {};
 
@@ -547,7 +547,7 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
     }
 
     function toParent(current) {
-        return (localStorage.locale ? localStorage.locale : '') + '/browse' + current.parent;
+        return ($routeParams.locale ? $routeParams.locale : '') + '/browse' + current.parent;
     }
 
     $scope.submit = function (id) {

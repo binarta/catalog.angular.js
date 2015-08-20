@@ -1297,10 +1297,7 @@ describe('catalog', function () {
     });
 
     describe('RemoveItemFromCatalogController', function () {
-        var local;
-
-        beforeEach(inject(function ($controller, localStorage) {
-            local = localStorage;
+        beforeEach(inject(function ($controller) {
             ctrl = $controller(RemoveItemFromCatalogController, {
                 $scope: scope,
                 $location: location,
@@ -1379,9 +1376,9 @@ describe('catalog', function () {
             });
 
             describe('with locale', function () {
-                beforeEach(function () {
-                    local.locale = 'lang';
-                });
+                beforeEach(inject(function ($routeParams) {
+                    $routeParams.locale = 'lang';
+                }));
 
                 describe('success', function () {
                     beforeEach(triggerSuccess);
