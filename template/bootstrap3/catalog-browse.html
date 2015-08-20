@@ -1,5 +1,5 @@
-<ng-include src="'partials/catalog/snippets/catalog-search-form.html'"></ng-include>
-<ng-include src="'partials/catalog/snippets/catalog-breadcrumb.html'"></ng-include>
+<ng-include src="'catalog-search-form.html'"></ng-include>
+<ng-include src="'catalog-breadcrumb.html'"></ng-include>
 
 <section class="bin-catalog" ng-controller="ListCatalogPartitionsController as listCtrl"
          ng-init="listCtrl.init('ownedBy', catalogCtrl.path)">
@@ -50,13 +50,13 @@
                     </a>
 
                     <div class="list-group-item" ng-if="permitted">
-                        <ng-include src="'partials/catalog/snippets/catalog-add-partition-form.html'"></ng-include>
+                        <ng-include src="'catalog-add-partition-form.html'"></ng-include>
                     </div>
                 </div>
                 <div checkpoint-permission-for="catalog.item.add" ng-if="::catalogCtrl.parent != '/'">
                     <div class="list-group" ng-if="permitted">
                         <div class="list-group-item">
-                            <ng-include src="'partials/catalog/snippets/catalog-add-item-form.html'"></ng-include>
+                            <ng-include src="'catalog-add-item-form.html'"></ng-include>
                         </div>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
                         default="Latest {{::catalogCtrl.name}}" read-only>
                         {{::var}}
                     </h2>
-                    <ng-include src="'partials/catalog/snippets/catalog-list-rows.html'"></ng-include>
+                    <ng-include src="'catalog-list-rows.html'"></ng-include>
                 </div>
             </div>
 
@@ -112,8 +112,8 @@
                         noMoreResultsNotification: false,
                         subset:{count: 12}
                     })">
-                <ng-include src="'partials/catalog/snippets/catalog-list-rows.html'"></ng-include>
-                <ng-include src="'partials/catalog/snippets/catalog-search-more-button.html'"></ng-include>
+                <ng-include src="'catalog-list-rows.html'"></ng-include>
+                <ng-include src="'catalog-search-more-button.html'"></ng-include>
             </div>
 
         </div>
