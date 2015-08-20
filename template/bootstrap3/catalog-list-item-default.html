@@ -1,0 +1,55 @@
+<div class="bin-catalog-item thumbnail clearfix">
+    <div class="clerk-actions-wrapper" ng-controller="catalogClerkActionsController as itemActions"
+         ng-class="{open: itemActions.open}"
+         ng-swipe-left="itemActions.show()" ng-swipe-right="itemActions.hide()" ng-swipe-disable-mouse>
+
+        <a class="item-image" ng-href="#!{{::localePrefix}}/view{{::item.name}}">
+            <img bin-image="carousels{{::item.id}}/0.img">
+        </a>
+
+        <div class="caption">
+            <a ng-href="#!{{::localePrefix}}/view{{::item.name}}">
+                <h3 class="item-title" i18n code="{{::item.name}}">
+                    {{var}}
+                </h3>
+            </a>
+
+            <p class="item-lead" i18n code="{{::item.id}}.body" editor="full" ng-bind-html="var|words:8"></p>
+
+            <div class="item-price" catalog-item-price="item" ng-if="item.price || editing">
+                {{item.price / 100 || 0}}
+            </div>
+        </div>
+
+        <div class="clerk-actions" ng-if="itemActions.permitted">
+            <div class="clerk-actions-toggle" ng-click="itemActions.toggle()">
+                <span class="arrow">
+                    <i class="fa fa-angle-left fa-fw text-muted"></i>
+                </span>
+                <span class="cross">
+                    <i class="fa fa-times fa-fw"></i>
+                </span>
+            </div>
+
+            <div class="actions">
+                <div checkpoint-permission-for="catalog.item.remove">
+                    <form ng-controller="RemoveItemFromCatalogController"
+                          ng-init="init({noredirect:true, success:item.remove})"
+                          ng-if="permitted"
+                          i18n code="catalog.remove.item.confirm" read-only>
+                        <button type="button" class="btn btn-danger btn-sm"
+                                ng-click-confirm="submit(item.id)"
+                                confirm-message="{{::var}}"
+                                ng-disabled="working"
+                                ng-if="::var">
+                            <i class="fa fa-times fa-fw"></i>
+                            <span class="visible-xs-inline" i18n code="catalog.remove.item.button" read-only>
+                                {{::var}}
+                            </span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

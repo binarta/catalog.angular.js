@@ -1,0 +1,36 @@
+<div class="bin-catalog-items" ng-if="viewport.xs">
+    <div class="row" ng-repeat="item in searchCtrl.results track by item.id">
+        <div class="col-xs-12">
+            <ng-include src="'partials/catalog/snippets/catalog-list-item-default.html'"></ng-include>
+        </div>
+    </div>
+</div>
+
+<div class="bin-catalog-items" ng-if="viewport.sm">
+    <div bin-split-in-rows="searchCtrl.results" columns="3">
+        <div class="row" ng-repeat="row in rows track by row.id">
+            <div class="col-sm-4" ng-repeat="item in row.items track by item.id">
+                <ng-include src="'partials/catalog/snippets/catalog-list-item-default.html'"></ng-include>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bin-catalog-items" ng-if="viewport.md || viewport.lg">
+    <div bin-split-in-rows="searchCtrl.results" columns="4">
+        <div class="row" ng-repeat="row in rows track by row.id">
+            <div class="col-md-3" ng-repeat="item in row.items track by item.id">
+                <ng-include src="'partials/catalog/snippets/catalog-list-item-default.html'"></ng-include>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div ng-if="searchCtrl.results.length == 0 && searchCtrl.working">
+    <i class="fa fa-spinner fa-spin fa-2x text-muted"></i>
+</div>
+
+<div class="alert alert-info" ng-if="searchCtrl.results.length == 0 && !searchCtrl.working"
+        i18n code="catalog.no.items.found.message" read-only>
+    <i class="fa fa-info-circle fa-fw"></i> {{::var}}
+</div>

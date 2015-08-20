@@ -1,0 +1,25 @@
+<div ng-controller="BinartaSearchController as searchCtrl">
+    <section class="bin-catalog"
+             ng-init="searchCtrl.init({
+            entity:'catalog-item',
+            context:'search',
+            filters:{
+                sortings: [
+                    {on:'name', orientation:'asc'}
+                ]
+            },
+            autosearch:true,
+            noMoreResultsNotification: false,
+            subset:{count:12}})">
+        <ng-include src="'partials/catalog/snippets/catalog-search-form.html'"></ng-include>
+        <ng-include src="'partials/catalog/snippets/catalog-breadcrumb.html'"></ng-include>
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-lg-8 col-lg-offset-2">
+                    <ng-include src="'partials/catalog/snippets/catalog-list-rows.html'"></ng-include>
+                    <ng-include src="'partials/catalog/snippets/catalog-search-more-button.html'"></ng-include>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

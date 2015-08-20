@@ -1,0 +1,37 @@
+<section id="search">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
+                <form ng-submit="submit()" ng-controller="RedirectToSearchController"
+                      ng-init="init({page:'/search/' + catalogCtrl.head})"
+                      ng-if="::catalogCtrl">
+                    <div class="input-group input-group-lg">
+                        <input type="text" class="form-control" ng-model="$parent.q"
+                               i18n code="catalog.search.{{::catalogCtrl.head}}.placeholder"
+                               default="Search all {{::catalogCtrl.head}}" read-only placeholder="{{::var}}">
+
+                        <div class="input-group-btn">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <form ng-submit="searchCtrl.search()" ng-if="::searchCtrl">
+                    <div class="input-group input-group-lg">
+                        <input type="text" class="form-control" ng-model="searchCtrl.q"
+                               i18n code="catalog.search.{{::searchCtrl.filters.type}}.placeholder"
+                               default="Search all {{::searchCtrl.filters.type}}" read-only placeholder="{{::var}}">
+
+                        <div class="input-group-btn">
+                            <button class="btn btn-primary" type="submit" ng-disabled="searchCtrl.working">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

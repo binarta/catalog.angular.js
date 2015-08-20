@@ -1,0 +1,80 @@
+<ng-include src="'partials/catalog/snippets/catalog-search-form.html'"></ng-include>
+<ng-include src="'partials/catalog/snippets/catalog-breadcrumb.html'"></ng-include>
+
+<section class="bin-catalog">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="page-header">
+                    <h1 class="bin-catalog-title inline" i18n code="{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].path}}"
+                        default="{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].name}}">
+                        {{var}}
+                    </h1>
+                </div>
+            </div>
+        </div>
+        <div class="row bin-catalog-item">
+            <div class="col-xs-12 col-sm-4 col-md-3">
+                <div class="list-group">
+                    <a class="list-group-item" ng-href="#!{{::localePrefix}}/browse{{::catalogCtrl.parent}}">
+                        <i class="fa fa-folder-o fa-fw"></i> ..
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-8 col-md-9">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-8 col-sm-offset-4">
+                        <h2 class="item-title inline" i18n code="{{::catalogCtrl.path}}" var="itemName">
+                            {{var}}
+                        </h2>
+                        <div class="pull-right" checkpoint-permission-for="catalog.item.remove">
+                            <form ng-controller="RemoveItemFromCatalogController"
+                                  ng-if="permitted"
+                                  i18n code="catalog.remove.item.confirm" read-only>
+                                <button type="button" class="btn btn-danger btn-sm"
+                                        ng-click-confirm="submit(item.id)"
+                                        confirm-message="{{::var}}"
+                                        ng-disabled="working"
+                                        ng-if="::var">
+                                    <i class="fa fa-times fa-fw"></i>
+                                    <span i18n code="catalog.remove.item.button" read-only>
+                                        {{::var}}
+                                    </span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-4">
+                        <div class="item-image">
+                            <img bin-image="carousels{{::catalogCtrl.item.id}}/0.img">
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-sm-8">
+                        <div class="item-price" catalog-item-price="catalogCtrl.item" ng-if="catalogCtrl.item.price || editing">
+                            <span i18n code="catalog.item.price.label" read-only>{{::var}}</span>
+                            {{catalogCtrl.item.price / 100 || 0}}
+                        </div>
+
+                        <div ng-if="::catalogCtrl.head == 'services'">
+                            <a ng-href="#!{{::localePrefix}}/contact?subject=Subscribe for {{itemName}}"
+                               class="btn btn-success" i18n code="catalog.item.subscribe.button" read-only>
+                                {{::var}}
+                            </a>
+                        </div>
+                        <div ng-if="::catalogCtrl.head != 'services'">
+                            <a ng-href="#!{{::localePrefix}}/contact?subject=Pre-order for {{itemName}}"
+                               class="btn btn-success" i18n code="catalog.item.preorder.button" read-only>
+                                {{::var}}
+                            </a>
+                        </div>
+
+                        <p class="item-body" i18n code="{{::catalogCtrl.path}}.body" editor="full" ng-bind-html="var|trust"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
