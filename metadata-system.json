@@ -27,7 +27,9 @@
       "catalog.products.add.placeholder": "New product",
       "catalog.services.add.placeholder": "New service",
       "catalog.partition.add.placeholder": "New category",
-      "catalog.item.defaultName.required": "Required"
+      "catalog.item.defaultName.required": "Required",
+      "catalog.unavailable.message": "Showcase your products or services in a beautiful catalog starting from our Professional subscription.",
+      "catalog.upgrade.button": "Upgraden"
     }, "en":{
       "catalog.item.removed": "Item removed",
       "catalog.item.updated": "Item updated",
@@ -55,7 +57,9 @@
       "catalog.products.add.placeholder": "New product",
       "catalog.services.add.placeholder": "New service",
       "catalog.partition.add.placeholder": "New category",
-      "catalog.item.defaultName.required": "Required"
+      "catalog.item.defaultName.required": "Required",
+      "catalog.unavailable.message": "Showcase your products or services in a beautiful catalog starting from our Professional subscription.",
+      "catalog.upgrade.button": "Upgrade"
     }, "fr":{
       "catalog.item.removed": "Article supprimé",
       "catalog.item.updated": "Article actualisé",
@@ -83,7 +87,9 @@
       "catalog.products.add.placeholder": "New product",
       "catalog.services.add.placeholder": "New service",
       "catalog.partition.add.placeholder": "New category",
-      "catalog.item.defaultName.required": "Required"
+      "catalog.item.defaultName.required": "Required",
+      "catalog.unavailable.message": "Showcase your products or services in a beautiful catalog starting from our Professional subscription.",
+      "catalog.upgrade.button": "Mise à niveau"
     }, "de":{
       "catalog.item.removed": "Artikel gelöscht",
       "catalog.item.updated": "Artikel überarbeitet",
@@ -111,7 +117,9 @@
       "catalog.products.add.placeholder": "New product",
       "catalog.services.add.placeholder": "New service",
       "catalog.partition.add.placeholder": "New category",
-      "catalog.item.defaultName.required": "Required"
+      "catalog.item.defaultName.required": "Required",
+      "catalog.unavailable.message": "Showcase your products or services in a beautiful catalog starting from our Professional subscription.",
+      "catalog.upgrade.button": "Upgraden"
     }
   }
 }
