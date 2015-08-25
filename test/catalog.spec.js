@@ -1991,13 +1991,14 @@ describe('catalog', function () {
         });
     });
 
-    ddescribe('catalogItemPrice directive', function () {
-        var element, html, scope, isolateScope, editMode, editModeRenderer, writer;
+    describe('catalogItemPrice directive', function () {
+        var element, html, scope, isolateScope, editMode, editModeRenderer, writer, topics;
 
-        beforeEach(inject(function ($rootScope, $compile, _editMode_, _editModeRenderer_, updateCatalogItemWriterSpy) {
+        beforeEach(inject(function ($rootScope, $compile, _editMode_, _editModeRenderer_, updateCatalogItemWriterSpy, topicRegistryMock) {
             editMode = _editMode_;
             editModeRenderer = _editModeRenderer_;
             writer = updateCatalogItemWriterSpy;
+            topics = topicRegistryMock;
             scope = $rootScope.$new();
             scope.item = {
                 price: 1050
@@ -2030,6 +2031,20 @@ describe('catalog', function () {
                 element: element,
                 permission: 'catalog.item.update',
                 onClick: jasmine.any(Function)
+            });
+        });
+
+        it('put editing on isolate scope', function () {
+            expect(isolateScope.editing).toBeFalsy();
+        });
+
+        describe('when edit mode is enabled', function () {
+            beforeEach(function () {
+                topics['edit.mode'](true);
+            });
+
+            it('put editing on isolate scope', function () {
+                expect(isolateScope.editing).toBeTruthy();
             });
         });
 
