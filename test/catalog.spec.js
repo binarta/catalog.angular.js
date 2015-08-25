@@ -1991,7 +1991,7 @@ describe('catalog', function () {
         });
     });
 
-    describe('catalogItemPrice directive', function () {
+    ddescribe('catalogItemPrice directive', function () {
         var element, html, scope, isolateScope, editMode, editModeRenderer, writer;
 
         beforeEach(inject(function ($rootScope, $compile, _editMode_, _editModeRenderer_, updateCatalogItemWriterSpy) {
@@ -2000,9 +2000,9 @@ describe('catalog', function () {
             writer = updateCatalogItemWriterSpy;
             scope = $rootScope.$new();
             scope.item = {
-                price: 10
+                price: 1050
             };
-            html = '<div catalog-item-price="item">{{item.price}}</div>';
+            html = '<div catalog-item-price="item"></div>';
             element = angular.element(html);
             $compile(element)(scope);
             isolateScope = element.isolateScope();
@@ -2010,6 +2010,18 @@ describe('catalog', function () {
 
         it('item is passed to directive', function () {
             expect(isolateScope.item).toEqual(scope.item);
+        });
+
+        it('price is on isolate scope', function () {
+            isolateScope.$digest();
+
+            expect(isolateScope.price).toEqual(10.5);
+        });
+
+        it('template is rendered', function () {
+            isolateScope.$digest();
+
+            expect(element.text()).toEqual('$10.50');
         });
 
         it('edit mode is bound', function () {
@@ -2037,8 +2049,8 @@ describe('catalog', function () {
                     rendererScope = editModeRenderer.open.mostRecentCall.args[0].scope;
                 });
 
-                it('item is on scope', function () {
-                    expect(rendererScope.item).toEqual(scope.item);
+                it('price is recalculated', function () {
+                    expect(rendererScope.price).toEqual(10.5);
                 });
 
                 describe('on update with valid form', function () {
@@ -2049,13 +2061,13 @@ describe('catalog', function () {
                             },
                             $valid: true
                         };
-                        rendererScope.item.price = 20;
+                        rendererScope.price = 20.6567;
                         rendererScope.update();
                     });
 
                     it('invoke writer', function() {
                         expect(writer.data()).toEqual({
-                            price: 20,
+                            price: 2066,
                             context: 'update'
                         });
                     });
@@ -2063,7 +2075,7 @@ describe('catalog', function () {
                     it('on success', function () {
                         writer.success();
 
-                        expect(scope.item.price).toEqual(20);
+                        expect(isolateScope.price).toEqual(20.66);
                         expect(editModeRenderer.close).toHaveBeenCalled();
                     });
                 });

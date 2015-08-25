@@ -711,7 +711,10 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
         scope: {
             item: '=catalogItemPrice'
         },
+        template: '<span ng-if="item.price || editing">{{price | currency}}</span>',
         link: function (scope, element) {
+            scope.price = scope.item.price / 100 || 0;
+
             editMode.bindEvent({
                 scope: scope,
                 element: element,
@@ -731,24 +734,25 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                             };
 
                         if (rendererScope.catalogItemPriceForm.$valid) {
+                            scope.item.price = Math.round(rendererScope.price * 100);
                             var ctx = usecaseAdapterFactory(rendererScope);
-                            ctx.data = rendererScope.item;
+                            ctx.data = scope.item;
                             ctx.data.context = 'update';
                             ctx.success = function () {
                                 rendererScope.close();
-                                scope.item.price = ctx.data.price;
+                                scope.price = scope.item.price / 100;
                             };
                             updateCatalogItem(ctx);
                         }
                     },
-                    item: angular.copy(scope.item)
+                    price: scope.price
                 });
 
                 editModeRenderer.open({
                     template: '<form name="catalogItemPriceForm" ng-submit="update()">' +
                     '<div class="form-group">' +
                     '<label for="catalogItemPrice" i18n code="catalog.item.price.label" read-only>{{::var}}</label>' +
-                    '<input type="number" name="catalogItemPrice" id="catalogItemPrice" ng-model="item.price">' +
+                    '<input type="number" step="any" name="catalogItemPrice" id="catalogItemPrice" ng-model="price">' +
                     '<div class="help-block text-danger" ng-repeat="v in violations[\'price\']"' +
                     'i18n code="catalog.menu.item.price.{{v}}" default="{{v}}" read-only ng-bind="var">' +
                     '</div>' +

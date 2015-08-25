@@ -3,21 +3,20 @@
          ng-class="{open: itemActions.open}"
          ng-swipe-left="itemActions.show()" ng-swipe-right="itemActions.hide()" ng-swipe-disable-mouse>
 
-        <a class="item-image" ng-href="#!{{::localePrefix}}/view{{::item.name}}">
+        <a class="item-image" ng-href="#!{{::localePrefix}}/view{{::item.id}}">
             <img bin-image="carousels{{::item.id}}/0.img">
         </a>
 
         <div class="caption">
-            <a ng-href="#!{{::localePrefix}}/view{{::item.name}}">
-                <h3 class="item-title" i18n code="{{::item.name}}">
+            <a ng-href="#!{{::localePrefix}}/view{{::item.id}}">
+                <h3 class="item-title" i18n code="{{::item.id}}">
                     {{var}}
                 </h3>
             </a>
 
             <p class="item-lead" i18n code="{{::item.id}}.body" editor="full" ng-bind-html="var|words:8"></p>
 
-            <div class="item-price" catalog-item-price="item" ng-if="item.price || editing">
-                {{item.price / 100 || 0}}
+            <div class="item-price" catalog-item-price="item">
             </div>
         </div>
 
