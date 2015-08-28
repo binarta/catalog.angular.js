@@ -29,7 +29,8 @@
       "catalog.partition.add.placeholder": "New category",
       "catalog.item.defaultName.required": "Required",
       "catalog.unavailable.message": "Showcase your products or services in a beautiful catalog starting from our Professional subscription.",
-      "catalog.upgrade.button": "Upgraden"
+      "catalog.upgrade.button": "Upgraden",
+      "catalog.item.add.to.basket.button": "Add to basket"
     }, "en":{
       "catalog.item.removed": "Item removed",
       "catalog.item.updated": "Item updated",
@@ -59,7 +60,8 @@
       "catalog.partition.add.placeholder": "New category",
       "catalog.item.defaultName.required": "Required",
       "catalog.unavailable.message": "Showcase your products or services in a beautiful catalog starting from our Professional subscription.",
-      "catalog.upgrade.button": "Upgrade"
+      "catalog.upgrade.button": "Upgrade",
+      "catalog.item.add.to.basket.button": "Add to basket"
     }, "fr":{
       "catalog.item.removed": "Article supprimé",
       "catalog.item.updated": "Article actualisé",
@@ -89,7 +91,8 @@
       "catalog.partition.add.placeholder": "New category",
       "catalog.item.defaultName.required": "Required",
       "catalog.unavailable.message": "Showcase your products or services in a beautiful catalog starting from our Professional subscription.",
-      "catalog.upgrade.button": "Mise à niveau"
+      "catalog.upgrade.button": "Mise à niveau",
+      "catalog.item.add.to.basket.button": "Add to basket"
     }, "de":{
       "catalog.item.removed": "Artikel gelöscht",
       "catalog.item.updated": "Artikel überarbeitet",
@@ -119,7 +122,8 @@
       "catalog.partition.add.placeholder": "New category",
       "catalog.item.defaultName.required": "Required",
       "catalog.unavailable.message": "Showcase your products or services in a beautiful catalog starting from our Professional subscription.",
-      "catalog.upgrade.button": "Upgraden"
+      "catalog.upgrade.button": "Upgraden",
+      "catalog.item.add.to.basket.button": "Add to basket"
     }
   }
 }

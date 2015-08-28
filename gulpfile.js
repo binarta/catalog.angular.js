@@ -1,5 +1,6 @@
 var gulp = require('gulp'),
     minifyHtml = require('gulp-minify-html'),
+    template = require('gulp-template'),
     templateCache = require('gulp-angular-templatecache');
 
 var minifyHtmlOpts = {
@@ -24,4 +25,12 @@ gulp.task('catalog-unavailable-bootstrap3', function () {
         .pipe(gulp.dest('src'));
 });
 
-gulp.task('default', ['catalog-bootstrap3', 'catalog-unavailable-bootstrap3']);
+gulp.task('catalog-shop-bootstrap3', function () {
+    gulp.src('template/bootstrap3/*.html')
+        .pipe(template({shop: true}))
+        .pipe(minifyHtml(minifyHtmlOpts))
+        .pipe(templateCache('catalog-shop-tpls-bootstrap3.js', {standalone: true, module: 'catalog.templates'}))
+        .pipe(gulp.dest('src'));
+});
+
+gulp.task('default', ['catalog-bootstrap3', 'catalog-unavailable-bootstrap3', 'catalog-shop-bootstrap3']);
