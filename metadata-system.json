@@ -28,7 +28,7 @@
       "catalog.services.add.placeholder": "New service",
       "catalog.partition.add.placeholder": "New category",
       "catalog.item.defaultName.required": "Required",
-      "catalog.unavailable.message": "Showcase your products or services in a beautiful catalog starting from our Professional subscription.",
+      "catalog.unavailable.message": "Upgrade your website to showcase your products or services in a beautiful catalog.",
       "catalog.upgrade.button": "Upgraden",
       "catalog.item.add.to.basket.button": "Add to basket"
     }, "en":{
@@ -59,7 +59,7 @@
       "catalog.services.add.placeholder": "New service",
       "catalog.partition.add.placeholder": "New category",
       "catalog.item.defaultName.required": "Required",
-      "catalog.unavailable.message": "Showcase your products or services in a beautiful catalog starting from our Professional subscription.",
+      "catalog.unavailable.message": "Upgrade your website to showcase your products or services in a beautiful catalog.",
       "catalog.upgrade.button": "Upgrade",
       "catalog.item.add.to.basket.button": "Add to basket"
     }, "fr":{
@@ -90,7 +90,7 @@
       "catalog.services.add.placeholder": "New service",
       "catalog.partition.add.placeholder": "New category",
       "catalog.item.defaultName.required": "Required",
-      "catalog.unavailable.message": "Showcase your products or services in a beautiful catalog starting from our Professional subscription.",
+      "catalog.unavailable.message": "Upgrade your website to showcase your products or services in a beautiful catalog.",
       "catalog.upgrade.button": "Mise à niveau",
       "catalog.item.add.to.basket.button": "Add to basket"
     }, "de":{
@@ -121,7 +121,7 @@
       "catalog.services.add.placeholder": "New service",
       "catalog.partition.add.placeholder": "New category",
       "catalog.item.defaultName.required": "Required",
-      "catalog.unavailable.message": "Showcase your products or services in a beautiful catalog starting from our Professional subscription.",
+      "catalog.unavailable.message": "Upgrade your website to showcase your products or services in a beautiful catalog.",
       "catalog.upgrade.button": "Upgraden",
       "catalog.item.add.to.basket.button": "Add to basket"
     }
