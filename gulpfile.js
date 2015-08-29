@@ -13,6 +13,7 @@ var minifyHtmlOpts = {
 
 gulp.task('catalog-bootstrap3', function () {
     gulp.src('template/bootstrap3/*.html')
+        .pipe(template({shop: false}))
         .pipe(minifyHtml(minifyHtmlOpts))
         .pipe(templateCache('catalog-tpls-bootstrap3.js', {standalone: true, module: 'catalog.templates'}))
         .pipe(gulp.dest('src'));
