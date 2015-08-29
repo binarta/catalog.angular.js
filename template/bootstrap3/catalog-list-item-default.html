@@ -16,7 +16,7 @@
 
             <p class="item-lead" i18n code="{{::item.id}}.body" editor="full" ng-bind-html="var|words:8"></p>
 
-            <div class="item-price" catalog-item-price="item">
+            <div class="item-price" ng-class="{'text-muted':!item.price || item.price == 0}" catalog-item-price="item">
             </div>
         </div>
 
