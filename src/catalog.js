@@ -712,10 +712,8 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
         scope: {
             item: '=catalogItemPrice'
         },
-        template: '<span ng-if="item.price || editing">{{price | currency}}</span>',
+        template: '<span ng-if="item.price || editing">{{(item.unitPrice || item.price) / 100 || 0 | currency}}</span>',
         link: function (scope, element) {
-            scope.price = scope.item.price / 100 || 0;
-
             ngRegisterTopicHandler(scope, 'edit.mode', function (editMode) {
                 scope.editing = editMode;
             });
@@ -745,12 +743,11 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                             ctx.data.context = 'update';
                             ctx.success = function () {
                                 rendererScope.close();
-                                scope.price = scope.item.price / 100;
                             };
                             updateCatalogItem(ctx);
                         }
                     },
-                    price: scope.price
+                    price: scope.item.price / 100
                 });
 
                 editModeRenderer.open({

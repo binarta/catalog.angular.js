@@ -2017,12 +2017,6 @@ describe('catalog', function () {
             expect(isolateScope.item).toEqual(scope.item);
         });
 
-        it('price is on isolate scope', function () {
-            isolateScope.$digest();
-
-            expect(isolateScope.price).toEqual(10.5);
-        });
-
         it('template is rendered', function () {
             isolateScope.$digest();
 
@@ -2094,7 +2088,6 @@ describe('catalog', function () {
                     it('on success', function () {
                         writer.success();
 
-                        expect(isolateScope.price).toEqual(20.66);
                         expect(editModeRenderer.close).toHaveBeenCalled();
                     });
                 });
