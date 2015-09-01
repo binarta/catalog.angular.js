@@ -1161,6 +1161,10 @@ describe('catalog', function () {
                 it('update item on local scope', function () {
                     expect(scope.item).toEqual(payload);
                 });
+
+                it('update item on controller', function () {
+                    expect(ctrl.item).toEqual(payload);
+                });
             });
         });
 

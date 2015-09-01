@@ -477,6 +477,7 @@ function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topi
     var updated = function (args) {
         findCatalogItemById(args.id, function (item) {
             $scope.item = item;
+            self.item = item;
         });
     };
 
