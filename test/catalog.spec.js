@@ -28,9 +28,11 @@ describe('catalog', function () {
         params = {};
         location = $location;
         location.path('');
-        rest = {service: function (it) {
-            rest.ctx = it;
-        }};
+        rest = {
+            service: function (it) {
+                rest.ctx = it;
+            }
+        };
         i18n = {
             resolver: function (ctx, presenter) {
                 i18n.ctx = ctx;
@@ -65,60 +67,66 @@ describe('catalog', function () {
 
         [undefined, ''].forEach(function (el) {
             it('when no owner selected an empty set of partitions is returned', function () {
-                usecase({query:'query-name', filters:{owner:el}, success:onSuccess});
+                usecase({query: 'query-name', filters: {owner: el}, success: onSuccess});
                 expect(receivedPayload).toEqual([]);
             });
         });
 
         it('on execute perform rest call', inject(function (config) {
             config.namespace = 'namespace';
-            $httpBackend.expect('POST', 'api/query/catalog-partition/query-name', {args: {
-                namespace: config.namespace,
-                owner: 'owner-id'
-            }}).respond(200);
-            usecase({query:'query-name', filters:{owner:'owner-id'}, success:onSuccess});
+            $httpBackend.expect('POST', 'api/query/catalog-partition/query-name', {
+                args: {
+                    namespace: config.namespace,
+                    owner: 'owner-id'
+                }
+            }).respond(200);
+            usecase({query: 'query-name', filters: {owner: 'owner-id'}, success: onSuccess});
             $httpBackend.flush();
         }));
 
         it('with sortings', inject(function (config) {
             config.namespace = 'namespace';
-            $httpBackend.expect('POST', 'api/query/catalog-partition/query-name', {args: {
-                namespace: config.namespace,
-                owner: 'owner-id',
-                sortings:'sortings'
-            }}).respond(200);
-            usecase({query:'query-name', filters:{owner:'owner-id'}, sortings:'sortings', success:onSuccess});
+            $httpBackend.expect('POST', 'api/query/catalog-partition/query-name', {
+                args: {
+                    namespace: config.namespace,
+                    owner: 'owner-id',
+                    sortings: 'sortings'
+                }
+            }).respond(200);
+            usecase({query: 'query-name', filters: {owner: 'owner-id'}, sortings: 'sortings', success: onSuccess});
             $httpBackend.flush();
         }));
 
         it('with sub set', inject(function (config) {
             config.namespace = 'namespace';
-            $httpBackend.expect('POST', 'api/query/catalog-partition/query-name', {args: {
-                namespace: config.namespace,
-                owner: 'owner-id',
-                subset:'subset'
-            }}).respond(200);
-            usecase({query:'query-name', filters:{owner:'owner-id'}, subset:'subset', success:onSuccess});
+            $httpBackend.expect('POST', 'api/query/catalog-partition/query-name', {
+                args: {
+                    namespace: config.namespace,
+                    owner: 'owner-id',
+                    subset: 'subset'
+                }
+            }).respond(200);
+            usecase({query: 'query-name', filters: {owner: 'owner-id'}, subset: 'subset', success: onSuccess});
             $httpBackend.flush();
         }));
 
         it('on execute with baseUri perform rest call', inject(function (config) {
             config.baseUri = 'http://host/context';
             $httpBackend.expect('POST', config.baseUri + 'api/query/catalog-partition/query-name').respond(200);
-            usecase({query:'query-name', filters:{owner:'owner-id'}, success:onSuccess});
+            usecase({query: 'query-name', filters: {owner: 'owner-id'}, success: onSuccess});
             $httpBackend.flush();
         }));
 
         it('unexpected responses resolve to an empty set', function () {
             $httpBackend.expect('POST', /.*/).respond(0);
-            usecase({query:'query-name', filters:{owner:'owner-id'}, success:onSuccess});
+            usecase({query: 'query-name', filters: {owner: 'owner-id'}, success: onSuccess});
             $httpBackend.flush();
             expect(receivedPayload).toEqual([]);
         });
 
         it('response payload is passed to success callback', function () {
             $httpBackend.expect('POST', /.*/).respond(200, payload);
-            usecase({query:'query-name', filters:{owner:'owner-id'}, success:onSuccess});
+            usecase({query: 'query-name', filters: {owner: 'owner-id'}, success: onSuccess});
             $httpBackend.flush();
             expect(receivedPayload).toEqual(payload);
         })
@@ -245,25 +253,25 @@ describe('catalog', function () {
             });
         }));
 
-        describe('exposes decorator', function() {
-            it('items get added to items array', function() {
-                scope.decorator({id:'I'});
-                expect(scope.items).toEqual([{id:'I'}]);
+        describe('exposes decorator', function () {
+            it('items get added to items array', function () {
+                scope.decorator({id: 'I'});
+                expect(scope.items).toEqual([{id: 'I'}]);
             })
         });
 
-        describe('exposes filters customizer', function() {
+        describe('exposes filters customizer', function () {
             var promise;
             var filters = {};
-            var subset = {offset:10, count:5};
+            var subset = {offset: 10, count: 5};
             var promiseWasResolved = false;
 
-            beforeEach(function() {
-                promise = scope.filtersCustomizer({filters:filters, subset:subset})
+            beforeEach(function () {
+                promise = scope.filtersCustomizer({filters: filters, subset: subset})
             });
 
-            it('subset is copied onto filters', function() {
-                promise.then(function() {
+            it('subset is copied onto filters', function () {
+                promise.then(function () {
                     promiseWasResolved = true;
                 });
                 scope.$root.$digest();
@@ -342,7 +350,7 @@ describe('catalog', function () {
                         id: 'item-2',
                         foo: 'bar'
                     };
-                    notifications['catalog.item.updated']({id:'item-2'});
+                    notifications['catalog.item.updated']({id: 'item-2'});
                 });
 
                 it('request catalog item for that id', function () {
@@ -402,41 +410,41 @@ describe('catalog', function () {
                 });
             });
 
-            describe('catalog.item.paste notification received', function() {
-                beforeEach(function() {
+            describe('catalog.item.paste notification received', function () {
+                beforeEach(function () {
                     scope.items = [
-                        {id:'I1', priority:1},
-                        {id:'I2', priority:2},
-                        {id:'I3', priority:3}
+                        {id: 'I1', priority: 1},
+                        {id: 'I2', priority: 2},
+                        {id: 'I3', priority: 3}
                     ];
                 });
 
-                it('first to middle', function() {
-                    notifications['catalog.item.paste']({id:'I1', priority:2});
-                    expect(scope.items[0]).toEqual({id:'I2', priority:1});
-                    expect(scope.items[1]).toEqual({id:'I1', priority:2});
-                    expect(scope.items[2]).toEqual({id:'I3', priority:3});
+                it('first to middle', function () {
+                    notifications['catalog.item.paste']({id: 'I1', priority: 2});
+                    expect(scope.items[0]).toEqual({id: 'I2', priority: 1});
+                    expect(scope.items[1]).toEqual({id: 'I1', priority: 2});
+                    expect(scope.items[2]).toEqual({id: 'I3', priority: 3});
                 });
 
-                it('first to last', function() {
-                    notifications['catalog.item.paste']({id:'I1', priority:3});
-                    expect(scope.items[0]).toEqual({id:'I2', priority:1});
-                    expect(scope.items[1]).toEqual({id:'I3', priority:2});
-                    expect(scope.items[2]).toEqual({id:'I1', priority:3});
+                it('first to last', function () {
+                    notifications['catalog.item.paste']({id: 'I1', priority: 3});
+                    expect(scope.items[0]).toEqual({id: 'I2', priority: 1});
+                    expect(scope.items[1]).toEqual({id: 'I3', priority: 2});
+                    expect(scope.items[2]).toEqual({id: 'I1', priority: 3});
                 });
 
-                it('last to first', function() {
-                    notifications['catalog.item.paste']({id:'I3', priority:1});
-                    expect(scope.items[0]).toEqual({id:'I3', priority:1});
-                    expect(scope.items[1]).toEqual({id:'I1', priority:2});
-                    expect(scope.items[2]).toEqual({id:'I2', priority:3});
+                it('last to first', function () {
+                    notifications['catalog.item.paste']({id: 'I3', priority: 1});
+                    expect(scope.items[0]).toEqual({id: 'I3', priority: 1});
+                    expect(scope.items[1]).toEqual({id: 'I1', priority: 2});
+                    expect(scope.items[2]).toEqual({id: 'I2', priority: 3});
                 });
 
-                it('to self', function() {
-                    notifications['catalog.item.paste']({id:'I2', priority:2});
-                    expect(scope.items[0]).toEqual({id:'I1', priority:1});
-                    expect(scope.items[1]).toEqual({id:'I2', priority:2});
-                    expect(scope.items[2]).toEqual({id:'I3', priority:3});
+                it('to self', function () {
+                    notifications['catalog.item.paste']({id: 'I2', priority: 2});
+                    expect(scope.items[0]).toEqual({id: 'I1', priority: 1});
+                    expect(scope.items[1]).toEqual({id: 'I2', priority: 2});
+                    expect(scope.items[2]).toEqual({id: 'I3', priority: 3});
                 });
             });
         });
@@ -472,53 +480,53 @@ describe('catalog', function () {
                         ctx = (c == 'scope') ? scope : ctrl;
                     });
 
-                    it('simple search', function() {
-                        ctx.init({query:'ownedBy', owner:'/parent/'});
+                    it('simple search', function () {
+                        ctx.init({query: 'ownedBy', owner: '/parent/'});
                         subscribers['app.start']();
                         expect(request().query).toEqual('ownedBy');
                         expect(request().filters.owner).toEqual('/parent/');
                     });
 
-                    it('with sortings', function() {
-                        ctx.init({query:'ownedBy', owner:'/parent/', sortings:[{on:'name', orientation:'asc'}]});
+                    it('with sortings', function () {
+                        ctx.init({query: 'ownedBy', owner: '/parent/', sortings: [{on: 'name', orientation: 'asc'}]});
                         subscribers['app.start']();
-                        expect(request().sortings).toEqual([{on:'name', orientation:'asc'}]);
+                        expect(request().sortings).toEqual([{on: 'name', orientation: 'asc'}]);
                     });
 
-                    it('with sub set', function() {
-                        ctx.init({query:'ownedBy', owner:'/parent/', subset:{offset:0, count:2}});
+                    it('with sub set', function () {
+                        ctx.init({query: 'ownedBy', owner: '/parent/', subset: {offset: 0, count: 2}});
                         subscribers['app.start']();
-                        expect(request().subset).toEqual({offset:0, count:2});
+                        expect(request().subset).toEqual({offset: 0, count: 2});
                     });
 
-                    describe('on search results', function() {
-                        beforeEach(function() {
-                            ctx.init({query:'ownedBy', owner:'/parent/', subset:{offset:0, count:2}});
+                    describe('on search results', function () {
+                        beforeEach(function () {
+                            ctx.init({query: 'ownedBy', owner: '/parent/', subset: {offset: 0, count: 2}});
                             subscribers['app.start']();
-                            request().success([{id:1}]);
+                            request().success([{id: 1}]);
                         });
 
-                        it('expose results on scope', function() {
+                        it('expose results on scope', function () {
                             expect(ctx.partitions.length).toEqual(1);
                             expect(ctx.partitions[0].id).toEqual(1);
                         });
 
-                        it('increment offset with count', function() {
-                            expect(request().subset).toEqual({offset:1, count:2});
+                        it('increment offset with count', function () {
+                            expect(request().subset).toEqual({offset: 1, count: 2});
                         });
 
-                        describe('when searching for more', function() {
-                            beforeEach(function() {
+                        describe('when searching for more', function () {
+                            beforeEach(function () {
                                 fixture.query.reset();
                                 ctx.searchForMore();
-                                request().success([{id:2}]);
+                                request().success([{id: 2}]);
                             });
 
-                            it('increment offset with count', function() {
-                                expect(request().subset).toEqual({offset:2, count:2});
+                            it('increment offset with count', function () {
+                                expect(request().subset).toEqual({offset: 2, count: 2});
                             });
 
-                            it('extends the results', function() {
+                            it('extends the results', function () {
                                 expect(ctx.partitions.length).toEqual(2);
                                 expect(ctx.partitions[0].id).toEqual(1);
                                 expect(ctx.partitions[1].id).toEqual(2);
@@ -813,7 +821,13 @@ describe('catalog', function () {
                             expect(ctx.scope).toEqual(scope);
                             expect(ctx.params.method).toEqual('PUT');
                             expect(ctx.params.url).toEqual('api/entity/catalog-item');
-                            expect(ctx.params.data).toEqual({type: 'type', name: 'name', namespace: 'namespace', partition: 'partition', locale: 'l'});
+                            expect(ctx.params.data).toEqual({
+                                type: 'type',
+                                name: 'name',
+                                namespace: 'namespace',
+                                partition: 'partition',
+                                locale: 'l'
+                            });
                             expect(ctx.params.withCredentials).toEqual(true);
                         });
                     }
@@ -883,7 +897,13 @@ describe('catalog', function () {
                     expect(ctx.scope).toEqual(scope);
                     expect(ctx.params.method).toEqual('PUT');
                     expect(ctx.params.url).toEqual('api/entity/catalog-item');
-                    expect(ctx.params.data).toEqual({namespace: 'namespace', type: 'type', name: 'name', partition: '', locale: 'l'});
+                    expect(ctx.params.data).toEqual({
+                        namespace: 'namespace',
+                        type: 'type',
+                        name: 'name',
+                        partition: '',
+                        locale: 'l'
+                    });
                 }
 
                 function assertItemDataReset() {
@@ -995,36 +1015,38 @@ describe('catalog', function () {
             });
         });
 
-        it('init with redirect to view', function() {
+        it('init with redirect to view', function () {
             params.redirectToView = true;
             params.partition = '/partition/';
             subscriptions['app.start']();
             itemTypesLoaded();
             scope.init(params);
             scope.submit();
-            ctx.success({id:'/item-id'});
+            ctx.success({id: '/item-id'});
             expect(location.path()).toEqual('/lang/view/item-id');
         });
 
-        it('on success then registered success handler gets executed', function() {
+        it('on success then registered success handler gets executed', function () {
             var successWasCalled = undefined;
             var item = {};
             subscriptions['app.start']();
             itemTypesLoaded();
-            scope.success = function(item) {successWasCalled = item; };
+            scope.success = function (item) {
+                successWasCalled = item;
+            };
             scope.submit();
             ctx.success(item);
             expect(successWasCalled).toEqual(item);
         });
 
-        it('init with edit mode enabled', function() {
+        it('init with edit mode enabled', function () {
             params.editMode = true;
             params.partition = '/partition/';
             subscriptions['app.start']();
             itemTypesLoaded();
             scope.init(params);
             scope.submit();
-            ctx.success({id:'/item-id'});
+            ctx.success({id: '/item-id'});
             expect(editMode.enable).toHaveBeenCalled();
         })
     });
@@ -1146,7 +1168,7 @@ describe('catalog', function () {
                     id: 'item-2',
                     foo: 'bar'
                 };
-                notifications['catalog.item.updated']({id:'item-2'});
+                notifications['catalog.item.updated']({id: 'item-2'});
             });
 
             it('request catalog item for that id', function () {
@@ -1192,14 +1214,22 @@ describe('catalog', function () {
         beforeEach(inject(function ($controller, config) {
             config.namespace = 'namespace';
             ctx = {};
-            ctrl = $controller(AddPartitionToCatalogController, {$scope: scope, $routeParams: params, restServiceHandler: handler});
+            ctrl = $controller(AddPartitionToCatalogController, {
+                $scope: scope,
+                $routeParams: params,
+                restServiceHandler: handler
+            });
         }));
 
         describe('with query params', function () {
             beforeEach(inject(function ($controller) {
                 params = {owner: 'owner'};
                 location.search(params);
-                ctrl = $controller(AddPartitionToCatalogController, {$scope: scope, $routeParams: params, restServiceHandler: handler});
+                ctrl = $controller(AddPartitionToCatalogController, {
+                    $scope: scope,
+                    $routeParams: params,
+                    restServiceHandler: handler
+                });
             }));
 
             it('expose owner', function () {
@@ -1383,9 +1413,13 @@ describe('catalog', function () {
                 expect(location.path()).toEqual('/path/');
             });
 
-            it('when initialised with on success handler execute it after item removal', function() {
+            it('when initialised with on success handler execute it after item removal', function () {
                 var executed = false;
-                scope.init({success:function() {executed = true;}});
+                scope.init({
+                    success: function () {
+                        executed = true;
+                    }
+                });
                 scope.submit('item-id');
                 rest.ctx.success();
                 expect(executed).toEqual(true);
@@ -1525,7 +1559,7 @@ describe('catalog', function () {
                             ctrl = $controller(ViewCatalogItemController, {
                                 $scope: scope,
                                 $routeParams: params,
-                                findCatalogItemById:findItemById
+                                findCatalogItemById: findItemById
                             });
                         }));
 
@@ -1698,27 +1732,31 @@ describe('catalog', function () {
                         expect(pristine).toEqual(true);
                     });
 
-                    describe('with registered success handler', function() {
+                    describe('with registered success handler', function () {
                         var updatedItem;
 
-                        beforeEach(function() {
-                            scope.init(item, {success:function(args){updatedItem = args}});
+                        beforeEach(function () {
+                            scope.init(item, {
+                                success: function (args) {
+                                    updatedItem = args
+                                }
+                            });
                             writer.success();
                         });
 
-                        describe('look up item by id', function() {
-                            it('with id from scoped item', inject(function() {
+                        describe('look up item by id', function () {
+                            it('with id from scoped item', inject(function () {
                                 expect(fixture.entity.calls[0].args[0]).toEqual(scope.item.id);
                             }));
 
-                            describe('on find by id callback', function() {
-                                var refreshedItem = {name:'item-id-1'};
+                            describe('on find by id callback', function () {
+                                var refreshedItem = {name: 'item-id-1'};
 
-                                beforeEach(function() {
+                                beforeEach(function () {
                                     fixture.entity.calls[0].args[1](refreshedItem);
                                 });
 
-                                it('test', inject(function() {
+                                it('test', inject(function () {
                                     expect(updatedItem).toEqual(refreshedItem);
                                 }));
                             });
@@ -1826,10 +1864,10 @@ describe('catalog', function () {
             });
         });
 
-        it('masking fields on payload', function() {
+        it('masking fields on payload', function () {
             scope.init(
-                {unmasked:'original',masked1:'original', masked2:'original'},
-                {mask:{masked1:'masked', masked2:'masked'}}
+                {unmasked: 'original', masked1: 'original', masked2: 'original'},
+                {mask: {masked1: 'masked', masked2: 'masked'}}
             );
             scope.update();
             expect(writer.data().unmasked).toEqual('original');
@@ -1862,11 +1900,11 @@ describe('catalog', function () {
                 ctrl2 = $controller(MoveCatalogItemController, {$scope: scope2});
                 onCutEventHandlers.push(topics['catalog.item.cut']);
                 onPasteEventHandlers.push(topics['catalog.item.paste']);
-                scope1.init({id: 'item-1', priority:1});
-                scope2.init({id: 'item-2', priority:2});
+                scope1.init({id: 'item-1', priority: 1});
+                scope2.init({id: 'item-2', priority: 2});
             }));
 
-            it('then controllers are in idle mode', function() {
+            it('then controllers are in idle mode', function () {
                 expect(scope1.idle).toEqual(true);
                 expect(scope2.idle).toEqual(true);
             });
@@ -1880,42 +1918,46 @@ describe('catalog', function () {
                     expect(session.moveCatalogItemClipboard).toEqual('item-1');
                 });
 
-                it('raise catalog.item.cut', function() {
+                it('raise catalog.item.cut', function () {
                     expect(dispatcher['catalog.item.cut']).toEqual('ok');
                 });
 
-                it('on catalog.item.cut exit idle mode', function() {
-                    onCutEventHandlers.forEach(function(it) {it();});
+                it('on catalog.item.cut exit idle mode', function () {
+                    onCutEventHandlers.forEach(function (it) {
+                        it();
+                    });
                     expect(scope1.idle).toEqual(false);
                     expect(scope2.idle).toEqual(false);
                 });
 
-                describe('and pasting it on another', function() {
-                    beforeEach(function() {
+                describe('and pasting it on another', function () {
+                    beforeEach(function () {
                         scope2.paste();
                     });
 
-                    it('then priority is updated', function() {
+                    it('then priority is updated', function () {
                         expect(writer.data().context).toEqual('updatePriority');
                         expect(writer.data().id.id).toEqual('item-1');
                         expect(writer.data().priority).toEqual(2);
                     });
 
-                    it('no catalog.item.paste should be raised yet', function() {
+                    it('no catalog.item.paste should be raised yet', function () {
                         expect(dispatcher['catalog.item.paste']).toBeUndefined()
                     });
 
-                    describe('on success', function() {
-                        beforeEach(function() {
+                    describe('on success', function () {
+                        beforeEach(function () {
                             writer.success();
                         });
 
-                        it('raise catalog.item.paste event', function() {
-                            expect(dispatcher['catalog.item.paste']).toEqual({id:'item-1', priority:2});
+                        it('raise catalog.item.paste event', function () {
+                            expect(dispatcher['catalog.item.paste']).toEqual({id: 'item-1', priority: 2});
                         });
 
-                        it('on catalog.item.paste enter idle mode', function() {
-                            onPasteEventHandlers.forEach(function(it) {it();});
+                        it('on catalog.item.paste enter idle mode', function () {
+                            onPasteEventHandlers.forEach(function (it) {
+                                it();
+                            });
                             expect(scope1.idle).toEqual(true);
                             expect(scope2.idle).toEqual(true);
                         });
@@ -1925,21 +1967,21 @@ describe('catalog', function () {
         });
     });
 
-    describe('CatalogItemUpdatedDecorators', function() {
+    describe('CatalogItemUpdatedDecorators', function () {
         var decorator;
 
-        beforeEach(inject(function(catalogItemUpdatedDecorator) {
+        beforeEach(inject(function (catalogItemUpdatedDecorator) {
             decorator = catalogItemUpdatedDecorator;
         }));
 
-        describe('when decorating', function() {
-            it('return args by default', function() {
-                expect(decorator({context:'unregistered', id: 'I'})).toEqual({context:'unregistered', id: 'I'});
+        describe('when decorating', function () {
+            it('return args by default', function () {
+                expect(decorator({context: 'unregistered', id: 'I'})).toEqual({context: 'unregistered', id: 'I'});
             });
 
-            describe('with a registered decorator', function() {
-                it('test', function() {
-                    expect(decorator({context:'context'}).decorated).toBeTruthy();
+            describe('with a registered decorator', function () {
+                it('test', function () {
+                    expect(decorator({context: 'context'}).decorated).toBeTruthy();
                 })
             });
         });
@@ -1962,35 +2004,35 @@ describe('catalog', function () {
             updateCatalogItem(args);
         }));
 
-        it('invoke writer', function() {
+        it('invoke writer', function () {
             writer.invokedFor(args);
         });
 
-        describe('on write success', function() {
-            beforeEach(function() {
+        describe('on write success', function () {
+            beforeEach(function () {
                 writer.success();
             });
 
-            it('raise system success', function() {
+            it('raise system success', function () {
                 expect(dispatcher['system.success']).toEqual({
                     code: 'catalog.item.updated',
                     default: 'Catalog item updated!'
                 });
             });
 
-            it('raise catalog item updated', function() {
+            it('raise catalog item updated', function () {
                 expect(dispatcher['catalog.item.updated']).toEqual(args.data);
             });
 
-            it('execute on success handler', function() {
+            it('execute on success handler', function () {
                 expect(onSuccessSpy.calls[0]).toBeTruthy();
             });
 
-            it('support updatePriority context', function() {
+            it('support updatePriority context', function () {
                 args.data.context = 'updatePriority';
-                args.data.id = {id:'I'};
+                args.data.id = {id: 'I'};
                 writer.success();
-                expect(dispatcher['catalog.item.updated']).toEqual({id:'I'});
+                expect(dispatcher['catalog.item.updated']).toEqual({id: 'I'});
             })
         });
     });
@@ -2078,7 +2120,7 @@ describe('catalog', function () {
                         rendererScope.update();
                     });
 
-                    it('invoke writer', function() {
+                    it('invoke writer', function () {
                         expect(writer.data()).toEqual({
                             price: 2066,
                             context: 'update'
@@ -2120,6 +2162,170 @@ describe('catalog', function () {
         });
     });
 
+    describe('ConfigureVatRateController', function () {
+        var ctrl, permitter, scope, config, reader, writer;
+
+        beforeEach(inject(function ($controller, activeUserHasPermissionHelper, $rootScope, _config_, configReader, configWriter) {
+            scope = $rootScope.$new();
+            config = _config_;
+            reader = configReader;
+            writer = configWriter;
+            ctrl = $controller('ConfigureVatRateController', {
+                $scope: scope
+            });
+            permitter = activeUserHasPermissionHelper;
+        }));
+
+        it('should chech for permission', function () {
+            permitter.permission = 'catalog.item.add';
+        });
+
+        it('scope is passed to permitter', function () {
+            permitter.scope = scope;
+        });
+
+        describe('when user has permission to add a catalog item', function () {
+            beforeEach(function () {
+                config.countries = 'countries';
+
+                permitter.yes();
+            });
+
+            it('make countries available on controller', function () {
+                expect(ctrl.countries).toEqual('countries');
+            });
+
+            it('read vat config values', function () {
+                expect(reader.calls[0].args[0].$scope).toEqual(scope);
+                expect(reader.calls[0].args[0].key).toEqual('shop.country.code');
+                expect(reader.calls[1].args[0].$scope).toEqual(scope);
+                expect(reader.calls[1].args[0].key).toEqual('shop.default.vat.rate');
+            });
+
+            describe('shop country code is unknown', function () {
+                beforeEach(function () {
+                    reader.calls[0].args[0].notFound();
+                });
+
+                it('enable checkForVatRate flag on controller', function () {
+                    expect(ctrl.checkForVatRate).toBeTruthy();
+                });
+            });
+
+            describe('shop default vat rate is unknown', function () {
+                beforeEach(function () {
+                    reader.calls[1].args[0].notFound();
+                });
+
+                it('enable checkForVatRate flag on controller', function () {
+                    expect(ctrl.checkForVatRate).toBeTruthy();
+                });
+            });
+
+            describe('shop country code is known', function () {
+                beforeEach(function () {
+                    reader.calls[0].args[0].success({value: 'code'});
+                });
+
+                it('enable checkForVatRate flag on controller', function () {
+                    expect(ctrl.countryCode).toEqual('code');
+                });
+            });
+
+            describe('shop default vat rate is known', function () {
+                beforeEach(function () {
+                    reader.calls[1].args[0].success({value: '0.105'});
+                });
+
+                it('vat rate is parsed and multuplied by 100', function () {
+                    expect(ctrl.vatRate).toEqual(10.5);
+                });
+            });
+
+            describe('check validity', function () {
+                it('no values are set', function () {
+                    expect(ctrl.isValid()).toBeFalsy();
+                });
+
+                it('vatRate is zero', function () {
+                    ctrl.countryCode = 'code';
+                    ctrl.vatRate = 0;
+
+                    expect(ctrl.isValid()).toBeTruthy();
+                });
+
+
+                it('values are set', function () {
+                    ctrl.countryCode = 'code';
+                    ctrl.vatRate = 10;
+
+                    expect(ctrl.isValid()).toBeTruthy();
+                });
+            });
+
+            describe('on getStandardVatRate', function () {
+                beforeEach(function () {
+                    config.euVatRates = {
+                        'rates': {
+                            'EN': {
+                                'standard_rate': '10.5'
+                            }
+                        }
+                    };
+                });
+
+                it('vat rate is known', function () {
+                    ctrl.countryCode = 'EN';
+
+                    ctrl.getStandardVatRate();
+
+                    expect(ctrl.vatRate).toEqual(10.5);
+                });
+
+                it('vat rate is unknown', function () {
+                    ctrl.countryCode = 'UNKNOWN';
+
+                    ctrl.getStandardVatRate();
+
+                    expect(ctrl.vatRate).toBeUndefined();
+                });
+            });
+
+            describe('on submit', function () {
+                it('and values are not valid, do nothing', function () {
+                    ctrl.submit();
+
+                    expect(writer).not.toHaveBeenCalled();
+                });
+
+                describe('with valid values', function () {
+                    beforeEach(function () {
+                        ctrl.countryCode = 'EN';
+                        ctrl.vatRate = '10.5';
+
+                        ctrl.submit();
+                    });
+
+                    it('coutry code is written to config', function () {
+                        expect(writer.calls[0].args[0].$scope).toEqual(scope);
+                        expect(writer.calls[0].args[0].key).toEqual('shop.country.code');
+                        expect(writer.calls[0].args[0].value).toEqual('EN');
+                    });
+
+                    it('default vat rate is written to config', function () {
+                        expect(writer.calls[1].args[0].$scope).toEqual(scope);
+                        expect(writer.calls[1].args[0].key).toEqual('shop.default.vat.rate');
+                        expect(writer.calls[1].args[0].value).toEqual(0.105);
+                    });
+
+                    it('disable checkForVatRate flag on controller', function () {
+                        expect(ctrl.checkForVatRate).toBeFalsy();
+                    });
+                });
+            });
+        });
+    });
+
     describe('splitInRows directive', function () {
         var element, html, scope;
 
@@ -2133,7 +2339,8 @@ describe('catalog', function () {
 
         [
             {columns: 0, expected: []},
-            {columns: 1, expected: [
+            {
+                columns: 1, expected: [
                 [1],
                 [2],
                 [3],
@@ -2144,48 +2351,67 @@ describe('catalog', function () {
                 [8],
                 [9],
                 [10]
-            ]},
-            {columns: 2, expected: [
+            ]
+            },
+            {
+                columns: 2, expected: [
                 [1, 2],
                 [3, 4],
                 [5, 6],
                 [7, 8],
                 [9, 10]
-            ]},
-            {columns: 3, expected: [
+            ]
+            },
+            {
+                columns: 3, expected: [
                 [1, 2, 3],
                 [4, 5, 6],
                 [7, 8, 9],
                 [10]
-            ]},
-            {columns: 4, expected: [
+            ]
+            },
+            {
+                columns: 4, expected: [
                 [1, 2, 3, 4],
                 [5, 6, 7, 8],
                 [9, 10]
-            ]},
-            {columns: 5, expected: [
+            ]
+            },
+            {
+                columns: 5, expected: [
                 [1, 2, 3, 4, 5],
                 [6, 7, 8, 9, 10]
-            ]},
-            {columns: 6, expected: [
+            ]
+            },
+            {
+                columns: 6, expected: [
                 [1, 2, 3, 4, 5, 6],
                 [7, 8, 9, 10]
-            ]},
-            {columns: 7, expected: [
+            ]
+            },
+            {
+                columns: 7, expected: [
                 [1, 2, 3, 4, 5, 6, 7],
                 [8, 9, 10]
-            ]},
-            {columns: 8, expected: [
+            ]
+            },
+            {
+                columns: 8, expected: [
                 [1, 2, 3, 4, 5, 6, 7, 8],
                 [9, 10]
-            ]},
-            {columns: 9, expected: [
+            ]
+            },
+            {
+                columns: 9, expected: [
                 [1, 2, 3, 4, 5, 6, 7, 8, 9],
                 [10]
-            ]},
-            {columns: 10, expected: [
+            ]
+            },
+            {
+                columns: 10, expected: [
                 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-            ]}
+            ]
+            }
         ].forEach(function (value) {
                 describe('creates rows for collection', function () {
                     beforeEach(inject(function ($rootScope, $compile) {
@@ -2225,8 +2451,8 @@ describe('catalog', function () {
     });
 });
 
-angular.module('test.app', ['catalog']).config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
-    catalogItemUpdatedDecoratorProvider.add('context', function(args) {
+angular.module('test.app', ['catalog']).config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
+    catalogItemUpdatedDecoratorProvider.add('context', function (args) {
         args.decorated = true;
         return args;
     })

@@ -3,79 +3,80 @@
 
 <section class="bin-catalog" ng-controller="ListCatalogPartitionsController as listCtrl"
          ng-init="listCtrl.init('ownedBy', catalogCtrl.path)">
-    <div class="container">
-        <div class="row">
-            <div class="col-xs-12">
-                <div class="page-header">
-                    <h1 class="inline" i18n code="{{::catalogCtrl.path}}" default="{{::catalogCtrl.name}}"
-                        ng-if="::catalogCtrl.parent != '/'">
-                        {{var}}
-                    </h1>
-                    <h1 class="inline" i18n code="{{::catalogCtrl.path}}" default="{{::catalogCtrl.name}}" read-only
-                        ng-if="::catalogCtrl.parent == '/'">
-                        {{::var}}
-                    </h1>
+    <div ng-controller="ConfigureVatRateController as vat">
+        <div class="container" ng-if="!working && !vat.checkForVatRate">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="page-header">
+                        <h1 class="inline" i18n code="{{::catalogCtrl.path}}" default="{{::catalogCtrl.name}}"
+                            ng-if="::catalogCtrl.parent != '/'">
+                            {{var}}
+                        </h1>
+                        <h1 class="inline" i18n code="{{::catalogCtrl.path}}" default="{{::catalogCtrl.name}}" read-only
+                            ng-if="::catalogCtrl.parent == '/'">
+                            {{::var}}
+                        </h1>
 
-                    <div class="pull-right" checkpoint-permission-for="catalog.partition.remove"
-                         ng-if="::catalogCtrl.parent != '/'">
-                        <form ng-controller="RemoveCatalogPartitionController" ng-init="init(listCtrl.partition)"
-                              ng-if="permitted" i18n code="catalog.remove.partition.confirm" read-only>
-                            <button type="button" class="btn btn-danger btn-sm"
-                                    ng-click-confirm="submit('/browse'+parent)"
-                                    confirm-message="{{::var}}"
-                                    ng-disabled="working"
-                                    ng-if="::var">
-                                <i class="fa fa-times fa-fw"></i>
-                                <span i18n code="catalog.remove.partition.button" read-only>{{::var}}</span>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-xs-12 col-sm-4 col-md-3">
-                <div class="list-group" checkpoint-permission-for="catalog.partition.add">
-                    <a class="list-group-item" ng-if="::catalogCtrl.parent != '/'"
-                       ng-href="#!{{::localePrefix}}/browse{{::catalogCtrl.parent}}">
-                        <i class="fa fa-folder-o fa-fw"></i> ..
-                    </a>
-                    <a class="list-group-item" ng-repeat="partition in listCtrl.partitions track by partition.id"
-                       ng-href="#!{{::localePrefix}}/browse{{::partition.id}}"
-                       i18n code="{{::partition.id}}" default="{{::partition.name}}">
-                        {{var}}
-                        <span class="pull-right">
-                            <i class="fa fa-angle-right fa-fw"></i>
-                        </span>
-                    </a>
-
-                    <div class="list-group-item" ng-if="permitted">
-                        <ng-include src="'catalog-add-partition-form.html'"></ng-include>
-                    </div>
-                </div>
-                <div checkpoint-permission-for="catalog.item.add" ng-if="::catalogCtrl.parent != '/'">
-                    <div class="list-group" ng-if="permitted">
-                        <div class="list-group-item">
-                            <ng-include src="'catalog-add-item-form.html'"></ng-include>
+                        <div class="pull-right" checkpoint-permission-for="catalog.partition.remove"
+                             ng-if="::catalogCtrl.parent != '/'">
+                            <form ng-controller="RemoveCatalogPartitionController" ng-init="init(listCtrl.partition)"
+                                  ng-if="permitted" i18n code="catalog.remove.partition.confirm" read-only>
+                                <button type="button" class="btn btn-danger btn-sm"
+                                        ng-click-confirm="submit('/browse'+parent)"
+                                        confirm-message="{{::var}}"
+                                        ng-disabled="working"
+                                        ng-if="::var">
+                                    <i class="fa fa-times fa-fw"></i>
+                                    <span i18n code="catalog.remove.partition.button" read-only>{{::var}}</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-4 col-md-3">
+                    <div class="list-group" checkpoint-permission-for="catalog.partition.add">
+                        <a class="list-group-item" ng-if="::catalogCtrl.parent != '/'"
+                           ng-href="#!{{::localePrefix}}/browse{{::catalogCtrl.parent}}">
+                            <i class="fa fa-folder-o fa-fw"></i> ..
+                        </a>
+                        <a class="list-group-item" ng-repeat="partition in listCtrl.partitions track by partition.id"
+                           ng-href="#!{{::localePrefix}}/browse{{::partition.id}}"
+                           i18n code="{{::partition.id}}" default="{{::partition.name}}">
+                            {{var}}
+                        <span class="pull-right">
+                            <i class="fa fa-angle-right fa-fw"></i>
+                        </span>
+                        </a>
 
-            <div class="col-xs-12 col-sm-8 col-md-9"
-                 ng-if="listCtrl.partitions.length == 0 && catalogCtrl.parent == '/'">
-                <div checkpoint-permission-for="catalog.partition.add">
-                    <div class="alert alert-info" ng-if="permitted"
-                         i18n code="catalog.add.first.partition.message" read-only>
-                        <i class="fa fa-info-circle fa-fw"></i> {{::var}}
+                        <div class="list-group-item" ng-if="permitted">
+                            <ng-include src="'catalog-add-partition-form.html'"></ng-include>
+                        </div>
+                    </div>
+                    <div checkpoint-permission-for="catalog.item.add" ng-if="::catalogCtrl.parent != '/'">
+                        <div class="list-group" ng-if="permitted">
+                            <div class="list-group-item">
+                                <ng-include src="'catalog-add-item-form.html'"></ng-include>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div i18n code="catalog.empty.message" read-only ng-bind-html="::var">
-                </div>
-            </div>
 
-            <div class="col-xs-12 col-sm-8 col-md-9" ng-if="listCtrl.partitions.length > 0 && catalogCtrl.parent == '/'"
-                 ng-controller="BinartaSearchController as searchCtrl" ng-init="searchCtrl.init({
+                <div class="col-xs-12 col-sm-8 col-md-9"
+                     ng-if="listCtrl.partitions.length == 0 && catalogCtrl.parent == '/'">
+                    <div checkpoint-permission-for="catalog.partition.add">
+                        <div class="alert alert-info" ng-if="permitted"
+                             i18n code="catalog.add.first.partition.message" read-only>
+                            <i class="fa fa-info-circle fa-fw"></i> {{::var}}
+                        </div>
+                    </div>
+                    <div i18n code="catalog.empty.message" read-only ng-bind-html="::var">
+                    </div>
+                </div>
+
+                <div class="col-xs-12 col-sm-8 col-md-9" ng-if="listCtrl.partitions.length > 0 && catalogCtrl.parent == '/'"
+                     ng-controller="BinartaSearchController as searchCtrl" ng-init="searchCtrl.init({
                         entity:'catalog-item',
                         context:'search',
                         filters:{
@@ -88,17 +89,17 @@
                         noMoreResultsNotification: false,
                         subset:{count: viewport.xs || viewport.sm ? 6 : 8}
                     })">
-                <div class="bin-catalog-group">
-                    <h2 class="group-title" i18n code="catalog.latest.{{::catalogCtrl.name}}.title"
-                        default="Latest {{::catalogCtrl.name}}" read-only>
-                        {{::var}}
-                    </h2>
-                    <ng-include src="'catalog-list-rows.html'"></ng-include>
+                    <div class="bin-catalog-group">
+                        <h2 class="group-title" i18n code="catalog.latest.{{::catalogCtrl.name}}.title"
+                            default="Latest {{::catalogCtrl.name}}" read-only>
+                            {{::var}}
+                        </h2>
+                        <ng-include src="'catalog-list-rows.html'"></ng-include>
+                    </div>
                 </div>
-            </div>
 
-            <div class="col-xs-12 col-sm-8 col-md-9" ng-if="::catalogCtrl.parent != '/'"
-                 ng-controller="BinartaSearchController as searchCtrl" ng-init="searchCtrl.init({
+                <div class="col-xs-12 col-sm-8 col-md-9" ng-if="::catalogCtrl.parent != '/'"
+                     ng-controller="BinartaSearchController as searchCtrl" ng-init="searchCtrl.init({
                         entity:'catalog-item',
                         context:'search',
                         filters:{
@@ -112,10 +113,17 @@
                         noMoreResultsNotification: false,
                         subset:{count: 12}
                     })">
-                <ng-include src="'catalog-list-rows.html'"></ng-include>
-                <ng-include src="'catalog-search-more-button.html'"></ng-include>
+                    <ng-include src="'catalog-list-rows.html'"></ng-include>
+                    <ng-include src="'catalog-search-more-button.html'"></ng-include>
+                </div>
             </div>
-
+        </div>
+        <div class="container" ng-if="!working && vat.checkForVatRate">
+            <div class="row">
+                <div class="col-xs-12 col-sm-6 col-sm-offset-3">
+                    <ng-include src="'catalog-vat-rate-form.html'"></ng-include>
+                </div>
+            </div>
         </div>
     </div>
 </section>

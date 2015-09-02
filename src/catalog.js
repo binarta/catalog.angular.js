@@ -1,4 +1,4 @@
-angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode'])
+angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint'])
     .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('findAllCatalogItemTypes', ['config', '$http', FindAllCatalogItemTypesFactory])
@@ -17,6 +17,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
     .controller('ViewCatalogItemController', ['$scope', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
+    .controller('ConfigureVatRateController', ['$scope', 'config', 'configReader', 'configWriter', 'activeUserHasPermission', ConfigureVatRateController])
     .directive('catalogItemPrice', ['editMode', 'editModeRenderer', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', CatalogItemPriceDirective])
     .directive('splitInRows', splitInRowsDirectiveFactory)
     .config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
@@ -770,6 +771,71 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
             }
         }
     }
+}
+
+function ConfigureVatRateController($scope, config, reader, writer, permission) {
+    var self = this;
+
+    permission({
+        yes: function () {
+            self.countries = config.countries;
+            var countryCodeKey = 'shop.country.code';
+            var defaultVatRateKey = 'shop.default.vat.rate';
+
+            reader({
+                $scope: $scope,
+                key: countryCodeKey,
+                success: function (data) {
+                    if (data) self.countryCode = data.value;
+                },
+                notFound: function () {
+                    self.checkForVatRate = true;
+                }
+            });
+
+            reader({
+                $scope: $scope,
+                key: defaultVatRateKey,
+                success: function (data) {
+                    if (data) self.vatRate = parseFloat(data.value * 100);
+                },
+                notFound: function () {
+                    self.checkForVatRate = true;
+                }
+            });
+
+            self.isValid = function () {
+                return self.countryCode && (self.vatRate || self.vatRate == 0);
+            };
+
+            self.getStandardVatRate = function () {
+                var rate = undefined;
+                if (config.euVatRates && config.euVatRates.rates) {
+                    rate = config.euVatRates.rates[self.countryCode];
+                }
+                self.vatRate = rate ? parseFloat(rate.standard_rate) : rate;
+            };
+
+            self.submit = function () {
+                if (self.isValid()) {
+                    writer({
+                        $scope: $scope,
+                        key: countryCodeKey,
+                        value: self.countryCode
+                    });
+
+                    writer({
+                        $scope: $scope,
+                        key: defaultVatRateKey,
+                        value: self.vatRate / 100
+                    });
+
+                    self.checkForVatRate = false;
+                }
+            }
+        },
+        scope: $scope
+    }, 'catalog.item.add');
 }
 
 // @deprecated use binarta.angularx instead

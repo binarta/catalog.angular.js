@@ -30,7 +30,9 @@
       "catalog.item.defaultName.required": "Required",
       "catalog.unavailable.message": "Upgrade your website to showcase your products or services in a beautiful catalog.",
       "catalog.upgrade.button": "Upgraden",
-      "catalog.item.add.to.basket.button": "Add to basket"
+      "catalog.item.add.to.basket.button": "Add to basket",
+      "catalog.config.vat.country.code.label": "In welk land is uw bedrijf geregistreerd?",
+      "catalog.config.vat.rate.label": "Welk BTW percentage wil je hanteren?"
     }, "en":{
       "catalog.item.removed": "Item removed",
       "catalog.item.updated": "Item updated",
@@ -61,7 +63,9 @@
       "catalog.item.defaultName.required": "Required",
       "catalog.unavailable.message": "Upgrade your website to showcase your products or services in a beautiful catalog.",
       "catalog.upgrade.button": "Upgrade",
-      "catalog.item.add.to.basket.button": "Add to basket"
+      "catalog.item.add.to.basket.button": "Add to basket",
+      "catalog.config.vat.country.code.label": "In what country is your company registered?",
+      "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?"
     }, "fr":{
       "catalog.item.removed": "Article supprimé",
       "catalog.item.updated": "Article actualisé",
@@ -92,7 +96,9 @@
       "catalog.item.defaultName.required": "Required",
       "catalog.unavailable.message": "Upgrade your website to showcase your products or services in a beautiful catalog.",
       "catalog.upgrade.button": "Mise à niveau",
-      "catalog.item.add.to.basket.button": "Add to basket"
+      "catalog.item.add.to.basket.button": "Add to basket",
+      "catalog.config.vat.country.code.label": "In what country is your company registered?",
+      "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?"
     }, "de":{
       "catalog.item.removed": "Artikel gelöscht",
       "catalog.item.updated": "Artikel überarbeitet",
@@ -123,7 +129,9 @@
       "catalog.item.defaultName.required": "Required",
       "catalog.unavailable.message": "Upgrade your website to showcase your products or services in a beautiful catalog.",
       "catalog.upgrade.button": "Upgraden",
-      "catalog.item.add.to.basket.button": "Add to basket"
+      "catalog.item.add.to.basket.button": "Add to basket",
+      "catalog.config.vat.country.code.label": "In what country is your company registered?",
+      "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?"
     }
   }
 }
