@@ -2108,6 +2108,10 @@ describe('catalog', function () {
                     expect(rendererScope.price).toEqual(10.5);
                 });
 
+                it('get current currency symbol', function () {
+                    expect(rendererScope.currencySymbol).toEqual('$');
+                });
+
                 describe('on update with valid form', function () {
                     beforeEach(function () {
                         rendererScope.catalogItemPriceForm = {

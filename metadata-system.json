@@ -21,7 +21,7 @@
       "catalog.search.products.placeholder": "Search all products",
       "catalog.search.services.placeholder": "Search all services",
       "catalog.next.results.button": "Show next results",
-      "catalog.item.price.label": "Price",
+      "catalog.item.price.label": "Prijs",
       "catalog.item.preorder.button": "Pre-order",
       "catalog.item.subscribe.button": "Subscribe",
       "catalog.products.add.placeholder": "New product",
@@ -32,7 +32,9 @@
       "catalog.upgrade.button": "Upgraden",
       "catalog.item.add.to.basket.button": "Add to basket",
       "catalog.config.vat.country.code.label": "In welk land is uw bedrijf geregistreerd?",
-      "catalog.config.vat.rate.label": "Welk BTW percentage wil je hanteren?"
+      "catalog.config.vat.rate.label": "Welk BTW percentage wil je hanteren?",
+      "catalog.item.price.vat.excl.info": "Vul altijd de prijs exclusief BTW in.",
+      "catalog.item.price.invalid": "Ongeldige prijs"
     }, "en":{
       "catalog.item.removed": "Item removed",
       "catalog.item.updated": "Item updated",
@@ -65,7 +67,9 @@
       "catalog.upgrade.button": "Upgrade",
       "catalog.item.add.to.basket.button": "Add to basket",
       "catalog.config.vat.country.code.label": "In what country is your company registered?",
-      "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?"
+      "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?",
+      "catalog.item.price.vat.excl.info": "Always enter the price VAT exclusive.",
+      "catalog.item.price.invalid": "Invalid price"
     }, "fr":{
       "catalog.item.removed": "Article supprimé",
       "catalog.item.updated": "Article actualisé",
@@ -98,7 +102,9 @@
       "catalog.upgrade.button": "Mise à niveau",
       "catalog.item.add.to.basket.button": "Add to basket",
       "catalog.config.vat.country.code.label": "In what country is your company registered?",
-      "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?"
+      "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?",
+      "catalog.item.price.vat.excl.info": "Always enter the price VAT exclusive.",
+      "catalog.item.price.invalid": "Invalid price"
     }, "de":{
       "catalog.item.removed": "Artikel gelöscht",
       "catalog.item.updated": "Artikel überarbeitet",
@@ -131,7 +137,9 @@
       "catalog.upgrade.button": "Upgraden",
       "catalog.item.add.to.basket.button": "Add to basket",
       "catalog.config.vat.country.code.label": "In what country is your company registered?",
-      "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?"
+      "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?",
+      "catalog.item.price.vat.excl.info": "Always enter the price VAT exclusive.",
+      "catalog.item.price.invalid": "Invalid price"
     }
   }
 }

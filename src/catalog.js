@@ -18,7 +18,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('ViewCatalogItemController', ['$scope', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .controller('ConfigureVatRateController', ['$scope', 'config', 'configReader', 'configWriter', 'activeUserHasPermission', ConfigureVatRateController])
-    .directive('catalogItemPrice', ['editMode', 'editModeRenderer', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', CatalogItemPriceDirective])
+    .directive('catalogItemPrice', ['editMode', 'editModeRenderer', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', '$locale', CatalogItemPriceDirective])
     .directive('splitInRows', splitInRowsDirectiveFactory)
     .config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function(args) {
@@ -707,7 +707,7 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
     });
 }
 
-function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem, usecaseAdapterFactory, ngRegisterTopicHandler) {
+function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem, usecaseAdapterFactory, ngRegisterTopicHandler, $locale) {
     return {
         restrict: 'A',
         scope: {
@@ -748,21 +748,29 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                             updateCatalogItem(ctx);
                         }
                     },
-                    price: scope.item.price / 100
+                    price: scope.item.price / 100,
+                    currencySymbol: $locale.NUMBER_FORMATS.CURRENCY_SYM
                 });
 
                 editModeRenderer.open({
                     template: '<form name="catalogItemPriceForm" ng-submit="update()">' +
                     '<div class="form-group">' +
                     '<label for="catalogItemPrice" i18n code="catalog.item.price.label" read-only>{{::var}}</label>' +
-                    '<input type="number" step="any" name="catalogItemPrice" id="catalogItemPrice" ng-model="price">' +
+                    '<div class="input-group">' +
+                    '<input type="number" min="0" step="any" name="catalogItemPrice" id="catalogItemPrice" ng-model="price">' +
+                    '<div class="input-group-addon">{{::currencySymbol}}</div>' +
+                    '</div>' +
                     '<div class="help-block text-danger" ng-repeat="v in violations[\'price\']"' +
-                    'i18n code="catalog.menu.item.price.{{v}}" default="{{v}}" read-only ng-bind="var">' +
+                    'i18n code="catalog.item.price.{{v}}" default="{{v}}" read-only ng-bind="var">' +
+                    '</div>' +
+                    '<div class="help-block" i18n code="catalog.item.price.vat.excl.info" read-only>' +
+                    '<i class="fa fa-info-circle fa-fw"></i> {{::var}}' +
                     '</div>' +
                     '</div>' +
 
                     '<div class="dropdown-menu-buttons">' +
-                    '<button type="submit" class="btn btn-primary" i18n code="clerk.menu.save.button" read-only>{{var}}</button>' +
+                    '<button type="submit" class="btn btn-primary" ng-disabled="catalogItemPriceForm.$pristine" ' +
+                    'i18n code="clerk.menu.save.button" read-only>{{var}}</button>' +
                     '<button type="reset" class="btn btn-default" ng-click="close()" i18n code="clerk.menu.cancel.button" read-only>{{var}}</button>' +
                     '</div>' +
                     '</form>',
