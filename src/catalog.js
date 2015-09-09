@@ -754,6 +754,7 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
 
                 editModeRenderer.open({
                     template: '<form name="catalogItemPriceForm" ng-submit="update()">' +
+                    '<div class="bin-menu-edit-body">' +
                     '<div class="form-group">' +
                     '<label for="catalogItemPrice" i18n code="catalog.item.price.label" read-only>{{::var}}</label>' +
                     '<div class="input-group">' +
@@ -767,8 +768,8 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                     '<i class="fa fa-info-circle fa-fw"></i> {{::var}}' +
                     '</div>' +
                     '</div>' +
-
-                    '<div class="dropdown-menu-buttons">' +
+                    '</div>' +
+                    '<div class="bin-menu-edit-actions">' +
                     '<button type="submit" class="btn btn-primary" ng-disabled="catalogItemPriceForm.$pristine" ' +
                     'i18n code="clerk.menu.save.button" read-only>{{var}}</button>' +
                     '<button type="reset" class="btn btn-default" ng-click="close()" i18n code="clerk.menu.cancel.button" read-only>{{var}}</button>' +
