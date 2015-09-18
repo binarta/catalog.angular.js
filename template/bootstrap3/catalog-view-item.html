@@ -1,18 +1,5 @@
-<ng-include src="'catalog-search-form.html'"></ng-include>
-<ng-include src="'catalog-breadcrumb.html'"></ng-include>
-
-<section class="bin-catalog">
+<div class="bin-catalog">
     <div class="container">
-        <div class="row">
-            <div class="col-xs-12">
-                <div class="page-header">
-                    <h1 class="bin-catalog-title inline" i18n code="{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].path}}"
-                        default="{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].name}}">
-                        {{var}}
-                    </h1>
-                </div>
-            </div>
-        </div>
         <div class="row bin-catalog-item">
             <div class="col-xs-12 col-sm-4 col-md-3">
                 <div class="list-group">
@@ -103,4 +90,4 @@
             </div>
         </div>
     </div>
-</section>
+</div>

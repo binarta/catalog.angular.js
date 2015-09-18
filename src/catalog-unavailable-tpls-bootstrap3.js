@@ -1,4 +1,8 @@
-angular.module("catalog.templates", []).run(["$templateCache", function($templateCache) {$templateCache.put("catalog-browse.html","<ng-include src=\"\'catalog-unavailable.html\'\"></ng-include>");
+angular.module("catalog.templates", []).run(["$templateCache", function($templateCache) {$templateCache.put("catalog-breadcrumb.html","");
+$templateCache.put("catalog-browse-header.html","<div class=\"page-header-wrapper\"><div class=\"container\"><div class=\"row\"><div class=\"col-xs-12\"><div class=\"page-header\"><h1 class=\"inline\" i18n=\"\" code=\"{{::catalogCtrl.path}}\" default=\"{{::catalogCtrl.name}}\" read-only=\"\">{{::var}}</h1></div></div></div></div></div>");
+$templateCache.put("catalog-browse.html","<ng-include src=\"\'catalog-unavailable.html\'\"></ng-include>");
+$templateCache.put("catalog-search-form.html","");
 $templateCache.put("catalog-search.html","<ng-include src=\"\'catalog-unavailable.html\'\"></ng-include>");
 $templateCache.put("catalog-unavailable.html","<div checkpoint-permission-for=\"edit.mode\"><section class=\"bin-catalog\" ng-if=\"permitted\"><div class=\"container\"><div class=\"row\"><div class=\"col-xs-12 col-sm-6 col-sm-offset-3\"><div class=\"alert alert-info alert-unavailable\" i18n=\"\" code=\"catalog.unavailable.message\" read-only=\"\"><i class=\"fa fa-info-circle fa-fw\"></i> {{::var}}<hr><a href=\"https://binarta.com/applications\" target=\"_blank\" class=\"btn btn-success\" i18n=\"\" code=\"catalog.upgrade.button\" read-only=\"\">{{::var}}</a></div></div></div></div></section></div>");
+$templateCache.put("catalog-view-item-header.html","");
 $templateCache.put("catalog-view.item.html","<ng-include src=\"\'catalog-unavailable.html\'\"></ng-include>");}]);

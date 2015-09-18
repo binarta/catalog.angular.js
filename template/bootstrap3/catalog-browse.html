@@ -1,39 +1,7 @@
-<ng-include src="'catalog-search-form.html'"></ng-include>
-<ng-include src="'catalog-breadcrumb.html'"></ng-include>
-
-<section class="bin-catalog" ng-controller="ListCatalogPartitionsController as listCtrl"
+<div class="bin-catalog" ng-controller="ListCatalogPartitionsController as listCtrl"
          ng-init="listCtrl.init('ownedBy', catalogCtrl.path)">
     <div ng-controller="ConfigureVatRateController as vat">
         <div class="container" ng-if="!working && !vat.checkForVatRate">
-            <div class="row">
-                <div class="col-xs-12">
-                    <div class="page-header">
-                        <h1 class="inline" i18n code="{{::catalogCtrl.path}}" default="{{::catalogCtrl.name}}"
-                            ng-if="::catalogCtrl.parent != '/'">
-                            {{var}}
-                        </h1>
-                        <h1 class="inline" i18n code="{{::catalogCtrl.path}}" default="{{::catalogCtrl.name}}" read-only
-                            ng-if="::catalogCtrl.parent == '/'">
-                            {{::var}}
-                        </h1>
-
-                        <div class="pull-right" checkpoint-permission-for="catalog.partition.remove"
-                             ng-if="::catalogCtrl.parent != '/'">
-                            <form ng-controller="RemoveCatalogPartitionController" ng-init="init(listCtrl.partition)"
-                                  ng-if="permitted" i18n code="catalog.remove.partition.confirm" read-only>
-                                <button type="button" class="btn btn-danger btn-sm"
-                                        ng-click-confirm="submit('/browse'+parent)"
-                                        confirm-message="{{::var}}"
-                                        ng-disabled="working"
-                                        ng-if="::var">
-                                    <i class="fa fa-times fa-fw"></i>
-                                    <span i18n code="catalog.remove.partition.button" read-only>{{::var}}</span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <div class="row">
                 <div class="col-xs-12 col-sm-4 col-md-3">
                     <div class="list-group" checkpoint-permission-for="catalog.partition.add">
@@ -126,4 +94,4 @@
             </div>
         </div>
     </div>
-</section>
+</div>
