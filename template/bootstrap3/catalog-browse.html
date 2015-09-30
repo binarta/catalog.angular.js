@@ -1,9 +1,9 @@
 <div class="bin-catalog" ng-controller="ListCatalogPartitionsController as listCtrl"
-         ng-init="listCtrl.init('ownedBy', catalogCtrl.path)">
+     ng-init="listCtrl.init('ownedBy', catalogCtrl.path)">
     <div ng-controller="ConfigureVatRateController as vat">
         <div class="container" ng-if="!working && !vat.checkForVatRate">
             <div class="row">
-                <div class="col-xs-12 col-sm-4 col-md-3">
+                <div class="col-xs-12 col-sm-4 col-md-3" ng-if="listCtrl.partitions.length > 0 || catalogCtrl.parent != '/'">
                     <div class="list-group" checkpoint-permission-for="catalog.partition.add">
                         <a class="list-group-item" ng-if="::catalogCtrl.parent != '/'"
                            ng-href="#!{{::localePrefix}}/browse{{::catalogCtrl.parent}}">
@@ -13,76 +13,162 @@
                            ng-href="#!{{::localePrefix}}/browse{{::partition.id}}"
                            i18n code="{{::partition.id}}" default="{{::partition.name}}">
                             {{var}}
-                        <span class="pull-right">
-                            <i class="fa fa-angle-right fa-fw"></i>
-                        </span>
+                            <span class="pull-right">
+                                <i class="fa fa-angle-right fa-fw"></i>
+                            </span>
                         </a>
 
                         <div class="list-group-item" ng-if="permitted">
-                            <ng-include src="'catalog-add-partition-form.html'"></ng-include>
+                            <form ng-controller="AddPartitionToCatalogController"
+                                  ng-init="init(catalogCtrl.path)"
+                                  ng-submit="submit()">
+
+                                <div class="input-group" ng-class="{'has-error': violations['name']}">
+                                    <input type="text" class="form-control" ng-model="$parent.name"
+                                           i18n code="{{'catalog.' + (catalogCtrl.parent == '/' ? 'partition' : 'subpartition') + '.add.placeholder'}}"
+                                           read-only placeholder="{{::var}}" required ng-disabled="working">
+
+                                    <div class="input-group-btn">
+                                        <button class="btn btn-primary" type="submit" ng-disabled="working">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+
+                                </div>
+                                <div class="help-block text-danger" ng-repeat="v in violations['name']"
+                                     i18n code="catalog.partition.name.{{::v}}" default="{{::v}}">
+                                    {{::var}}
+                                </div>
+                            </form>
                         </div>
                     </div>
-                    <div checkpoint-permission-for="catalog.item.add" ng-if="::catalogCtrl.parent != '/'">
-                        <div class="list-group" ng-if="permitted">
-                            <div class="list-group-item">
-                                <ng-include src="'catalog-add-item-form.html'"></ng-include>
+                </div>
+
+                <div class="col-xs-12" ng-if="listCtrl.partitions.length == 0 && catalogCtrl.parent == '/'">
+                    <div checkpoint-permission-for="catalog.partition.add">
+                        <div ng-if="permitted">
+                            <h3 class="bin-empty-title" i18n code="catalog.add.first.partition.message" read-only ng-bind="::var"></h3>
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
+                                    <form ng-controller="AddPartitionToCatalogController as addPartitionCtrl"
+                                          ng-init="init(catalogCtrl.path); addPartitionCtrl.noredirect = false;"
+                                          ng-submit="submit(localePrefix + '/browse' + catalogCtrl.path + name)">
+
+                                        <div class="input-group input-group-lg" ng-class="{'has-error': violations['name']}">
+                                            <input type="text" class="form-control" ng-model="$parent.name"
+                                                   i18n code="catalog.partition.add.placeholder" read-only
+                                                   placeholder="{{::var}}" required ng-disabled="working">
+
+                                            <div class="input-group-btn">
+                                                <button class="btn btn-primary" type="submit" ng-disabled="working">
+                                                    <i class="fa fa-plus"></i>
+                                                </button>
+                                            </div>
+
+                                        </div>
+                                        <div class="help-block text-danger" ng-repeat="v in violations['name']"
+                                             i18n code="catalog.partition.name.{{::v}}" default="{{::v}}">
+                                            {{::var}}
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
+
+                        <div class="bin-empty-visual">
+                            <i class="fa fa-cloud"></i>
+                        </div>
+                        <h3 class="bin-empty-title" i18n code="catalog.no.items.found.message" read-only ng-bind="::var"></h3>
                     </div>
                 </div>
 
-                <div class="col-xs-12 col-sm-8 col-md-9"
-                     ng-if="listCtrl.partitions.length == 0 && catalogCtrl.parent == '/'">
-                    <div checkpoint-permission-for="catalog.partition.add">
-                        <div class="alert alert-info" ng-if="permitted"
-                             i18n code="catalog.add.first.partition.message" read-only>
-                            <i class="fa fa-info-circle fa-fw"></i> {{::var}}
+                <div class="col-xs-12 col-sm-8 col-md-9">
+                    <div checkpoint-permission-for="catalog.item.add">
+                        <div ng-if="catalogCtrl.parent != '/' && permitted">
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
+                                    <div class="list-group">
+                                        <div class="list-group-item">
+                                            <form ng-controller="AddToCatalogController"
+                                                  ng-init="init({
+                                                       partition: catalogCtrl.path,
+                                                       type: catalogCtrl.head,
+                                                       redirectToView: true,
+                                                       editMode: true
+                                                   })"
+                                                  ng-submit="submit()"
+                                                  name="catalogItemAddForm">
+
+                                                <div class="bin-action-visual">
+                                                    <i class="fa fa-plus"></i>
+                                                </div>
+
+                                                <div class="input-group" ng-class="{'has-error': violations['defaultName']}">
+                                                    <input type="text" class="form-control" name="defaultName" ng-model="$parent.item.defaultName"
+                                                           i18n code="catalog.{{::catalogCtrl.head}}.add.placeholder" default="New item" read-only
+                                                           placeholder="{{::var}}" required ng-disabled="working">
+
+                                                    <div class="input-group-btn">
+                                                        <button class="btn btn-primary" type="submit" ng-disabled="working">
+                                                            <i class="fa fa-plus"></i>
+                                                        </button>
+                                                    </div>
+
+                                                </div>
+                                                <div class="help-block text-danger" ng-repeat="v in violations['defaultName']"
+                                                     i18n code="catalog.item.defaultName.{{::v}}" default="{{::v}}">
+                                                    {{::var}}
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
                         </div>
                     </div>
-                    <div i18n code="catalog.empty.message" read-only ng-bind-html="::var">
-                    </div>
-                </div>
 
-                <div class="col-xs-12 col-sm-8 col-md-9" ng-if="listCtrl.partitions.length > 0 && catalogCtrl.parent == '/'"
-                     ng-controller="BinartaSearchController as searchCtrl" ng-init="searchCtrl.init({
-                        entity:'catalog-item',
-                        context:'search',
-                        filters:{
-                            type: catalogCtrl.head,
-                            sortings: [
-                                {on:'creationTime', orientation:'desc'}
-                            ]
-                        },
-                        autosearch:true,
-                        noMoreResultsNotification: false,
-                        subset:{count: viewport.xs || viewport.sm ? 6 : 8}
-                    })">
-                    <div class="bin-catalog-group">
-                        <h2 class="group-title" i18n code="catalog.latest.{{::catalogCtrl.name}}.title"
-                            default="Latest {{::catalogCtrl.name}}" read-only>
-                            {{::var}}
-                        </h2>
+                    <div ng-if="listCtrl.partitions.length > 0 && catalogCtrl.parent == '/'"
+                         ng-controller="BinartaSearchController as searchCtrl" ng-init="searchCtrl.init({
+                            entity:'catalog-item',
+                            context:'search',
+                            filters:{
+                                type: catalogCtrl.head,
+                                sortings: [
+                                    {on:'creationTime', orientation:'desc'}
+                                ]
+                            },
+                            autosearch:true,
+                            noMoreResultsNotification: false,
+                            subset:{count: viewport.xs || viewport.sm ? 6 : 8}
+                        })">
+                        <div class="bin-catalog-group">
+                            <h2 class="group-title" i18n code="catalog.latest.{{::catalogCtrl.name}}.title"
+                                default="Latest {{::catalogCtrl.name}}" read-only>
+                                {{::var}}
+                            </h2>
+                            <ng-include src="'catalog-list-rows.html'"></ng-include>
+                        </div>
+                    </div>
+
+                    <div ng-if="::catalogCtrl.parent != '/'"
+                         ng-controller="BinartaSearchController as searchCtrl" ng-init="searchCtrl.init({
+                            entity:'catalog-item',
+                            context:'search',
+                            filters:{
+                                type: catalogCtrl.head,
+                                partition: listCtrl.partition,
+                                sortings: [
+                                    {on:'creationTime', orientation:'desc'}
+                                ]
+                            },
+                            autosearch:true,
+                            noMoreResultsNotification: false,
+                            subset:{count: 12}
+                        })">
                         <ng-include src="'catalog-list-rows.html'"></ng-include>
+                        <ng-include src="'catalog-search-more-button.html'"></ng-include>
                     </div>
-                </div>
-
-                <div class="col-xs-12 col-sm-8 col-md-9" ng-if="::catalogCtrl.parent != '/'"
-                     ng-controller="BinartaSearchController as searchCtrl" ng-init="searchCtrl.init({
-                        entity:'catalog-item',
-                        context:'search',
-                        filters:{
-                            type: catalogCtrl.head,
-                            partition: listCtrl.partition,
-                            sortings: [
-                                {on:'creationTime', orientation:'desc'}
-                            ]
-                        },
-                        autosearch:true,
-                        noMoreResultsNotification: false,
-                        subset:{count: 12}
-                    })">
-                    <ng-include src="'catalog-list-rows.html'"></ng-include>
-                    <ng-include src="'catalog-search-more-button.html'"></ng-include>
                 </div>
             </div>
         </div>

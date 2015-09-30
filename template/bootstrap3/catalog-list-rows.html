@@ -30,7 +30,9 @@
     <i class="fa fa-spinner fa-spin fa-2x text-muted"></i>
 </div>
 
-<div class="alert alert-info" ng-if="searchCtrl.results.length == 0 && !searchCtrl.working"
-        i18n code="catalog.no.items.found.message" read-only>
-    <i class="fa fa-info-circle fa-fw"></i> {{::var}}
+<div ng-if="searchCtrl.results.length == 0 && !searchCtrl.working">
+    <div class="bin-empty-visual">
+        <i class="fa" ng-class="catalogCtrl ? 'fa-cloud' : 'fa-search'"></i>
+    </div>
+    <h3 class="bin-empty-title" i18n code="catalog.no.items.found.message" read-only>{{::var}}</h3>
 </div>
