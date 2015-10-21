@@ -770,7 +770,7 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                     '</div>' +
                     '</div>' +
                     '<div class="bin-menu-edit-actions">' +
-                    '<button type="submit" class="btn btn-primary" ng-disabled="catalogItemPriceForm.$pristine" ' +
+                    '<button type="submit" class="btn btn-primary" ' +
                     'i18n code="clerk.menu.save.button" read-only>{{var}}</button>' +
                     '<button type="reset" class="btn btn-default" ng-click="close()" i18n code="clerk.menu.cancel.button" read-only>{{var}}</button>' +
                     '</div>' +
