@@ -34,7 +34,7 @@
 
     <div class="form-group">
         <button type="submit" class="btn btn-success"
-                ng-disabled="working || !vat.isValid() || form.$pristine"
+                ng-disabled="working || !vat.isValid()"
                 i18n code="config.save.button" read-only>
             <span ng-show="!working"><i class="fa fa-check-circle fa-fw"></i></span>
             <span ng-show="working"><i class="fa fa-spinner fa-spin fa-fw"></i></span>
