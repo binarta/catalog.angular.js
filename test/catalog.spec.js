@@ -2038,9 +2038,11 @@ describe('catalog', function () {
     });
 
     describe('catalogItemPrice directive', function () {
-        var element, html, scope, isolateScope, editMode, editModeRenderer, writer, topics;
+        var element, html, scope, isolateScope, editMode, editModeRenderer, writer, topics, configReader, configWriter;
 
-        beforeEach(inject(function ($rootScope, $compile, _editMode_, _editModeRenderer_, updateCatalogItemWriterSpy, topicRegistryMock) {
+        beforeEach(inject(function ($rootScope, $compile, _editMode_, _editModeRenderer_, updateCatalogItemWriterSpy, topicRegistryMock, _configReader_, _configWriter_) {
+            configReader = _configReader_;
+            configWriter = _configWriter_;
             editMode = _editMode_;
             editModeRenderer = _editModeRenderer_;
             writer = updateCatalogItemWriterSpy;
@@ -2089,11 +2091,16 @@ describe('catalog', function () {
         });
 
         describe('on click', function () {
-            beforeEach(function () {
-                editMode.bindEvent.mostRecentCall.args[0].onClick();
-            });
+            var readerDeferred;
 
-            it('editModeRenderer is opended', function () {
+            beforeEach(inject(function ($q) {
+                readerDeferred = $q.defer();
+                configReader.andReturn(readerDeferred.promise);
+
+                editMode.bindEvent.mostRecentCall.args[0].onClick();
+            }));
+
+            it('editModeRenderer is opened', function () {
                 expect(editModeRenderer.open).toHaveBeenCalled();
             });
 
@@ -2101,7 +2108,7 @@ describe('catalog', function () {
                 var rendererScope;
 
                 beforeEach(function () {
-                    rendererScope = editModeRenderer.open.mostRecentCall.args[0].scope;
+                    rendererScope = isolateScope.rendererScope;
                 });
 
                 it('price is recalculated', function () {
@@ -2110,6 +2117,77 @@ describe('catalog', function () {
 
                 it('get current currency symbol', function () {
                     expect(rendererScope.currencySymbol).toEqual('$');
+                });
+
+                describe('get config value to know if price is vat included or excluded', function () {
+                    it('reader is called', function () {
+                        expect(configReader).toHaveBeenCalledWith({
+                            $scope: rendererScope,
+                            key: 'shop.vat.on.price.interpreted.as'
+                        });
+                    });
+
+                    describe('when vat is included', function () {
+                        beforeEach(function () {
+                            readerDeferred.resolve({data: {value: 'included'}});
+                            rendererScope.$digest();
+                        });
+
+                        it('value is on scope', function () {
+                            expect(rendererScope.vatOnPrice).toBeTruthy();
+                        });
+                    });
+
+                    describe('defaults to excluded', function () {
+                        beforeEach(function () {
+                            readerDeferred.resolve({data: {value: 'excluded'}});
+                            rendererScope.$digest();
+                        });
+
+                        it('value is on scope', function () {
+                            expect(rendererScope.vatOnPrice).toBeFalsy();
+                        });
+                    });
+
+                    describe('defaults to excluded', function () {
+                        beforeEach(function () {
+                            readerDeferred.resolve({data: {value: ''}});
+                            rendererScope.$digest();
+                        });
+
+                        it('value is on scope', function () {
+                            expect(rendererScope.vatOnPrice).toBeFalsy();
+                        });
+                    });
+
+                    describe('defaults to excluded', function () {
+                        beforeEach(function () {
+                            readerDeferred.reject();
+                            rendererScope.$digest();
+                        });
+
+                        it('value is on scope', function () {
+                            expect(rendererScope.vatOnPrice).toBeFalsy();
+                        });
+                    });
+                });
+
+                describe('on switch vat on price interpreter', function () {
+                    describe('switch to vat included', function () {
+                        beforeEach(function () {
+                            rendererScope.vatOnPrice = true;
+                            rendererScope.toggleVatOnPrice();
+                        });
+
+                        it('writer is called', function () {
+                            expect(configWriter).toHaveBeenCalledWith({
+                                $scope: rendererScope,
+                                key: 'shop.vat.on.price.interpreted.as',
+                                value: 'included'
+                            });
+                        });
+
+                    });
                 });
 
                 describe('on update with valid form', function () {

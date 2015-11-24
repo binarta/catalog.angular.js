@@ -18,7 +18,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('ViewCatalogItemController', ['$scope', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .controller('ConfigureVatRateController', ['$scope', 'config', 'configReader', 'configWriter', 'activeUserHasPermission', ConfigureVatRateController])
-    .directive('catalogItemPrice', ['editMode', 'editModeRenderer', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', '$locale', CatalogItemPriceDirective])
+    .directive('catalogItemPrice', ['editMode', 'editModeRenderer', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', '$locale', 'configReader', 'configWriter', CatalogItemPriceDirective])
     .directive('splitInRows', splitInRowsDirectiveFactory)
     .config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function(args) {
@@ -707,7 +707,7 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
     });
 }
 
-function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem, usecaseAdapterFactory, ngRegisterTopicHandler, $locale) {
+function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem, usecaseAdapterFactory, ngRegisterTopicHandler, $locale, reader, writer) {
     return {
         restrict: 'A',
         scope: {
@@ -727,55 +727,88 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
             });
 
             function open() {
-                var rendererScope = angular.extend(scope.$new(), {
+                var vatOnPriceKey = 'shop.vat.on.price.interpreted.as';
+
+                scope.rendererScope = angular.extend(scope.$new(), {
                     close: function () {
                         editModeRenderer.close();
                     },
                     update: function () {
-                        if (rendererScope.catalogItemPriceForm.catalogItemPrice.$invalid)
-                            rendererScope.violations = {
+                        if (scope.rendererScope.catalogItemPriceForm.catalogItemPrice.$invalid)
+                            scope.rendererScope.violations = {
                                 price: ['invalid']
                             };
 
-                        if (rendererScope.catalogItemPriceForm.$valid) {
-                            scope.item.price = Math.round(rendererScope.price * 100);
-                            var ctx = usecaseAdapterFactory(rendererScope);
+                        if (scope.rendererScope.catalogItemPriceForm.$valid) {
+                            scope.item.price = Math.round(scope.rendererScope.price * 100);
+                            var ctx = usecaseAdapterFactory(scope.rendererScope);
                             ctx.data = scope.item;
                             ctx.data.context = 'update';
                             ctx.success = function () {
-                                rendererScope.close();
+                                scope.rendererScope.close();
                             };
                             updateCatalogItem(ctx);
                         }
                     },
+                    toggleVatOnPrice: function () {
+                        writer({
+                            $scope: scope.rendererScope,
+                            key: vatOnPriceKey,
+                            value: scope.rendererScope.vatOnPrice ? 'included' : 'excluded'
+                        });
+                    },
                     price: scope.item.price / 100,
                     currencySymbol: $locale.NUMBER_FORMATS.CURRENCY_SYM
+                });
+
+                reader({
+                    $scope: scope.rendererScope,
+                    key: vatOnPriceKey
+                }).then(function (result) {
+                    scope.rendererScope.vatOnPrice = result.data.value == 'included';
+                }, function () {
+                    scope.rendererScope.vatOnPrice = false;
                 });
 
                 editModeRenderer.open({
                     template: '<form name="catalogItemPriceForm" ng-submit="update()">' +
                     '<div class="bin-menu-edit-body">' +
                     '<div class="form-group">' +
-                    '<label for="catalogItemPrice" i18n code="catalog.item.price.label" read-only>{{::var}}</label>' +
+                    '<label for="catalogItemPrice" i18n code="catalog.item.price.label" read-only ng-bind="::var"></label> ' +
+                    '<small ng-if="vatOnPrice == 1" i18n code="catalog.item.price.vat.incl" read-only ng-bind="::var"></small>' +
+                    '<small ng-if="vatOnPrice == 0" i18n code="catalog.item.price.vat.excl" read-only ng-bind="::var"></small>' +
                     '<div class="input-group">' +
                     '<input type="number" min="0" step="any" name="catalogItemPrice" id="catalogItemPrice" ng-model="price">' +
-                    '<div class="input-group-addon">{{::currencySymbol}}</div>' +
+                    '<div class="input-group-addon" ng-bind="::currencySymbol"></div>' +
                     '</div>' +
                     '<div class="help-block text-danger" ng-repeat="v in violations[\'price\']"' +
                     'i18n code="catalog.item.price.{{v}}" default="{{v}}" read-only ng-bind="var">' +
                     '</div>' +
-                    '<div class="help-block" i18n code="catalog.item.price.vat.excl.info" read-only>' +
-                    '<i class="fa fa-info-circle fa-fw"></i> {{::var}}' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                    '<div class="row">' +
+                    '<div class="col-xs-12 col-sm-6">' +
+                    '<table class="table">' +
+                    '<tr>' +
+                    '<th i18n code="catalog.item.price.input.vat.included" read-only ng-bind="::var"></th>' +
+                    '<td>' +
+                    '<div class="checkbox-switch" ng-show="vatOnPrice != undefined">' +
+                    '<input type="checkbox" id="vat-on-price-switch" ng-model="vatOnPrice" ng-change="toggleVatOnPrice()">' +
+                    '<label for="vat-on-price-switch"></label>' +
+                    '</div>' +
+                    '</td>' +
+                    '</tr>' +
+                    '</table>' +
+                    '</div>' +
                     '</div>' +
                     '</div>' +
                     '</div>' +
                     '<div class="bin-menu-edit-actions">' +
-                    '<button type="submit" class="btn btn-primary" ' +
-                    'i18n code="clerk.menu.save.button" read-only>{{var}}</button>' +
-                    '<button type="reset" class="btn btn-default" ng-click="close()" i18n code="clerk.menu.cancel.button" read-only>{{var}}</button>' +
+                    '<button type="submit" class="btn btn-primary" i18n code="clerk.menu.save.button" read-only ng-bind="::var"></button>' +
+                    '<button type="reset" class="btn btn-default" ng-click="close()" i18n code="clerk.menu.cancel.button" read-only ng-bind="::var"></button>' +
                     '</div>' +
                     '</form>',
-                    scope: rendererScope
+                    scope: scope.rendererScope
                 });
             }
         }

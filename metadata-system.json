@@ -34,7 +34,9 @@
       "catalog.config.vat.country.code.label": "In welk land is uw bedrijf geregistreerd?",
       "catalog.config.vat.rate.label": "Welk BTW percentage wil je hanteren?",
       "catalog.config.save.button": "Opslaan",
-      "catalog.item.price.vat.excl.info": "Vul altijd de prijs exclusief BTW in.",
+      "catalog.item.price.vat.incl": "(BTW incl.)",
+      "catalog.item.price.vat.excl": "(BTW excl.)",
+      "catalog.item.price.input.vat.included": "Vul prijs in inclusief BTW.",
       "catalog.item.price.invalid": "Ongeldige prijs"
     }, "en":{
       "catalog.item.removed": "Item removed",
@@ -70,7 +72,9 @@
       "catalog.config.vat.country.code.label": "In what country is your company registered?",
       "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?",
       "catalog.config.save.button": "Save",
-      "catalog.item.price.vat.excl.info": "Always enter the price VAT exclusive.",
+      "catalog.item.price.vat.incl": "(VAT incl.)",
+      "catalog.item.price.vat.excl": "(VAT excl.)",
+      "catalog.item.price.input.vat.included": "Input price with VAT included.",
       "catalog.item.price.invalid": "Invalid price"
     }, "fr":{
       "catalog.item.removed": "Article supprimé",
@@ -106,7 +110,9 @@
       "catalog.config.vat.country.code.label": "In what country is your company registered?",
       "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?",
       "catalog.config.save.button": "Enregistrer",
-      "catalog.item.price.vat.excl.info": "Always enter the price VAT exclusive.",
+      "catalog.item.price.vat.incl": "(VAT incl.)",
+      "catalog.item.price.vat.excl": "(VAT excl.)",
+      "catalog.item.price.input.vat.included": "Input price with VAT included.",
       "catalog.item.price.invalid": "Invalid price"
     }, "de":{
       "catalog.item.removed": "Artikel gelöscht",
@@ -142,7 +148,9 @@
       "catalog.config.vat.country.code.label": "In what country is your company registered?",
       "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?",
       "catalog.config.save.button": "Speichern",
-      "catalog.item.price.vat.excl.info": "Always enter the price VAT exclusive.",
+      "catalog.item.price.vat.incl": "(VAT incl.)",
+      "catalog.item.price.vat.excl": "(VAT excl.)",
+      "catalog.item.price.input.vat.included": "Input price with VAT included.",
       "catalog.item.price.invalid": "Invalid price"
     }
   }

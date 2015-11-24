@@ -1,36 +1,39 @@
 {
-    "name": "binarta.catalog.angular",
-    "main": [
-      "./src/catalog.js",
-      "./src/catalog-tpls-bootstrap3.js",
-      "./less/catalog.less",
-      "./metadata-system.json"
-    ],
-    "dependencies": {
-      "angular": "1.3.*",
-      "angular-route": "1.3.*",
-      "binarta.catalogx.rest.angular": "0.*.*",
-      "binarta.notifications.angular":"1.*.*",
-      "binarta.config.angular": "0.*.*",
-      "binarta.rest.client.angular": "0.*.*",
-      "binarta.i18n.angular": "1.*.*",
-      "binarta.web.storage.angular": "0.*.*",
-      "binarta.usecase.adapter.angular": "0.*.*",
-      "binarta.toggle.edit.mode.angular":"v1.*.*",
-      "binarta.checkpoint.angular": "0.*.*"
-    },
-    "devDependencies": {
-        "angular-mocks": "1.3.*",
-        "thk-notifications-mock": "0.*.*",
-        "thk-rest-client-mock": "0.*.*",
-        "thk-web-storage-mock": "0.*.*",
-        "thk-config-mock": "0.*.*"
-    },
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "test",
-        "tests"
-    ]
+  "name": "binarta.catalog.angular",
+  "main": [
+    "./src/catalog.js",
+    "./src/catalog-tpls-bootstrap3.js",
+    "./less/catalog.less",
+    "./metadata-system.json"
+  ],
+  "dependencies": {
+    "angular": "1.3.*",
+    "angular-route": "1.3.*",
+    "binarta.catalogx.rest.angular": "0.*.*",
+    "binarta.notifications.angular": "1.*.*",
+    "binarta.config.angular": "0.*.*",
+    "binarta.rest.client.angular": "0.*.*",
+    "binarta.i18n.angular": "1.*.*",
+    "binarta.web.storage.angular": "0.*.*",
+    "binarta.usecase.adapter.angular": "0.*.*",
+    "binarta.toggle.edit.mode.angular": "v1.*.*",
+    "binarta.checkpoint.angular": "0.*.*"
+  },
+  "devDependencies": {
+    "angular-mocks": "1.3.*",
+    "thk-notifications-mock": "0.*.*",
+    "thk-rest-client-mock": "0.*.*",
+    "thk-web-storage-mock": "0.*.*",
+    "thk-config-mock": "0.*.*"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "resolutions": {
+    "angular": "1.3.*"
+  }
 }
