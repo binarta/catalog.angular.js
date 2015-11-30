@@ -2,13 +2,14 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
+                <i18n code="catalog.search.all.prefix" read-only var="searchAll"></i18n>
+
                 <form ng-submit="submit()" ng-controller="RedirectToSearchController"
                       ng-init="init({page:'/search/' + catalogCtrl.head})"
                       ng-if="::catalogCtrl">
                     <div class="input-group input-group-lg">
                         <input type="text" class="form-control" ng-model="$parent.q"
-                               i18n code="catalog.search.{{::catalogCtrl.head}}.placeholder"
-                               default="Search all {{::catalogCtrl.head}}" read-only placeholder="{{::var}}">
+                               i18n code="navigation.label.{{::catalogCtrl.head}}" read-only placeholder="{{::searchAll}} {{var | lowercase}}">
 
                         <div class="input-group-btn">
                             <button class="btn btn-primary" type="submit">
@@ -21,8 +22,7 @@
                 <form ng-submit="searchCtrl.search()" ng-if="::searchCtrl">
                     <div class="input-group input-group-lg">
                         <input type="text" class="form-control" ng-model="searchCtrl.q"
-                               i18n code="catalog.search.{{::searchCtrl.filters.type}}.placeholder"
-                               default="Search all {{::searchCtrl.filters.type}}" read-only placeholder="{{::var}}">
+                               i18n code="navigation.label.{{::searchCtrl.filters.type}}" read-only placeholder="{{::searchAll}} {{var | lowercase}}">
 
                         <div class="input-group-btn">
                             <button class="btn btn-primary" type="submit" ng-disabled="searchCtrl.working">

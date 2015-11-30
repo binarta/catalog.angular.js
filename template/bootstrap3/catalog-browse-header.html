@@ -20,9 +20,8 @@
                             </span>
                         </span>
                     </h1>
-                    <h1 class="inline" i18n code="{{::catalogCtrl.path}}" default="{{::catalogCtrl.name}}" read-only
+                    <h1 i18n code="navigation.label.{{::catalogCtrl.name}}" read-only ng-bind="var"
                         ng-if="::catalogCtrl.parent == '/'">
-                        {{::var}}
                     </h1>
                 </div>
             </div>

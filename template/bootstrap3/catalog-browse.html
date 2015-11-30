@@ -74,11 +74,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="bin-empty-visual">
-                            <i class="fa fa-cloud"></i>
-                        </div>
-                        <h3 class="bin-empty-title" i18n code="catalog.no.items.found.message" read-only ng-bind="::var"></h3>
                     </div>
                 </div>
 
@@ -143,9 +138,9 @@
                             subset:{count: viewport.xs || viewport.sm ? 6 : 8}
                         })">
                         <div class="bin-catalog-group">
-                            <h2 class="group-title" i18n code="catalog.latest.{{::catalogCtrl.name}}.title"
-                                default="Latest {{::catalogCtrl.name}}" read-only>
-                                {{::var}}
+                            <h2 class="group-title">
+                                <span i18n code="catalog.latest.prefix" read-only ng-bind="::var"></span>
+                                <span i18n code="navigation.label.{{::catalogCtrl.name}}" read-only ng-bind="var | lowercase"></span>
                             </h2>
                             <ng-include src="'catalog-list-rows.html'"></ng-include>
                         </div>
@@ -167,7 +162,7 @@
                             subset:{count: 12}
                         })">
                         <ng-include src="'catalog-list-rows.html'"></ng-include>
-                        <ng-include src="'catalog-search-more-button.html'"></ng-include>
+                        <ng-include src="'search-for-more.html'"></ng-include>
                     </div>
                 </div>
             </div>
