@@ -756,8 +756,8 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                             key: vatOnPriceKey,
                             value: scope.rendererScope.vatOnPrice ? 'included' : 'excluded'
                         });
+                        scope.rendererScope.price = getItemPrice();
                     },
-                    price: scope.item.price / 100,
                     currencySymbol: $locale.NUMBER_FORMATS.CURRENCY_SYM
                 });
 
@@ -768,7 +768,13 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                     scope.rendererScope.vatOnPrice = result.data.value == 'included';
                 }, function () {
                     scope.rendererScope.vatOnPrice = false;
+                }).finally(function () {
+                    scope.rendererScope.price = getItemPrice();
                 });
+
+                function getItemPrice() {
+                    return (scope.rendererScope.vatOnPrice ? (scope.item.unitPrice || scope.item.price) : scope.item.price) / 100;
+                }
 
                 editModeRenderer.open({
                     template: '<form name="catalogItemPriceForm" ng-submit="update()">' +

@@ -2048,83 +2048,249 @@ describe('catalog', function () {
             writer = updateCatalogItemWriterSpy;
             topics = topicRegistryMock;
             scope = $rootScope.$new();
-            scope.item = {
-                price: 1050
-            };
             html = '<div catalog-item-price="item"></div>';
             element = angular.element(html);
-            $compile(element)(scope);
-            isolateScope = element.isolateScope();
         }));
 
-        it('item is passed to directive', function () {
-            expect(isolateScope.item).toEqual(scope.item);
-        });
+        describe('when item has no unitPrice defined', function () {
+            beforeEach(inject(function ($compile) {
+                scope.item = {
+                    price: 1050
+                };
+                $compile(element)(scope);
+                isolateScope = element.isolateScope();
+            }));
 
-        it('template is rendered', function () {
-            isolateScope.$digest();
-
-            expect(element.text()).toEqual('$10.50');
-        });
-
-        it('edit mode is bound', function () {
-            expect(editMode.bindEvent).toHaveBeenCalledWith({
-                scope: isolateScope,
-                element: element,
-                permission: 'catalog.item.update',
-                onClick: jasmine.any(Function)
+            it('item is passed to directive', function () {
+                expect(isolateScope.item).toEqual(scope.item);
             });
-        });
 
-        it('put editing on isolate scope', function () {
-            expect(isolateScope.editing).toBeFalsy();
-        });
+            it('template is rendered', function () {
+                isolateScope.$digest();
 
-        describe('when edit mode is enabled', function () {
-            beforeEach(function () {
-                topics['edit.mode'](true);
+                expect(element.text()).toEqual('$10.50');
+            });
+
+            it('edit mode is bound', function () {
+                expect(editMode.bindEvent).toHaveBeenCalledWith({
+                    scope: isolateScope,
+                    element: element,
+                    permission: 'catalog.item.update',
+                    onClick: jasmine.any(Function)
+                });
             });
 
             it('put editing on isolate scope', function () {
-                expect(isolateScope.editing).toBeTruthy();
+                expect(isolateScope.editing).toBeFalsy();
+            });
+
+            describe('when edit mode is enabled', function () {
+                beforeEach(function () {
+                    topics['edit.mode'](true);
+                });
+
+                it('put editing on isolate scope', function () {
+                    expect(isolateScope.editing).toBeTruthy();
+                });
+            });
+
+            describe('on click', function () {
+                var readerDeferred;
+
+                beforeEach(inject(function ($q) {
+                    readerDeferred = $q.defer();
+                    configReader.andReturn(readerDeferred.promise);
+
+                    editMode.bindEvent.mostRecentCall.args[0].onClick();
+                }));
+
+                it('editModeRenderer is opened', function () {
+                    expect(editModeRenderer.open).toHaveBeenCalled();
+                });
+
+                describe('with editModeRenderer scope', function () {
+                    var rendererScope;
+
+                    beforeEach(function () {
+                        rendererScope = isolateScope.rendererScope;
+                    });
+
+                    it('get current currency symbol', function () {
+                        expect(rendererScope.currencySymbol).toEqual('$');
+                    });
+
+                    describe('get config value to know if price is vat included or excluded', function () {
+                        it('reader is called', function () {
+                            expect(configReader).toHaveBeenCalledWith({
+                                $scope: rendererScope,
+                                key: 'shop.vat.on.price.interpreted.as'
+                            });
+                        });
+
+                        describe('when vat is included', function () {
+                            beforeEach(function () {
+                                readerDeferred.resolve({data: {value: 'included'}});
+                                rendererScope.$digest();
+                            });
+
+                            it('value is on scope', function () {
+                                expect(rendererScope.vatOnPrice).toBeTruthy();
+                            });
+
+                            it('displayed price is VAT excl', function () {
+                                expect(rendererScope.price).toEqual(10.5);
+                            });
+                        });
+
+                        describe('defaults to excluded', function () {
+                            beforeEach(function () {
+                                readerDeferred.resolve({data: {value: 'excluded'}});
+                                rendererScope.$digest();
+                            });
+
+                            it('value is on scope', function () {
+                                expect(rendererScope.vatOnPrice).toBeFalsy();
+                            });
+
+                            it('displayed price is VAT excl', function () {
+                                expect(rendererScope.price).toEqual(10.5);
+                            });
+                        });
+
+                        describe('defaults to excluded', function () {
+                            beforeEach(function () {
+                                readerDeferred.resolve({data: {value: ''}});
+                                rendererScope.$digest();
+                            });
+
+                            it('value is on scope', function () {
+                                expect(rendererScope.vatOnPrice).toBeFalsy();
+                            });
+
+                            it('displayed price is VAT excl', function () {
+                                expect(rendererScope.price).toEqual(10.5);
+                            });
+                        });
+
+                        describe('defaults to excluded', function () {
+                            beforeEach(function () {
+                                readerDeferred.reject();
+                                rendererScope.$digest();
+                            });
+
+                            it('value is on scope', function () {
+                                expect(rendererScope.vatOnPrice).toBeFalsy();
+                            });
+
+                            it('displayed price is VAT excl', function () {
+                                expect(rendererScope.price).toEqual(10.5);
+                            });
+                        });
+                    });
+
+                    describe('on switch vat on price interpreter', function () {
+                        describe('switch to vat included', function () {
+                            beforeEach(function () {
+                                rendererScope.vatOnPrice = true;
+                                rendererScope.toggleVatOnPrice();
+                            });
+
+                            it('writer is called', function () {
+                                expect(configWriter).toHaveBeenCalledWith({
+                                    $scope: rendererScope,
+                                    key: 'shop.vat.on.price.interpreted.as',
+                                    value: 'included'
+                                });
+                            });
+
+                        });
+                    });
+
+                    describe('on update with valid form', function () {
+                        beforeEach(function () {
+                            rendererScope.catalogItemPriceForm = {
+                                catalogItemPrice: {
+                                    $invalid: false
+                                },
+                                $valid: true
+                            };
+                            rendererScope.price = 20.6567;
+                            rendererScope.update();
+                        });
+
+                        it('invoke writer', function () {
+                            expect(writer.data()).toEqual({
+                                price: 2066,
+                                context: 'update'
+                            });
+                        });
+
+                        it('on success', function () {
+                            writer.success();
+
+                            expect(editModeRenderer.close).toHaveBeenCalled();
+                        });
+                    });
+
+                    describe('on update with invalid form', function () {
+                        beforeEach(function () {
+                            rendererScope.catalogItemPriceForm = {
+                                catalogItemPrice: {
+                                    $invalid: true
+                                },
+                                $valid: false
+                            };
+
+                            rendererScope.update();
+                        });
+
+                        it('put violation on scope', function () {
+                            expect(rendererScope.violations).toEqual({
+                                price: ['invalid']
+                            });
+                        });
+                    });
+
+                    it('on close', function () {
+                        rendererScope.close();
+
+                        expect(editModeRenderer.close).toHaveBeenCalled();
+                    });
+                });
             });
         });
 
-        describe('on click', function () {
-            var readerDeferred;
-
-            beforeEach(inject(function ($q) {
-                readerDeferred = $q.defer();
-                configReader.andReturn(readerDeferred.promise);
-
-                editMode.bindEvent.mostRecentCall.args[0].onClick();
+        describe('when item has unitPrice defined', function () {
+            beforeEach(inject(function ($compile) {
+                scope.item = {
+                    price: 1050,
+                    unitPrice: 1270
+                };
+                $compile(element)(scope);
+                isolateScope = element.isolateScope();
             }));
 
-            it('editModeRenderer is opened', function () {
-                expect(editModeRenderer.open).toHaveBeenCalled();
+            it('template is rendered', function () {
+                isolateScope.$digest();
+
+                expect(element.text()).toEqual('$12.70');
             });
 
-            describe('with editModeRenderer scope', function () {
-                var rendererScope;
+            describe('on click', function () {
+                var readerDeferred;
 
-                beforeEach(function () {
-                    rendererScope = isolateScope.rendererScope;
-                });
+                beforeEach(inject(function ($q) {
+                    readerDeferred = $q.defer();
+                    configReader.andReturn(readerDeferred.promise);
 
-                it('price is recalculated', function () {
-                    expect(rendererScope.price).toEqual(10.5);
-                });
+                    editMode.bindEvent.mostRecentCall.args[0].onClick();
+                }));
 
-                it('get current currency symbol', function () {
-                    expect(rendererScope.currencySymbol).toEqual('$');
-                });
+                describe('with editModeRenderer scope', function () {
+                    var rendererScope;
 
-                describe('get config value to know if price is vat included or excluded', function () {
-                    it('reader is called', function () {
-                        expect(configReader).toHaveBeenCalledWith({
-                            $scope: rendererScope,
-                            key: 'shop.vat.on.price.interpreted.as'
-                        });
+                    beforeEach(function () {
+                        rendererScope = isolateScope.rendererScope;
                     });
 
                     describe('when vat is included', function () {
@@ -2136,109 +2302,22 @@ describe('catalog', function () {
                         it('value is on scope', function () {
                             expect(rendererScope.vatOnPrice).toBeTruthy();
                         });
-                    });
 
-                    describe('defaults to excluded', function () {
-                        beforeEach(function () {
-                            readerDeferred.resolve({data: {value: 'excluded'}});
-                            rendererScope.$digest();
+                        it('displayed price is VAT incl', function () {
+                            expect(rendererScope.price).toEqual(12.7);
                         });
 
-                        it('value is on scope', function () {
-                            expect(rendererScope.vatOnPrice).toBeFalsy();
-                        });
-                    });
+                        describe('switch to vat excluded', function () {
+                            beforeEach(function () {
+                                rendererScope.vatOnPrice = false;
+                                rendererScope.toggleVatOnPrice();
+                            });
 
-                    describe('defaults to excluded', function () {
-                        beforeEach(function () {
-                            readerDeferred.resolve({data: {value: ''}});
-                            rendererScope.$digest();
-                        });
-
-                        it('value is on scope', function () {
-                            expect(rendererScope.vatOnPrice).toBeFalsy();
-                        });
-                    });
-
-                    describe('defaults to excluded', function () {
-                        beforeEach(function () {
-                            readerDeferred.reject();
-                            rendererScope.$digest();
-                        });
-
-                        it('value is on scope', function () {
-                            expect(rendererScope.vatOnPrice).toBeFalsy();
-                        });
-                    });
-                });
-
-                describe('on switch vat on price interpreter', function () {
-                    describe('switch to vat included', function () {
-                        beforeEach(function () {
-                            rendererScope.vatOnPrice = true;
-                            rendererScope.toggleVatOnPrice();
-                        });
-
-                        it('writer is called', function () {
-                            expect(configWriter).toHaveBeenCalledWith({
-                                $scope: rendererScope,
-                                key: 'shop.vat.on.price.interpreted.as',
-                                value: 'included'
+                            it('displayed price is VAT excl', function () {
+                                expect(rendererScope.price).toEqual(10.5);
                             });
                         });
-
                     });
-                });
-
-                describe('on update with valid form', function () {
-                    beforeEach(function () {
-                        rendererScope.catalogItemPriceForm = {
-                            catalogItemPrice: {
-                                $invalid: false
-                            },
-                            $valid: true
-                        };
-                        rendererScope.price = 20.6567;
-                        rendererScope.update();
-                    });
-
-                    it('invoke writer', function () {
-                        expect(writer.data()).toEqual({
-                            price: 2066,
-                            context: 'update'
-                        });
-                    });
-
-                    it('on success', function () {
-                        writer.success();
-
-                        expect(editModeRenderer.close).toHaveBeenCalled();
-                    });
-                });
-
-                describe('on update with invalid form', function () {
-                    beforeEach(function () {
-                        rendererScope.catalogItemPriceForm = {
-                            catalogItemPrice: {
-                                $invalid: true
-                            },
-                            $valid: false
-                        };
-
-                        rendererScope.update();
-                    });
-
-                    it('put violation on scope', function () {
-                        expect(rendererScope.violations).toEqual({
-                            price: ['invalid']
-                        });
-                    });
-                });
-
-                it('on close', function () {
-                    rendererScope.close();
-
-                    expect(editModeRenderer.close).toHaveBeenCalled();
                 });
             });
         });
