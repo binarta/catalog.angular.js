@@ -7,7 +7,7 @@
                         <a ng-href="#!{{::localePrefix}}/browse{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].path}}"
                            i18n code="navigation.label.{{::catalogCtrl.head}}" read-only
                            ng-if="::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].name == catalogCtrl.head">
-                            <i class="fa fa-angle-left fa-fw"></i> {{::var}}
+                            <i class="fa fa-angle-left fa-fw"></i> {{var}}
                         </a>
                         <a class="inline" ng-href="#!{{::localePrefix}}/browse{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].path}}"
                            i18n code="{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].path}}"
@@ -22,11 +22,11 @@
                         <a ng-href="#!{{::localePrefix}}/browse{{::breadcrumb.path}}"
                            i18n code="navigation.label.{{::catalogCtrl.head}}" read-only
                            ng-if="::!$last && breadcrumb.name == catalogCtrl.head">
-                            {{::var}}
+                            {{var}}
                         </a>
                         <span ng-if="::$last && breadcrumb.name == catalogCtrl.head"
                               i18n code="navigation.label.{{::catalogCtrl.head}}" read-only>
-                            {{::var}}
+                            {{var}}
                         </span>
                         <a class="inline" ng-href="#!{{::localePrefix}}/browse{{::breadcrumb.path}}"
                                   i18n code="{{::breadcrumb.path}}"
@@ -46,7 +46,7 @@
                 <ol class="breadcrumb">
                     <li class="inline" i18n code="navigation.label.{{::searchCtrl.filters.type}}" read-only>
                         <a ng-href="#!{{::localePrefix}}/browse/{{::searchCtrl.filters.type}}/">
-                            <i class="fa fa-angle-left fa-fw"></i> {{::var}}
+                            <i class="fa fa-angle-left fa-fw"></i> {{var}}
                         </a>
                     </li>
                 </ol>
