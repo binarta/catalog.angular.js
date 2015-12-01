@@ -713,7 +713,8 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
         scope: {
             item: '=catalogItemPrice'
         },
-        template: '<span ng-if="item.price || editing">{{(item.unitPrice || item.price) / 100 || 0 | currency}}</span>',
+        template: '<span ng-if="item.price">{{(item.unitPrice || item.price) / 100 || 0 | currency}}</span>' +
+        '<span ng-if="!item.price && editing" i18n code="catalog.item.price.add.label" read-only ng-bind="::var"></span>',
         link: function (scope, element) {
             ngRegisterTopicHandler(scope, 'edit.mode', function (editMode) {
                 scope.editing = editMode;
