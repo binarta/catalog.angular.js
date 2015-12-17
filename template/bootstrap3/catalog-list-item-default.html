@@ -14,7 +14,7 @@
                 </h3>
             </a>
 
-            <p class="item-lead" i18n code="{{::item.id}}.body" editor="full" read-only ng-bind-html="::var|words:8"></p>
+            <p class="item-lead" i18n code="{{::item.id}}.body" editor="full" read-only ng-bind-html="::var|binTruncate"></p>
 
             <span class="item-price" ng-if="::(item.unitPrice || item.price) > 0">
                 {{::(item.unitPrice || item.price) / 100 || 0 | currency}}
