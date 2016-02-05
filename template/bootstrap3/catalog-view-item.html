@@ -43,44 +43,24 @@
                         <div class="item-price" catalog-item-price="catalogCtrl.item"></div>
 
                         <% if(shop) { %>
-
-                        <div ng-controller="AddToBasketController" ng-if="catalogCtrl.item.price">
-                            <button class="btn btn-success" ng-disabled="working"
-                                    ng-click="submit(catalogCtrl.item.id, catalogCtrl.item.price)"
-                                    i18n code="catalog.item.add.to.basket.button" read-only>
-                                <i class="fa fa-shopping-cart fa-fw"></i> {{::var}}
-                            </button>
-                        </div>
-                        <div ng-if="!catalogCtrl.item.price || catalogCtrl.item.price == 0">
-                            <div ng-if="::catalogCtrl.head == 'services'">
-                                <a ng-href="#!{{::localePrefix}}/contact?subject=Subscribe for {{itemName}}"
-                                   class="btn btn-success" i18n code="catalog.item.subscribe.button" read-only>
+                            <div ng-controller="AddToBasketController" ng-if="catalogCtrl.item.price">
+                                <button class="btn btn-success" ng-disabled="working"
+                                        ng-click="submit(catalogCtrl.item.id, catalogCtrl.item.price)"
+                                        i18n code="catalog.item.add.to.basket.button" read-only>
+                                    <i class="fa fa-shopping-cart fa-fw"></i> {{::var}}
+                                </button>
+                            </div>
+                            <div ng-if="!catalogCtrl.item.price || catalogCtrl.item.price == 0">
+                                <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{itemName}}"
+                                   class="btn btn-success" i18n code="catalog.item.more.info.button" read-only>
                                     {{::var}}
                                 </a>
                             </div>
-                            <div ng-if="::catalogCtrl.head != 'services'">
-                                <a ng-href="#!{{::localePrefix}}/contact?subject=Pre-order for {{itemName}}"
-                                   class="btn btn-success" i18n code="catalog.item.preorder.button" read-only>
-                                    {{::var}}
-                                </a>
-                            </div>
-                        </div>
-
                         <% } else { %>
-
-                        <div ng-if="::catalogCtrl.head == 'services'">
-                            <a ng-href="#!{{::localePrefix}}/contact?subject=Subscribe for {{itemName}}"
-                               class="btn btn-success" i18n code="catalog.item.subscribe.button" read-only>
+                            <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{itemName}}"
+                               class="btn btn-success" i18n code="catalog.item.more.info.button" read-only>
                                 {{::var}}
                             </a>
-                        </div>
-                        <div ng-if="::catalogCtrl.head != 'services'">
-                            <a ng-href="#!{{::localePrefix}}/contact?subject=Pre-order for {{itemName}}"
-                               class="btn btn-success" i18n code="catalog.item.preorder.button" read-only>
-                                {{::var}}
-                            </a>
-                        </div>
-
                         <% } %>
 
                         <p class="item-body" i18n code="{{::catalogCtrl.path}}.body" editor="full" ng-bind-html="var|trust"></p>
