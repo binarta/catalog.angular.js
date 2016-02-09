@@ -78,51 +78,6 @@
                 </div>
 
                 <div class="col-xs-12 col-sm-8 col-md-9">
-                    <div checkpoint-permission-for="catalog.item.add">
-                        <div ng-if="catalogCtrl.parent != '/' && permitted">
-                            <div class="row">
-                                <div class="col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
-                                    <div class="list-group">
-                                        <div class="list-group-item">
-                                            <form ng-controller="AddToCatalogController"
-                                                  ng-init="init({
-                                                       partition: catalogCtrl.path,
-                                                       type: catalogCtrl.head,
-                                                       redirectToView: true,
-                                                       editMode: true
-                                                   })"
-                                                  ng-submit="submit()"
-                                                  name="catalogItemAddForm">
-
-                                                <div class="bin-action-visual">
-                                                    <i class="fa fa-plus"></i>
-                                                </div>
-
-                                                <div class="input-group" ng-class="{'has-error': violations['defaultName']}">
-                                                    <input type="text" class="form-control" name="defaultName" ng-model="$parent.item.defaultName"
-                                                           i18n code="catalog.{{::catalogCtrl.head}}.add.placeholder" default="Add item" read-only
-                                                           placeholder="{{::var}}" required ng-disabled="working">
-
-                                                    <div class="input-group-btn">
-                                                        <button class="btn btn-primary" type="submit" ng-disabled="working">
-                                                            <i class="fa fa-plus"></i>
-                                                        </button>
-                                                    </div>
-
-                                                </div>
-                                                <div class="help-block text-danger" ng-repeat="v in violations['defaultName']"
-                                                     i18n code="catalog.item.defaultName.{{::v}}" default="{{::v}}">
-                                                    {{::var}}
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr>
-                        </div>
-                    </div>
-
                     <div ng-if="listCtrl.partitions.length > 0 && catalogCtrl.parent == '/'"
                          ng-controller="BinartaSearchController as searchCtrl" ng-init="searchCtrl.init({
                             entity:'catalog-item',
@@ -161,6 +116,43 @@
                             noMoreResultsNotification: false,
                             subset:{count: 12}
                         })">
+                        <div checkpoint-permission-for="catalog.item.add">
+                            <div class="row" ng-if="permitted">
+                                <div class="col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
+                                    <div class="list-group">
+                                        <div class="list-group-item">
+                                            <form ng-controller="AddToCatalogController"
+                                                  ng-init="init({
+                                                   partition: catalogCtrl.path,
+                                                   type: catalogCtrl.head,
+                                                   redirectToView: true,
+                                                   editMode: true
+                                               })"
+                                                  ng-submit="submit()"
+                                                  name="catalogItemAddForm">
+                                                <div class="input-group" ng-class="{'has-error': violations['defaultName']}">
+                                                    <input type="text" class="form-control" name="defaultName" ng-model="$parent.item.defaultName"
+                                                           i18n code="catalog.{{::catalogCtrl.head}}.add.placeholder" default="Add item" read-only
+                                                           placeholder="{{::var}}" required ng-disabled="working">
+
+                                                    <div class="input-group-btn">
+                                                        <button class="btn btn-primary" type="submit" ng-disabled="working">
+                                                            <i class="fa fa-plus"></i>
+                                                        </button>
+                                                    </div>
+
+                                                </div>
+                                                <div class="help-block text-danger" ng-repeat="v in violations['defaultName']"
+                                                     i18n code="catalog.item.defaultName.{{::v}}" default="{{::v}}">
+                                                    {{::var}}
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <ng-include src="'catalog-list-rows.html'"></ng-include>
                         <ng-include src="'search-for-more.html'"></ng-include>
                     </div>
