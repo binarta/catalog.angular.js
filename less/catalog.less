@@ -10,13 +10,6 @@
     margin: 50px 0;
   }
 
-  .clerk-actions-wrapper {
-    position: relative;
-    .clerk-actions {
-      position: absolute;
-    }
-  }
-
   .bin-catalog-items {
     overflow: hidden;
 
@@ -65,77 +58,6 @@
   }
 
   @media (max-width: 767px) {
-    .clerk-actions-wrapper {
-      @clerk-actions-width: 100px;
-
-      transition: transform 0.35s ease;
-      & > *:not(.clerk-actions) {
-        transition: opacity 0.35s ease;
-      }
-
-      .clerk-actions {
-        top: 4px;
-        right: -10px;
-        transform: translateX(@clerk-actions-width);
-        z-index: 1;
-
-        .clerk-actions-toggle {
-          display: inline-block;
-          min-height: 100%;
-          span {
-            padding: 5px 10px;
-          }
-        }
-
-        .cross {
-          display: none;
-        }
-
-        .arrow {
-          display: inline-block;
-          animation-name: swipe;
-          animation-duration: 0.7s;
-          animation-timing-function: ease;
-          animation-iteration-count: infinite;
-
-          @keyframes swipe {
-            from {
-              transform: translateX(0);
-            }
-
-            50% {
-              transform: translateX(3px);
-            }
-
-            100% {
-              transform: translateX(0);
-            }
-          }
-        }
-        .actions {
-          width: @clerk-actions-width;
-          float: right;
-          text-align: right;
-        }
-      }
-
-      &.open {
-        transform: translateX(-(@clerk-actions-width + 15px));
-
-        .cross {
-          display: inline-block;
-        }
-
-        .arrow {
-          display: none;
-        }
-
-        & > *:not(.clerk-actions) {
-          opacity: 0.3;
-        }
-      }
-    }
-
     .bin-catalog-items {
       .bin-catalog-item {
         .item-image {
@@ -160,16 +82,6 @@
 
   @media (min-width: 768px) {
     padding-bottom: 50px;
-
-    .clerk-actions-wrapper {
-      .clerk-actions {
-        top: 0;
-        right: 0;
-        .clerk-actions-toggle {
-          display: none;
-        }
-      }
-    }
 
     .bin-catalog-items {
       .bin-catalog-item {
