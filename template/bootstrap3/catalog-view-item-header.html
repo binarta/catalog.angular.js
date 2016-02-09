@@ -3,9 +3,23 @@
         <div class="row">
             <div class="col-xs-12">
                 <div class="page-header">
-                    <h1 class="bin-catalog-title inline" i18n code="{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].path}}"
-                        default="{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].name}}">
-                        {{var}}
+                    <h1 class="bin-catalog-title">
+                        <span class="inline" i18n code="{{::catalogCtrl.path}}" ng-bind="var"></span>
+
+                        <span checkpoint-permission-for="catalog.item.remove">
+                            <span ng-controller="RemoveItemFromCatalogController"
+                                  ng-if="permitted"
+                                  i18n code="catalog.remove.item.confirm" read-only>
+                                <button type="button" class="btn btn-danger btn-sm"
+                                        ng-click-confirm="submit(item.id)"
+                                        confirm-message="{{::var}}"
+                                        ng-disabled="working"
+                                        ng-if="::var">
+                                    <i class="fa fa-times fa-fw"></i>
+                                    <span i18n code="catalog.remove.item.button" read-only ng-bind="::var"></span>
+                                </button>
+                            </span>
+                        </span>
                     </h1>
                 </div>
             </div>

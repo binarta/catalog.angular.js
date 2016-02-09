@@ -1,70 +1,37 @@
 <div class="bin-catalog">
     <div class="container">
-        <div class="row bin-catalog-item">
-            <div class="col-xs-12 col-sm-4 col-md-3">
-                <div class="list-group">
-                    <a class="list-group-item" ng-href="#!{{::localePrefix}}/browse{{::catalogCtrl.parent}}">
-                        <i class="fa fa-folder-o fa-fw"></i> ..
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-xs-12 col-sm-8 col-md-9">
-                <div class="row">
-                    <div class="col-xs-12 col-sm-8 col-sm-offset-4">
-                        <h2 class="item-title inline" i18n code="{{::catalogCtrl.path}}" var="itemName">
-                            {{var}}
-                        </h2>
-                        <div class="pull-right" checkpoint-permission-for="catalog.item.remove">
-                            <form ng-controller="RemoveItemFromCatalogController"
-                                  ng-if="permitted"
-                                  i18n code="catalog.remove.item.confirm" read-only>
-                                <button type="button" class="btn btn-danger btn-sm"
-                                        ng-click-confirm="submit(item.id)"
-                                        confirm-message="{{::var}}"
-                                        ng-disabled="working"
-                                        ng-if="::var">
-                                    <i class="fa fa-times fa-fw"></i>
-                                    <span i18n code="catalog.remove.item.button" read-only>
-                                        {{::var}}
-                                    </span>
-                                </button>
-                            </form>
-                        </div>
+        <div class="bin-catalog-item">
+            <div class="row">
+                <div class="col-xs-12 col-sm-4">
+                    <div class="item-image">
+                        <img bin-image="carousels{{::catalogCtrl.item.id}}/0.img">
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-xs-12 col-sm-4">
-                        <div class="item-image">
-                            <img bin-image="carousels{{::catalogCtrl.item.id}}/0.img">
-                        </div>
-                    </div>
-                    <div class="col-xs-12 col-sm-8">
-                        <div class="item-price" catalog-item-price="catalogCtrl.item"></div>
+                <div class="col-xs-12 col-sm-8">
+                    <p class="item-body" i18n code="{{::catalogCtrl.path}}.body" editor="full" ng-bind-html="var|trust"></p>
 
-                        <% if(shop) { %>
-                            <div ng-controller="AddToBasketController" ng-if="catalogCtrl.item.price">
-                                <button class="btn btn-success" ng-disabled="working"
-                                        ng-click="submit(catalogCtrl.item.id, catalogCtrl.item.price)"
-                                        i18n code="catalog.item.add.to.basket.button" read-only>
-                                    <i class="fa fa-shopping-cart fa-fw"></i> {{::var}}
-                                </button>
-                            </div>
-                            <div ng-if="!catalogCtrl.item.price || catalogCtrl.item.price == 0">
-                                <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{itemName}}"
-                                   class="btn btn-success" i18n code="catalog.item.more.info.button" read-only>
-                                    {{::var}}
-                                </a>
-                            </div>
-                        <% } else { %>
-                            <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{itemName}}"
-                               class="btn btn-success" i18n code="catalog.item.more.info.button" read-only>
-                                {{::var}}
+                    <div class="item-price" catalog-item-price="catalogCtrl.item"></div>
+
+                    <% if(shop) { %>
+                        <div ng-controller="AddToBasketController" ng-if="catalogCtrl.item.price">
+                            <button class="btn btn-success" ng-disabled="working"
+                                    ng-click="submit(catalogCtrl.item.id, catalogCtrl.item.price)"
+                                    i18n code="catalog.item.add.to.basket.button" read-only>
+                                <i class="fa fa-shopping-cart fa-fw"></i> {{::var}}
+                            </button>
+                        </div>
+                        <div ng-if="!catalogCtrl.item.price || catalogCtrl.item.price == 0">
+                            <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{var}}"
+                               class="btn btn-success" i18n code="{{::catalogCtrl.path}}" read-only>
+                                <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
                             </a>
-                        <% } %>
-
-                        <p class="item-body" i18n code="{{::catalogCtrl.path}}.body" editor="full" ng-bind-html="var|trust"></p>
-                    </div>
+                        </div>
+                    <% } else { %>
+                        <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{var}}"
+                           class="btn btn-success" i18n code="{{::catalogCtrl.path}}" read-only>
+                            <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
+                        </a>
+                    <% } %>
                 </div>
             </div>
         </div>
