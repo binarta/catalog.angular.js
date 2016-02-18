@@ -4,7 +4,14 @@
             <div class="row">
                 <div class="col-xs-12 col-sm-4">
                     <div class="item-image">
-                        <img bin-image="carousels{{::catalogCtrl.item.id}}/0.img">
+                        <div ng-controller="binImagesController as imagesCtrl"
+                             ng-init="imagesCtrl.init({partition: catalogCtrl.item.id + '/'})">
+                            <carousel>
+                                <slide ng-repeat="image in imagesCtrl.images track by image.id">
+                                    <img bin-image="{{::image.path}}" ng-init="onEdit = imagesCtrl.open">
+                                </slide>
+                            </carousel>
+                        </div>
                     </div>
                 </div>
                 <div class="col-xs-12 col-sm-8">
