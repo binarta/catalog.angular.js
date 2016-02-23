@@ -27,10 +27,12 @@
                             </a>
                         </div>
                     <% } else { %>
-                        <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{var}}"
-                           class="btn btn-success" i18n code="{{::catalogCtrl.path}}" read-only>
-                            <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
-                        </a>
+                        <div>
+                            <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{var}}"
+                               class="btn btn-success" i18n code="{{::catalogCtrl.path}}" read-only>
+                                <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
+                            </a>
+                        </div>
                     <% } %>
                 </div>
             </div>
