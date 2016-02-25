@@ -20,14 +20,14 @@
                                 <i class="fa fa-shopping-cart fa-fw"></i> {{::var}}
                             </button>
                         </div>
-                        <div ng-if="!catalogCtrl.item.price || catalogCtrl.item.price == 0">
+                        <div ng-if="application.pages.contact.active && (!catalogCtrl.item.price || catalogCtrl.item.price == 0)">
                             <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{var}}"
                                class="btn btn-success" i18n code="{{::catalogCtrl.path}}" read-only>
                                 <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
                             </a>
                         </div>
                     <% } else { %>
-                        <div>
+                        <div ng-if="application.pages.contact.active">
                             <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{var}}"
                                class="btn btn-success" i18n code="{{::catalogCtrl.path}}" read-only>
                                 <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
