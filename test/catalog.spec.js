@@ -883,6 +883,32 @@ describe('catalog', function () {
                 });
             });
 
+            describe('init for noredirect with partition and custom locale', function () {
+                beforeEach(function () {
+                    scope.init({partition: 'partition', type: 'type', locale: 'locale'});
+                });
+
+                describe('on submit', function () {
+                    beforeEach(function () {
+                        scope.item = {
+                            type: 'type',
+                            name: 'name'
+                        };
+                        scope.submit();
+                    });
+
+                    it('perform rest call', function () {
+                        expect(ctx.params.data).toEqual({
+                            type: 'type',
+                            name: 'name',
+                            namespace: 'namespace',
+                            partition: 'partition',
+                            locale: 'locale'
+                        });
+                    });
+                });
+            });
+
             describe('with item types loaded', function () {
                 beforeEach(function () {
                     itemTypesLoaded(payload);

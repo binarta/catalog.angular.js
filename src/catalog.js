@@ -378,6 +378,7 @@ function AddToCatalogController(config, $scope, localeResolver, $routeParams, to
         if (params.partition)  $scope.partition = params.partition;
         if (params.type) preselectedType = params.type;
         if (params.redirectTo) $scope.redirectTo = params.redirectTo;
+        if (params.locale) $scope.locale = params.locale;
     };
 
     $scope.templateUri = function () {
@@ -403,7 +404,7 @@ function AddToCatalogController(config, $scope, localeResolver, $routeParams, to
         if (!$scope.violations) {
             $scope.item.namespace = config.namespace;
             $scope.item.partition = $scope.partition;
-            $scope.item.locale = localeResolver();
+            $scope.item.locale = $scope.locale || localeResolver();
             restServiceHandler({
                 scope: $scope,
                 params: {
