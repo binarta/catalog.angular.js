@@ -358,7 +358,7 @@ function FindAllCatalogItemTypesFactory(config, $http) {
 function AddToCatalogController(config, $scope, localeResolver, $routeParams, topicRegistry, topicMessageDispatcher, findAllCatalogItemTypes, restServiceHandler, $location, i18nLocation, editMode) {
     var self = this;
 
-    var preselectedType;
+    var preselectedType, locale;
     var reset = function () {
         $scope.partition = $scope.partition || $routeParams.partition || '';
         $scope.item = {};
@@ -378,7 +378,7 @@ function AddToCatalogController(config, $scope, localeResolver, $routeParams, to
         if (params.partition)  $scope.partition = params.partition;
         if (params.type) preselectedType = params.type;
         if (params.redirectTo) $scope.redirectTo = params.redirectTo;
-        if (params.locale) $scope.locale = params.locale;
+        if (params.locale) locale = params.locale;
     };
 
     $scope.templateUri = function () {
@@ -404,7 +404,7 @@ function AddToCatalogController(config, $scope, localeResolver, $routeParams, to
         if (!$scope.violations) {
             $scope.item.namespace = config.namespace;
             $scope.item.partition = $scope.partition;
-            $scope.item.locale = $scope.locale || localeResolver();
+            $scope.item.locale = locale || localeResolver();
             restServiceHandler({
                 scope: $scope,
                 params: {
