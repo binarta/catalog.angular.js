@@ -575,7 +575,7 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
                 withCredentials: true
             },
             success: function () {
-                topicMessageDispatcher.fire('system.success', {
+                if (self.config.successNotification != false) topicMessageDispatcher.fire('system.success', {
                     code: 'catalog.item.removed',
                     default: 'Item removed!'
                 });

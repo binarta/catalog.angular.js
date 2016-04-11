@@ -1464,6 +1464,12 @@ describe('catalog', function () {
                 expect(location.path()).toEqual('/path/');
             });
 
+            it('success with no notification', function () {
+                scope.init({successNotification: false});
+                triggerSuccess();
+                expect(dispatcher['system.success']).toBeUndefined();
+            });
+
             it('when initialised with on success handler execute it after item removal', function () {
                 var executed = false;
                 scope.init({
