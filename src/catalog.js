@@ -393,6 +393,7 @@ function AddToCatalogController(config, $scope, localeResolver, $routeParams, to
             if ($scope.redirectTo) $location.path($scope.redirectTo);
             if ($scope.config && $scope.config.redirectToView) i18nLocation.path('/view' + item.id);
             if ($scope.config && $scope.config.editMode) editMode.enable();
+            if (isSuccessHandlerPresent()) executeSuccessHandler(item);
         };
 
         $scope.violations = undefined;
@@ -417,6 +418,14 @@ function AddToCatalogController(config, $scope, localeResolver, $routeParams, to
             });
         }
     };
+
+    function isSuccessHandlerPresent() {
+        return $scope.config && $scope.config.success;
+    }
+
+    function executeSuccessHandler(item) {
+        $scope.config.success(item)
+    }
 
     topicRegistry.subscribe('app.start', function () {
         findAllCatalogItemTypes(function (types) {

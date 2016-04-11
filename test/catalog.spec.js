@@ -883,9 +883,15 @@ describe('catalog', function () {
                 });
             });
 
-            describe('init for noredirect with partition and custom locale', function () {
+            describe('init for noredirect with partition, custom locale and success handler', function () {
+                var executed = false;
+                var passedItem;
+
                 beforeEach(function () {
-                    scope.init({partition: 'partition', type: 'type', locale: 'locale'});
+                    scope.init({partition: 'partition', type: 'type', locale: 'locale', success: function (item) {
+                        executed = true;
+                        passedItem = item;
+                    }});
                 });
 
                 describe('on submit', function () {
@@ -906,6 +912,25 @@ describe('catalog', function () {
                             locale: 'locale'
                         });
                     });
+
+                    describe('on success', function () {
+                        var item = {
+                            id: 'itemId'
+                        };
+
+                        beforeEach(function () {
+                            ctx.success(item);
+                        });
+
+                        it('success handler is executed', function () {
+                            expect(executed).toEqual(true);
+                        });
+
+                        it('item is passed to success handler', function () {
+                            expect(passedItem).toEqual(item);
+                        });
+                    });
+
                 });
             });
 
