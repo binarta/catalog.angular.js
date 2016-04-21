@@ -8,9 +8,11 @@
                     </div>
                 </div>
                 <div class="col-xs-12 col-sm-8">
-                    <p class="item-body" i18n code="{{::catalogCtrl.path}}.body" editor="full" ng-bind-html="var|trust"></p>
+                    <div class="item-body" i18n code="{{::catalogCtrl.path}}.body" editor="full" ng-show="var || editing">
+                        <p ng-bind-html="var|trust"></p>
+                    </div>
 
-                    <div class="item-price" catalog-item-price="catalogCtrl.item"></div>
+                    <div class="item-price" catalog-item-price="catalogCtrl.item" ng-show="item.price || editing"></div>
 
                     <% if(shop) { %>
                         <div ng-controller="AddToBasketController" ng-if="catalogCtrl.item.price">
