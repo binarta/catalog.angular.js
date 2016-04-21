@@ -18,7 +18,7 @@
                             </span>
                         </a>
 
-                        <div class="list-group-item" ng-if="permitted">
+                        <div class="list-group-item" ng-if="permitted && editing">
                             <form ng-controller="AddPartitionToCatalogController"
                                   ng-init="init(catalogCtrl.path)"
                                   ng-submit="submit()">
@@ -46,7 +46,7 @@
 
                 <div class="col-xs-12" ng-if="listCtrl.partitions.length == 0 && catalogCtrl.parent == '/'">
                     <div checkpoint-permission-for="catalog.partition.add">
-                        <div ng-if="permitted">
+                        <div ng-if="permitted && editing">
                             <h3 class="bin-empty-title" i18n code="catalog.add.first.partition.message" read-only ng-bind="::var"></h3>
                             <div class="row">
                                 <div class="col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
@@ -116,8 +116,13 @@
                             noMoreResultsNotification: false,
                             subset:{count: 12}
                         })">
+                        <div i18n code="{{::catalogCtrl.path}}.body" editor="full-media" ng-show="var || editing">
+                            <p ng-bind-html="var|trust"></p>
+                            <hr>
+                        </div>
+
                         <div checkpoint-permission-for="catalog.item.add">
-                            <div class="row" ng-if="permitted">
+                            <div class="row" ng-if="permitted && editing">
                                 <div class="col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
                                     <div class="list-group">
                                         <div class="list-group-item">

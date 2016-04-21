@@ -8,7 +8,7 @@
 
                         <span checkpoint-permission-for="catalog.partition.remove">
                             <span ng-controller="RemoveCatalogPartitionController" ng-init="init(catalogCtrl.path)"
-                                  ng-if="permitted" i18n code="catalog.remove.partition.confirm" read-only>
+                                  ng-if="permitted && editing" i18n code="catalog.remove.partition.confirm" read-only>
                                 <button type="button" class="btn btn-danger btn-sm"
                                         ng-click-confirm="submit('/browse'+parent)"
                                         confirm-message="{{::var}}"

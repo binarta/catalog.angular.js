@@ -8,7 +8,7 @@
 
                         <span checkpoint-permission-for="catalog.item.remove">
                             <span ng-controller="RemoveItemFromCatalogController"
-                                  ng-if="permitted"
+                                  ng-if="permitted && editing"
                                   i18n code="catalog.remove.item.confirm" read-only>
                                 <button type="button" class="btn btn-danger btn-sm"
                                         ng-click-confirm="submit(item.id)"
