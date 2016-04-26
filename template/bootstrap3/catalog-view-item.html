@@ -4,12 +4,12 @@
             <div class="row">
                 <div class="col-xs-12 col-sm-4">
                     <div class="item-image">
-                        <img bin-image="carousels{{::catalogCtrl.item.id}}/0.img">
+                        <img bin-image="carousels{{::catalogCtrl.item.id}}/0.img" seo-image>
                     </div>
                 </div>
                 <div class="col-xs-12 col-sm-8">
                     <div class="item-body" i18n code="{{::catalogCtrl.path}}.body" editor="full" ng-show="var || editing">
-                        <p ng-bind-html="var|trust"></p>
+                        <p ng-bind-html="var|trust" seo-description></p>
                     </div>
 
                     <div class="item-price" catalog-item-price="catalogCtrl.item" ng-show="item.price || editing"></div>
