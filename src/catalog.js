@@ -1,6 +1,7 @@
 angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint'])
     .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
+    .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])
     .factory('findAllCatalogItemTypes', ['config', '$http', FindAllCatalogItemTypesFactory])
     .factory('findCatalogPartitions', ['config', '$http', FindCatalogPartitionsFactory])
     .factory('findCatalogItemById', ['config', 'restServiceHandler', FindCatalogItemByIdFactory])
@@ -8,7 +9,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
-    .controller('AddToCatalogController', ['config', '$scope', 'localeResolver', '$location', 'topicRegistry', 'topicMessageDispatcher', 'findAllCatalogItemTypes', 'scopedRestServiceHandler', '$location', 'i18nLocation', 'editMode', AddToCatalogController])
+    .controller('AddToCatalogController', ['$scope', '$routeParams', 'topicRegistry', 'findAllCatalogItemTypes', 'addCatalogItem', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
     .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', '$routeParams', RemoveItemFromCatalogController])
     .controller('QueryCatalogController', ['$scope', 'ngRegisterTopicHandler', 'findCatalogItemsByPartition', 'findCatalogItemById', 'topicMessageDispatcher', '$q', QueryCatalogController])
@@ -355,7 +356,30 @@ function FindAllCatalogItemTypesFactory(config, $http) {
     }
 }
 
-function AddToCatalogController(config, $scope, localeResolver, $routeParams, topicRegistry, topicMessageDispatcher, findAllCatalogItemTypes, restServiceHandler, $location, i18nLocation, editMode) {
+function AddCatalogItemFactory($location, config, localeResolver, restServiceHandler, topicMessageDispatcher, i18nLocation, editMode) {
+    return function (args) {
+        args.item.namespace = config.namespace;
+        if (!args.item.locale) args.item.locale = localeResolver();
+
+        return restServiceHandler({
+            params: {
+                method: 'PUT',
+                url: (config.baseUri || '') + 'api/entity/catalog-item',
+                data: args.item,
+                withCredentials: true
+            },
+            success: function (item) {
+                topicMessageDispatcher.fire('catalog.item.added', item.id);
+                if (args.success) args.success(item);
+                if (args.redirectTo) $location.path(args.redirectTo);
+                if (args.redirectToView) i18nLocation.path('/view' + item.id);
+                if (args.editMode) editMode.enable();
+            }
+        });
+    }
+}
+
+function AddToCatalogController($scope, $routeParams, topicRegistry, findAllCatalogItemTypes, addCatalogItem) {
     var self = this;
 
     var preselectedType, locale;
@@ -388,11 +412,7 @@ function AddToCatalogController(config, $scope, localeResolver, $routeParams, to
     $scope.submit = function () {
         var onSuccess = function (item) {
             if ($scope.success) $scope.success(item);
-            topicMessageDispatcher.fire('catalog.item.added', item.id);
             reset();
-            if ($scope.redirectTo) $location.path($scope.redirectTo);
-            if ($scope.config && $scope.config.redirectToView) i18nLocation.path('/view' + item.id);
-            if ($scope.config && $scope.config.editMode) editMode.enable();
             if (isSuccessHandlerPresent()) executeSuccessHandler(item);
         };
 
@@ -403,18 +423,15 @@ function AddToCatalogController(config, $scope, localeResolver, $routeParams, to
             };
         }
         if (!$scope.violations) {
-            $scope.item.namespace = config.namespace;
             $scope.item.partition = $scope.partition;
-            $scope.item.locale = locale || localeResolver();
-            restServiceHandler({
-                scope: $scope,
-                params: {
-                    method: 'PUT',
-                    url: (config.baseUri || '') + 'api/entity/catalog-item',
-                    data: $scope.item,
-                    withCredentials: true
-                },
-                success: onSuccess
+            $scope.item.locale = locale;
+
+            addCatalogItem({
+                item: $scope.item,
+                success: onSuccess,
+                redirectTo: $scope.redirectTo,
+                redirectToView: $scope.config && $scope.config.redirectToView,
+                editMode: $scope.config && $scope.config.editMode
             });
         }
     };

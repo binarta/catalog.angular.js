@@ -2,8 +2,6 @@ describe('catalog', function () {
     var usecase, ctrl, scope, params, $httpBackend, dispatcher, location, payload, notifications;
     var onSuccess, receivedPayload, rest, i18n;
 
-    angular.module('toggle.edit.mode', []);
-
     beforeEach(module('catalog'));
     beforeEach(module('config'));
     beforeEach(module('notifications'));
@@ -728,28 +726,24 @@ describe('catalog', function () {
     });
 
     describe('AddToCatalogController', function () {
-        var ctx, createCtrl, itemTypesLoaded, subscriptions;
-        var editMode;
-        var handler = function (it) {
-            ctx = it;
-        };
+        var itemTypesLoaded, subscriptions, rest, config, topics, editMode;
         var findAllCatalogItemTypes = function (onSuccess) {
             itemTypesLoaded = onSuccess;
         };
 
-        beforeEach(inject(function ($controller, config, topicRegistryMock) {
-            editMode = jasmine.createSpyObj('editMode', ['enable']);
+        beforeEach(inject(function ($controller, _config_, topicRegistryMock, restServiceHandler, topicMessageDispatcherMock, _editMode_) {
+            config = _config_;
+            config.baseUri = '';
+            rest = restServiceHandler;
+            topics = topicMessageDispatcherMock;
+            editMode = _editMode_;
             subscriptions = topicRegistryMock;
             config.namespace = 'namespace';
-            ctx = {};
             itemTypesLoaded = undefined;
             ctrl = $controller(AddToCatalogController, {
                 $scope: scope,
                 $routeParams: params,
-                topicMessageDispatcher: dispatcher,
-                findAllCatalogItemTypes: findAllCatalogItemTypes,
-                restServiceHandler: handler,
-                editMode: editMode
+                findAllCatalogItemTypes: findAllCatalogItemTypes
             });
         }));
 
@@ -810,25 +804,25 @@ describe('catalog', function () {
                 describe('on submit', function () {
                     function assertSubmit() {
                         beforeEach(function () {
-                            scope.item = {
-                                type: 'type',
-                                name: 'name'
-                            };
                             scope.submit();
                         });
 
                         it('perform rest call', function () {
-                            expect(ctx.scope).toEqual(scope);
-                            expect(ctx.params.method).toEqual('PUT');
-                            expect(ctx.params.url).toEqual('api/entity/catalog-item');
-                            expect(ctx.params.data).toEqual({
-                                type: 'type',
-                                name: 'name',
-                                namespace: 'namespace',
-                                partition: 'partition',
-                                locale: 'l'
+                            expect(rest).toHaveBeenCalledWith({
+                                params: {
+                                    method: 'PUT',
+                                    url: config.baseUri + 'api/entity/catalog-item',
+                                    data: {
+                                        type: scope.item.type,
+                                        name: scope.item.name,
+                                        namespace: 'namespace',
+                                        partition: 'partition',
+                                        locale: 'l'
+                                    },
+                                    withCredentials: true
+                                },
+                                success: jasmine.any(Function)
                             });
-                            expect(ctx.params.withCredentials).toEqual(true);
                         });
                     }
 
@@ -853,33 +847,41 @@ describe('catalog', function () {
                         });
 
                         it('do not perform rest request', function () {
-                            expect(ctx.params).toBeUndefined();
+                            expect(rest).not.toHaveBeenCalled();
                         });
                     });
 
                     describe('without violation', function () {
+                        beforeEach(function () {
+                            scope.item = {
+                                type: 'type',
+                                name: 'name'
+                            };
+                        });
+
                         assertSubmit();
                     });
 
                     describe('with previous violation', function () {
                         beforeEach(function () {
                             scope.violations = {};
+                            scope.item = {
+                                type: 'type',
+                                name: 'name'
+                            };
                         });
 
                         assertSubmit();
                     });
-                });
 
-                describe('on submit with baseUri', function () {
-                    beforeEach(inject(function (config) {
-                        config.baseUri = 'http://host/context/';
-                        scope.item = {};
-                        scope.submit();
-                    }));
+                    describe('on submit with baseUri', function () {
+                        beforeEach(function () {
+                            config.baseUri = 'http://host/context/';
+                            scope.item = {};
+                        });
 
-                    it('perform rest call', inject(function (config) {
-                        expect(ctx.params.url).toEqual(config.baseUri + 'api/entity/catalog-item');
-                    }));
+                        assertSubmit();
+                    });
                 });
             });
 
@@ -904,7 +906,7 @@ describe('catalog', function () {
                     });
 
                     it('perform rest call', function () {
-                        expect(ctx.params.data).toEqual({
+                        expect(rest.calls[0].args[0].params.data).toEqual({
                             type: 'type',
                             name: 'name',
                             namespace: 'namespace',
@@ -919,7 +921,7 @@ describe('catalog', function () {
                         };
 
                         beforeEach(function () {
-                            ctx.success(item);
+                            rest.calls[0].args[0].success(item);
                         });
 
                         it('success handler is executed', function () {
@@ -945,15 +947,20 @@ describe('catalog', function () {
                 }
 
                 function assertPutRequestReceived() {
-                    expect(ctx.scope).toEqual(scope);
-                    expect(ctx.params.method).toEqual('PUT');
-                    expect(ctx.params.url).toEqual('api/entity/catalog-item');
-                    expect(ctx.params.data).toEqual({
-                        namespace: 'namespace',
-                        type: 'type',
-                        name: 'name',
-                        partition: '',
-                        locale: 'l'
+                    expect(rest).toHaveBeenCalledWith({
+                        params: {
+                            method: 'PUT',
+                            url: 'api/entity/catalog-item',
+                            data: {
+                                type: 'type',
+                                name: 'name',
+                                namespace: 'namespace',
+                                partition: '',
+                                locale: 'l'
+                            },
+                            withCredentials: true
+                        },
+                        success: jasmine.any(Function)
                     });
                 }
 
@@ -979,7 +986,7 @@ describe('catalog', function () {
                 it('on submit success reset form', function () {
                     withItemData();
                     scope.submit();
-                    ctx.success({});
+                    rest.calls[0].args[0].success({});
                     assertItemDataReset();
                 });
 
@@ -1021,7 +1028,7 @@ describe('catalog', function () {
                     it('on submit success without redirect', function () {
                         scope.noredirect();
                         scope.submit();
-                        ctx.success({id: 'item-id'});
+                        rest.calls[0].args[0].success({id: 'item-id'});
                         expect(location.path()).toEqual('/');
                     });
 
@@ -1030,9 +1037,9 @@ describe('catalog', function () {
                         scope.item.custom = 'custom-field';
 
                         scope.submit();
-                        ctx.success({id: 'item-id'});
+                        rest.calls[0].args[0].success({id: 'item-id'});
 
-                        expect(dispatcher['catalog.item.added']).toEqual('item-id');
+                        expect(topics['catalog.item.added']).toEqual('item-id');
                     });
 
                     it('on submit clear form dirty state', function () {
@@ -1043,7 +1050,7 @@ describe('catalog', function () {
                             }
                         };
                         scope.submit();
-                        ctx.success({id: 'item-id'});
+                        rest.calls[0].args[0].success({id: 'item-id'});
 
                         expect(pristine).toEqual(true);
                     });
@@ -1061,7 +1068,7 @@ describe('catalog', function () {
             it('on submit success redirect to path', function () {
                 scope.init(params);
                 scope.submit();
-                ctx.success({id: 'item-id'});
+                rest.calls[0].args[0].success({id: 'item-id'});
                 expect(location.path()).toEqual('/path');
             });
         });
@@ -1073,7 +1080,7 @@ describe('catalog', function () {
             itemTypesLoaded();
             scope.init(params);
             scope.submit();
-            ctx.success({id: '/item-id'});
+            rest.calls[0].args[0].success({id: '/item-id'});
             expect(location.path()).toEqual('/lang/view/item-id');
         });
 
@@ -1086,7 +1093,7 @@ describe('catalog', function () {
                 successWasCalled = item;
             };
             scope.submit();
-            ctx.success(item);
+            rest.calls[0].args[0].success(item);
             expect(successWasCalled).toEqual(item);
         });
 
@@ -1097,9 +1104,9 @@ describe('catalog', function () {
             itemTypesLoaded();
             scope.init(params);
             scope.submit();
-            ctx.success({id: '/item-id'});
+            rest.calls[0].args[0].success({id: '/item-id'});
             expect(editMode.enable).toHaveBeenCalled();
-        })
+        });
     });
 
     describe("ViewCatalogItemController", function () {
