@@ -1,5 +1,7 @@
 <div class="bin-catalog-item thumbnail clearfix">
-    <a class="item-image" ng-href="#!{{::localePrefix}}/view{{::item.id}}" bin-background-image="carousels{{::item.id}}/0.img"></a>
+    <a ng-href="#!{{::localePrefix}}/view{{::item.id}}">
+        <div class="item-image" bin-background-image="carousels{{::item.id}}/0.img"></div>
+    </a>
 
     <div class="caption">
         <a ng-href="#!{{::localePrefix}}/view{{::item.id}}">
