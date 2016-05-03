@@ -812,7 +812,7 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                     '<small ng-if="vatOnPrice == 1" i18n code="catalog.item.price.vat.incl" read-only ng-bind="::var"></small>' +
                     '<small ng-if="vatOnPrice == 0" i18n code="catalog.item.price.vat.excl" read-only ng-bind="::var"></small>' +
                     '<div class="input-group">' +
-                    '<input type="number" min="0" step="any" name="catalogItemPrice" id="catalogItemPrice" ng-model="price">' +
+                    '<input type="number" min="0" step="any" name="catalogItemPrice" id="catalogItemPrice" ng-model="price" autofocus>' +
                     '<div class="input-group-addon" ng-bind="::currencySymbol"></div>' +
                     '</div>' +
                     '<div class="help-block text-danger" ng-repeat="v in violations[\'price\']"' +
