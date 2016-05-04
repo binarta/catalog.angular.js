@@ -10,7 +10,7 @@
                             <span ng-controller="RemoveItemFromCatalogController"
                                   ng-if="permitted && editing"
                                   i18n code="catalog.remove.item.confirm" read-only>
-                                <button type="button" class="btn btn-danger btn-sm"
+                                <button type="button" class="bin-btn bin-btn-danger"
                                         ng-click-confirm="submit(item.id)"
                                         confirm-message="{{::var}}"
                                         ng-disabled="working"

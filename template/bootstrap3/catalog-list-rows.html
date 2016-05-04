@@ -1,26 +1,37 @@
-<div class="bin-catalog-items" ng-if="viewport.xs">
-    <div class="row" ng-repeat="item in searchCtrl.results track by item.id">
-        <div class="col-xs-12">
-            <ng-include src="'catalog-list-item-default.html'"></ng-include>
-        </div>
-    </div>
-</div>
+<div bin-group-by="partition" on="searchCtrl.results">
+    <div ng-repeat="group in groups track by group.id" ng-hide="editing && $index > 0">
 
-<div class="bin-catalog-items" ng-if="viewport.sm">
-    <div bin-split-in-rows="searchCtrl.results" columns="3">
-        <div class="row" ng-repeat="row in rows track by row.id">
-            <div class="col-sm-4" ng-repeat="item in row.items track by item.id">
-                <ng-include src="'catalog-list-item-default.html'"></ng-include>
+        <div class="row" ng-if="::catalogCtrl.path != group.items[0].partition">
+            <div class="col-xs-12">
+                <h2 class="partition-title" i18n code="{{::group.items[0].partition}}" read-only ng-bind="::var"></h2>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="bin-catalog-items" ng-if="viewport.md || viewport.lg">
-    <div bin-split-in-rows="searchCtrl.results" columns="4">
-        <div class="row" ng-repeat="row in rows track by row.id">
-            <div class="col-md-3" ng-repeat="item in row.items track by item.id">
-                <ng-include src="'catalog-list-item-default.html'"></ng-include>
+        <div class="bin-catalog-items" ng-if="viewport.xs">
+            <div class="row" ng-repeat="item in group.items track by item.id">
+                <div class="col-xs-12">
+                    <ng-include src="'catalog-list-item-default.html'"></ng-include>
+                </div>
+            </div>
+        </div>
+
+        <div class="bin-catalog-items" ng-if="viewport.sm">
+            <div bin-split-in-rows="group.items" columns="3">
+                <div class="row" ng-repeat="row in rows track by row.id">
+                    <div class="col-sm-4" ng-repeat="item in row.items track by item.id">
+                        <ng-include src="'catalog-list-item-default.html'"></ng-include>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bin-catalog-items" ng-if="viewport.md || viewport.lg">
+            <div bin-split-in-rows="group.items" columns="4">
+                <div class="row" ng-repeat="row in rows track by row.id">
+                    <div class="col-md-3" ng-repeat="item in row.items track by item.id">
+                        <ng-include src="'catalog-list-item-default.html'"></ng-include>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
