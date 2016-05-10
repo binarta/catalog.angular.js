@@ -11,7 +11,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
     .controller('AddToCatalogController', ['$scope', '$routeParams', 'topicRegistry', 'findAllCatalogItemTypes', 'addCatalogItem', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
-    .controller('RemoveItemFromCatalogController', ['config', '$scope', '$location', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', '$routeParams', RemoveItemFromCatalogController])
+    .controller('RemoveItemFromCatalogController', ['config', '$scope', 'i18nLocation', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', RemoveItemFromCatalogController])
     .controller('QueryCatalogController', ['$scope', 'ngRegisterTopicHandler', 'findCatalogItemsByPartition', 'findCatalogItemById', 'topicMessageDispatcher', '$q', QueryCatalogController])
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
     .controller('UpdateCatalogItemController', ['config', '$scope', 'updateCatalogItem', 'usecaseAdapterFactory', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
@@ -557,7 +557,7 @@ function AddPartitionToCatalogController(config, $scope, $location, $routeParams
     };
 }
 
-function RemoveItemFromCatalogController(config, $scope, $location, catalogPathProcessor, topicMessageDispatcher, scopedRestServiceHandler, $routeParams) {
+function RemoveItemFromCatalogController(config, $scope, i18nLocation, catalogPathProcessor, topicMessageDispatcher, scopedRestServiceHandler) {
     var self = this;
     self.config = {};
 
@@ -578,7 +578,7 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
     }
 
     function toParent(current) {
-        return ($routeParams.locale ? $routeParams.locale : '') + '/browse' + current.parent;
+        return '/browse' + current.parent;
     }
 
     $scope.submit = function (id) {
@@ -598,7 +598,7 @@ function RemoveItemFromCatalogController(config, $scope, $location, catalogPathP
                 });
                 topicMessageDispatcher.fire('catalog.item.removed', id);
                 topicMessageDispatcher.fire('edit.mode.unlock', id);
-                if (isRedirectEnabled()) $location.path(self.config.redirect || toParent(current)).search({});
+                if (isRedirectEnabled()) i18nLocation.path(self.config.redirect || toParent(current)).search({});
                 if (isSuccessHandlerPresent()) executeSuccessHandler();
             }
         });

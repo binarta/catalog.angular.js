@@ -1,5 +1,5 @@
 describe('catalog', function () {
-    var usecase, ctrl, scope, params, $httpBackend, dispatcher, location, payload, notifications;
+    var usecase, ctrl, scope, params, $httpBackend, dispatcher, location, i18nLocation, payload, notifications;
     var onSuccess, receivedPayload, rest, i18n;
 
     beforeEach(module('catalog'));
@@ -10,7 +10,7 @@ describe('catalog', function () {
     beforeEach(module('i18n'));
     beforeEach(module('test.app'));
 
-    beforeEach(inject(function ($injector, $location, config) {
+    beforeEach(inject(function ($injector, $location, _i18nLocation_, config) {
         config.namespace = 'namespace';
         scope = {
             $watch: function (expression, callback) {
@@ -26,6 +26,7 @@ describe('catalog', function () {
         params = {};
         location = $location;
         location.path('');
+        i18nLocation = _i18nLocation_;
         rest = {
             service: function (it) {
                 rest.ctx = it;
@@ -1455,7 +1456,7 @@ describe('catalog', function () {
                 });
 
                 it('switch to browse the parent partition', function () {
-                    expectRedirectTo('/browse/parent/');
+                    expectRedirectTo('/lang/browse/parent/');
                 });
             });
 
@@ -1468,7 +1469,7 @@ describe('catalog', function () {
             it('success with redirect to custom path', function () {
                 scope.init({redirect: '/path/'});
                 triggerSuccess();
-                expect(location.path()).toEqual('/path/');
+                expect(location.path()).toEqual('/lang/path/');
             });
 
             it('success with no notification', function () {
