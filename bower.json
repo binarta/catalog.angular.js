@@ -4,7 +4,8 @@
     "./src/catalog.js",
     "./src/catalog-tpls-bootstrap3.js",
     "./less/catalog.less",
-    "./metadata-system.json"
+    "./metadata-system.json",
+    "./sources.json"
   ],
   "dependencies": {
     "angular": "1.3.*",
