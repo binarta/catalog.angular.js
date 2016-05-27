@@ -70,6 +70,7 @@ function FindCatalogItemByIdFactory(config, restServiceHandler) {
             params: {
                 method: 'GET',
                 url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + encodeURIComponent(id),
+                headers: {'X-Binarta-Carousel': true},
                 withCredentials: true
             },
             error: function () {

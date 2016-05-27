@@ -154,6 +154,11 @@ describe('catalog', function () {
             expect(fixture.rest.calls[0].args[0].params.url).toEqual('api/entity/catalog-item?id=item-id');
         });
 
+        it('set carousel header when requesting item', function () {
+            fixture.usecase('item-id', onSuccess);
+            expect(fixture.rest.calls[0].args[0].params.headers).toEqual({'X-Binarta-Carousel': true});
+        });
+
         it('on execute with baseUri', function () {
             fixture.config.baseUri = 'http://host/context/';
             fixture.usecase('item/id', onSuccess);
