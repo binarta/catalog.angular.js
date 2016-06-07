@@ -149,31 +149,31 @@ describe('catalog', function () {
 
         it('on execute perform rest call', function () {
             fixture.usecase('item-id', onSuccess);
-            expect(fixture.rest.calls[0].args[0].params.withCredentials).toEqual(true);
-            expect(fixture.rest.calls[0].args[0].params.method).toEqual('GET');
-            expect(fixture.rest.calls[0].args[0].params.url).toEqual('api/entity/catalog-item?id=item-id');
+            expect(fixture.rest.calls.first().args[0].params.withCredentials).toEqual(true);
+            expect(fixture.rest.calls.first().args[0].params.method).toEqual('GET');
+            expect(fixture.rest.calls.first().args[0].params.url).toEqual('api/entity/catalog-item?id=item-id');
         });
 
         it('set carousel header when requesting item', function () {
             fixture.usecase('item-id', onSuccess);
-            expect(fixture.rest.calls[0].args[0].params.headers).toEqual({'X-Binarta-Carousel': true});
+            expect(fixture.rest.calls.first().args[0].params.headers).toEqual({'X-Binarta-Carousel': true});
         });
 
         it('on execute with baseUri', function () {
             fixture.config.baseUri = 'http://host/context/';
             fixture.usecase('item/id', onSuccess);
-            expect(fixture.rest.calls[0].args[0].params.url).toEqual(fixture.config.baseUri + 'api/entity/catalog-item?id=' + encodeURIComponent('item/id'));
+            expect(fixture.rest.calls.first().args[0].params.url).toEqual(fixture.config.baseUri + 'api/entity/catalog-item?id=' + encodeURIComponent('item/id'));
         });
 
         it('unexpected responses resolve to an empty set', function () {
             fixture.usecase('item-id', onSuccess);
-            fixture.rest.calls[0].args[0].error();
+            fixture.rest.calls.first().args[0].error();
             expect(receivedPayload).toEqual([]);
         });
 
         it('response payload is passed to success callback', function () {
             fixture.usecase('type', onSuccess);
-            fixture.rest.calls[0].args[0].success(payload);
+            fixture.rest.calls.first().args[0].success(payload);
             expect(receivedPayload).toEqual(payload);
         });
     });
@@ -196,10 +196,10 @@ describe('catalog', function () {
 
         it('on execute perform rest call', inject(function (config) {
             fixture.usecase({partition: 'partition-id'}, onSuccess);
-            expect(fixture.rest.calls[0].args[0].params.withCredentials).toEqual(true);
-            expect(fixture.rest.calls[0].args[0].params.method).toEqual('POST');
-            expect(fixture.rest.calls[0].args[0].params.url).toEqual('api/query/catalog-item/findByPartition');
-            expect(fixture.rest.calls[0].args[0].params.data).toEqual({
+            expect(fixture.rest.calls.first().args[0].params.withCredentials).toEqual(true);
+            expect(fixture.rest.calls.first().args[0].params.method).toEqual('POST');
+            expect(fixture.rest.calls.first().args[0].params.url).toEqual('api/query/catalog-item/findByPartition');
+            expect(fixture.rest.calls.first().args[0].params.data).toEqual({
                 args: {
                     namespace: config.namespace,
                     partition: 'partition-id'
@@ -209,8 +209,8 @@ describe('catalog', function () {
 
         it('on execute with sorting info', inject(function (config) {
             fixture.usecase({partition: 'partition-id', sortBy: 'creationTime', sortOrder: 'desc'}, onSuccess);
-            expect(fixture.rest.calls[0].args[0].params.url).toEqual('api/query/catalog-item/findByPartition');
-            expect(fixture.rest.calls[0].args[0].params.data).toEqual({
+            expect(fixture.rest.calls.first().args[0].params.url).toEqual('api/query/catalog-item/findByPartition');
+            expect(fixture.rest.calls.first().args[0].params.data).toEqual({
                 args: {
                     namespace: config.namespace,
                     partition: 'partition-id',
@@ -223,18 +223,18 @@ describe('catalog', function () {
         it('on execute with baseUri', inject(function (config) {
             fixture.config.baseUri = 'http://host/context/';
             fixture.usecase('partition-id', onSuccess);
-            expect(fixture.rest.calls[0].args[0].params.url).toEqual(fixture.config.baseUri + 'api/query/catalog-item/findByPartition');
+            expect(fixture.rest.calls.first().args[0].params.url).toEqual(fixture.config.baseUri + 'api/query/catalog-item/findByPartition');
         }));
 
         it('unexpected responses resolve to an empty set', function () {
             fixture.usecase({partition: 'partition-id', success: onSuccess});
-            fixture.rest.calls[0].args[0].error();
+            fixture.rest.calls.first().args[0].error();
             expect(receivedPayload).toEqual([]);
         });
 
         it('response payload is passed to success callback', function () {
             fixture.usecase({partition: 'type', success: onSuccess});
-            fixture.rest.calls[0].args[0].success(payload);
+            fixture.rest.calls.first().args[0].success(payload);
             expect(receivedPayload).toEqual(payload);
         });
     });
@@ -314,12 +314,12 @@ describe('catalog', function () {
                 });
 
                 it('request catalog item for that id', function () {
-                    expect(fixture.entity.calls[0].args[0]).toEqual(id);
+                    expect(fixture.entity.calls.first().args[0]).toEqual(id);
                 });
 
                 describe('when catalog item received', function () {
                     beforeEach(function () {
-                        fixture.entity.calls[0].args[1](payload);
+                        fixture.entity.calls.first().args[1](payload);
                     });
 
                     it('update item on local scope', function () {
@@ -334,7 +334,7 @@ describe('catalog', function () {
 
                     describe('when catalog item received', function () {
                         beforeEach(function () {
-                            fixture.entity.calls[0].args[1](payload);
+                            fixture.entity.calls.first().args[1](payload);
                         });
 
                         it('prepend item on local scope', function () {
@@ -358,12 +358,12 @@ describe('catalog', function () {
                 });
 
                 it('request catalog item for that id', function () {
-                    expect(fixture.entity.calls[0].args[0]).toEqual('item-2');
+                    expect(fixture.entity.calls.first().args[0]).toEqual('item-2');
                 });
 
                 describe('when catalog item received', function () {
                     beforeEach(function () {
-                        fixture.entity.calls[0].args[1](payload);
+                        fixture.entity.calls.first().args[1](payload);
                     });
 
                     it('update item on local scope', function () {
@@ -405,7 +405,7 @@ describe('catalog', function () {
 
                 describe('when catalog item received', function () {
                     beforeEach(function () {
-                        fixture.entity.calls[0].args[1](payload);
+                        fixture.entity.calls.first().args[1](payload);
                     });
 
                     it('append item on local scope', function () {
@@ -470,7 +470,7 @@ describe('catalog', function () {
         }));
 
         function request() {
-            return fixture.query.calls[0].args[0];
+            return fixture.query.calls.first().args[0];
         }
 
         [
@@ -521,7 +521,7 @@ describe('catalog', function () {
 
                         describe('when searching for more', function () {
                             beforeEach(function () {
-                                fixture.query.reset();
+                                fixture.query.calls.reset();
                                 ctx.searchForMore();
                                 request().success([{id: 2}]);
                             });
@@ -558,8 +558,8 @@ describe('catalog', function () {
                             });
 
                             it('request partitions', function () {
-                                expect(fixture.query.calls[0].args[0].query).toEqual('ownedBy');
-                                expect(fixture.query.calls[0].args[0].filters.owner).toEqual('/parent/');
+                                expect(fixture.query.calls.first().args[0].query).toEqual('ownedBy');
+                                expect(fixture.query.calls.first().args[0].filters.owner).toEqual('/parent/');
                             });
 
                             describe('and partitions received', function () {
@@ -568,7 +568,7 @@ describe('catalog', function () {
                                         {id: '/parent/path/'},
                                         {id: '/parent/another/'}
                                     ];
-                                    fixture.query.calls[0].args[0].success(payload);
+                                    fixture.query.calls.first().args[0].success(payload);
                                 });
 
                                 it('mark the current partition with css class active', function () {
@@ -814,13 +814,11 @@ describe('catalog', function () {
                         });
 
                         it('perform rest call', function () {
-                            expect(rest).toHaveBeenCalledWith({
+                            var ctx = {
                                 params: {
                                     method: 'PUT',
                                     url: config.baseUri + 'api/entity/catalog-item',
                                     data: {
-                                        type: scope.item.type,
-                                        name: scope.item.name,
                                         namespace: 'namespace',
                                         partition: 'partition',
                                         locale: 'l'
@@ -828,7 +826,11 @@ describe('catalog', function () {
                                     withCredentials: true
                                 },
                                 success: jasmine.any(Function)
-                            });
+                            };
+                            if (scope.item.type) ctx.params.data.type = scope.item.type;
+                            if (scope.item.name) ctx.params.data.name = scope.item.name;
+
+                            expect(rest).toHaveBeenCalledWith(ctx);
                         });
                     }
 
@@ -912,7 +914,7 @@ describe('catalog', function () {
                     });
 
                     it('perform rest call', function () {
-                        expect(rest.calls[0].args[0].params.data).toEqual({
+                        expect(rest.calls.first().args[0].params.data).toEqual({
                             type: 'type',
                             name: 'name',
                             namespace: 'namespace',
@@ -927,7 +929,7 @@ describe('catalog', function () {
                         };
 
                         beforeEach(function () {
-                            rest.calls[0].args[0].success(item);
+                            rest.calls.first().args[0].success(item);
                         });
 
                         it('success handler is executed', function () {
@@ -992,7 +994,7 @@ describe('catalog', function () {
                 it('on submit success reset form', function () {
                     withItemData();
                     scope.submit();
-                    rest.calls[0].args[0].success({});
+                    rest.calls.first().args[0].success({});
                     assertItemDataReset();
                 });
 
@@ -1034,7 +1036,7 @@ describe('catalog', function () {
                     it('on submit success without redirect', function () {
                         scope.noredirect();
                         scope.submit();
-                        rest.calls[0].args[0].success({id: 'item-id'});
+                        rest.calls.first().args[0].success({id: 'item-id'});
                         expect(location.path()).toEqual('/');
                     });
 
@@ -1043,7 +1045,7 @@ describe('catalog', function () {
                         scope.item.custom = 'custom-field';
 
                         scope.submit();
-                        rest.calls[0].args[0].success({id: 'item-id'});
+                        rest.calls.first().args[0].success({id: 'item-id'});
 
                         expect(topics['catalog.item.added']).toEqual('item-id');
                     });
@@ -1056,7 +1058,7 @@ describe('catalog', function () {
                             }
                         };
                         scope.submit();
-                        rest.calls[0].args[0].success({id: 'item-id'});
+                        rest.calls.first().args[0].success({id: 'item-id'});
 
                         expect(pristine).toEqual(true);
                     });
@@ -1074,7 +1076,7 @@ describe('catalog', function () {
             it('on submit success redirect to path', function () {
                 scope.init(params);
                 scope.submit();
-                rest.calls[0].args[0].success({id: 'item-id'});
+                rest.calls.first().args[0].success({id: 'item-id'});
                 expect(location.path()).toEqual('/path');
             });
         });
@@ -1086,7 +1088,7 @@ describe('catalog', function () {
             itemTypesLoaded();
             scope.init(params);
             scope.submit();
-            rest.calls[0].args[0].success({id: '/item-id'});
+            rest.calls.first().args[0].success({id: '/item-id'});
             expect(location.path()).toEqual('/lang/view/item-id');
         });
 
@@ -1099,7 +1101,7 @@ describe('catalog', function () {
                 successWasCalled = item;
             };
             scope.submit();
-            rest.calls[0].args[0].success(item);
+            rest.calls.first().args[0].success(item);
             expect(successWasCalled).toEqual(item);
         });
 
@@ -1110,7 +1112,7 @@ describe('catalog', function () {
             itemTypesLoaded();
             scope.init(params);
             scope.submit();
-            rest.calls[0].args[0].success({id: '/item-id'});
+            rest.calls.first().args[0].success({id: '/item-id'});
             expect(editMode.enable).toHaveBeenCalled();
         });
     });
@@ -1148,9 +1150,9 @@ describe('catalog', function () {
                         //$httpBackend.flush();
                         $httpBackend.verifyNoOutstandingExpectation();
                         $httpBackend.verifyNoOutstandingRequest();
-                        expect(fixture.entity.calls[0].args[0]).toEqual(el.params.id);
+                        expect(fixture.entity.calls.first().args[0]).toEqual(el.params.id);
 
-                        fixture.entity.calls[0].args[1]({
+                        fixture.entity.calls.first().args[1]({
                             id: 'id',
                             type: 'type',
                             name: 'name',
@@ -1184,8 +1186,8 @@ describe('catalog', function () {
 
                 scope.init();
                 topicRegistryMock['app.start']();
-                expect(fixture.entity.calls[0].args[0]).toEqual('id');
-                fixture.entity.calls[0].args[1]({
+                expect(fixture.entity.calls.first().args[0]).toEqual('id');
+                fixture.entity.calls.first().args[1]({
                     id: 'id',
                     type: 'type',
                     name: 'name',
@@ -1236,12 +1238,12 @@ describe('catalog', function () {
             });
 
             it('request catalog item for that id', function () {
-                expect(fixture.entity.calls[0].args[0]).toEqual('item-2');
+                expect(fixture.entity.calls.first().args[0]).toEqual('item-2');
             });
 
             describe('when catalog item received', function () {
                 beforeEach(function () {
-                    fixture.entity.calls[0].args[1](payload);
+                    fixture.entity.calls.first().args[1](payload);
                 });
 
                 it('update item on local scope', function () {
@@ -1401,7 +1403,7 @@ describe('catalog', function () {
                     owner: owner,
                     name: name
                 });
-                expect(messages['catalog.partition.added'].name).toNotEqual('');
+                expect(messages['catalog.partition.added'].name).not.toEqual('');
             });
         });
     });
@@ -1644,7 +1646,7 @@ describe('catalog', function () {
                             it('and app.start notification received', inject(function (config, topicRegistryMock) {
                                 if (filePath) {
                                     topicRegistryMock['app.start']();
-                                    expect(findItemById.calls[0].args[0]).toEqual(filePath);
+                                    expect(findItemById.calls.first().args[0]).toEqual(filePath);
                                 }
                             }));
                         });
@@ -1657,7 +1659,7 @@ describe('catalog', function () {
                             it('and app.start notification received', inject(function (config, topicRegistryMock) {
                                 if (filePath) {
                                     topicRegistryMock['app.start']();
-                                    expect(findItemById.calls[0].args[0]).toEqual(filePath);
+                                    expect(findItemById.calls.first().args[0]).toEqual(filePath);
                                 }
                             }));
                         });
@@ -1816,14 +1818,14 @@ describe('catalog', function () {
 
                         describe('look up item by id', function () {
                             it('with id from scoped item', inject(function () {
-                                expect(fixture.entity.calls[0].args[0]).toEqual(scope.item.id);
+                                expect(fixture.entity.calls.first().args[0]).toEqual(scope.item.id);
                             }));
 
                             describe('on find by id callback', function () {
                                 var refreshedItem = {name: 'item-id-1'};
 
                                 beforeEach(function () {
-                                    fixture.entity.calls[0].args[1](refreshedItem);
+                                    fixture.entity.calls.first().args[1](refreshedItem);
                                 });
 
                                 it('test', inject(function () {
@@ -1881,14 +1883,14 @@ describe('catalog', function () {
                 });
 
                 it('request catalog item for that id', function () {
-                    expect(fixture.entity.calls[0].args[0]).toEqual(scope.item.id);
+                    expect(fixture.entity.calls.first().args[0]).toEqual(scope.item.id);
                 });
 
                 describe('when catalog item received', function () {
                     beforeEach(function () {
                         scope.item.customField = 'modified';
 
-                        fixture.entity.calls[0].args[1](payload);
+                        fixture.entity.calls.first().args[1](payload);
                     });
 
                     it('refresh item on scope', function () {
@@ -2095,7 +2097,7 @@ describe('catalog', function () {
             });
 
             it('execute on success handler', function () {
-                expect(onSuccessSpy.calls[0]).toBeTruthy();
+                expect(onSuccessSpy.calls.first()).toBeTruthy();
             });
 
             it('support updatePriority context', function () {
@@ -2169,9 +2171,9 @@ describe('catalog', function () {
 
                 beforeEach(inject(function ($q) {
                     readerDeferred = $q.defer();
-                    configReader.andReturn(readerDeferred.promise);
+                    configReader.and.returnValue(readerDeferred.promise);
 
-                    editMode.bindEvent.mostRecentCall.args[0].onClick();
+                    editMode.bindEvent.calls.mostRecent().args[0].onClick();
                 }));
 
                 it('editModeRenderer is opened', function () {
@@ -2351,9 +2353,9 @@ describe('catalog', function () {
 
                 beforeEach(inject(function ($q) {
                     readerDeferred = $q.defer();
-                    configReader.andReturn(readerDeferred.promise);
+                    configReader.and.returnValue(readerDeferred.promise);
 
-                    editMode.bindEvent.mostRecentCall.args[0].onClick();
+                    editMode.bindEvent.calls.mostRecent().args[0].onClick();
                 }));
 
                 describe('with editModeRenderer scope', function () {
@@ -2427,15 +2429,15 @@ describe('catalog', function () {
             });
 
             it('read vat config values', function () {
-                expect(reader.calls[0].args[0].$scope).toEqual(scope);
-                expect(reader.calls[0].args[0].key).toEqual('shop.country.code');
-                expect(reader.calls[1].args[0].$scope).toEqual(scope);
-                expect(reader.calls[1].args[0].key).toEqual('shop.default.vat.rate');
+                expect(reader.calls.first().args[0].$scope).toEqual(scope);
+                expect(reader.calls.first().args[0].key).toEqual('shop.country.code');
+                expect(reader.calls.mostRecent().args[0].$scope).toEqual(scope);
+                expect(reader.calls.mostRecent().args[0].key).toEqual('shop.default.vat.rate');
             });
 
             describe('shop country code is unknown', function () {
                 beforeEach(function () {
-                    reader.calls[0].args[0].notFound();
+                    reader.calls.first().args[0].notFound();
                 });
 
                 it('enable checkForVatRate flag on controller', function () {
@@ -2445,7 +2447,7 @@ describe('catalog', function () {
 
             describe('shop default vat rate is unknown', function () {
                 beforeEach(function () {
-                    reader.calls[1].args[0].notFound();
+                    reader.calls.mostRecent().args[0].notFound();
                 });
 
                 it('enable checkForVatRate flag on controller', function () {
@@ -2455,7 +2457,7 @@ describe('catalog', function () {
 
             describe('shop country code is known', function () {
                 beforeEach(function () {
-                    reader.calls[0].args[0].success({value: 'code'});
+                    reader.calls.first().args[0].success({value: 'code'});
                 });
 
                 it('enable checkForVatRate flag on controller', function () {
@@ -2465,7 +2467,7 @@ describe('catalog', function () {
 
             describe('shop default vat rate is known', function () {
                 beforeEach(function () {
-                    reader.calls[1].args[0].success({value: '0.105'});
+                    reader.calls.mostRecent().args[0].success({value: '0.105'});
                 });
 
                 it('vat rate is parsed and multuplied by 100', function () {
@@ -2538,15 +2540,15 @@ describe('catalog', function () {
                     });
 
                     it('coutry code is written to config', function () {
-                        expect(writer.calls[0].args[0].$scope).toEqual(scope);
-                        expect(writer.calls[0].args[0].key).toEqual('shop.country.code');
-                        expect(writer.calls[0].args[0].value).toEqual('EN');
+                        expect(writer.calls.first().args[0].$scope).toEqual(scope);
+                        expect(writer.calls.first().args[0].key).toEqual('shop.country.code');
+                        expect(writer.calls.first().args[0].value).toEqual('EN');
                     });
 
                     it('default vat rate is written to config', function () {
-                        expect(writer.calls[1].args[0].$scope).toEqual(scope);
-                        expect(writer.calls[1].args[0].key).toEqual('shop.default.vat.rate');
-                        expect(writer.calls[1].args[0].value).toEqual(0.105);
+                        expect(writer.calls.mostRecent().args[0].$scope).toEqual(scope);
+                        expect(writer.calls.mostRecent().args[0].key).toEqual('shop.default.vat.rate');
+                        expect(writer.calls.mostRecent().args[0].value).toEqual(0.105);
                     });
 
                     it('disable checkForVatRate flag on controller', function () {

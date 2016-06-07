@@ -7,13 +7,13 @@ function UpdateCatalogItemWriterSpyFactory() {
     return {
         spy:spy,
         invokedFor:function(args) {
-            expect(spy.calls[0].args[0]).toEqual(args);
+            expect(spy.calls.first().args[0]).toEqual(args);
         },
         data:function() {
-            return spy.calls[0].args[0].data;
+            return spy.calls.first().args[0].data;
         },
         success:function() {
-            spy.calls[0].args[0].success();
+            spy.calls.first().args[0].success();
         }
     };
 }
