@@ -71,6 +71,9 @@ function FindCatalogItemByIdFactory(config, restServiceHandler) {
                 method: 'GET',
                 url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + encodeURIComponent(id),
                 headers: {'X-Binarta-Carousel': true},
+                params: {
+                    treatInputAsId: true
+                },
                 withCredentials: true
             },
             error: function () {
@@ -690,6 +693,7 @@ function CatalogItemUpdatedDecoratorsFactory() {
 
 function UpdateCatalogItemFactory(updateCatalogItemWriter, topicMessageDispatcher, catalogItemUpdatedDecorator) {
     return function (args) {
+        args.data.treatInputAsId = true;
         var onSuccess = args.success;
         args.success = function () {
             topicMessageDispatcher.fire('system.success', {

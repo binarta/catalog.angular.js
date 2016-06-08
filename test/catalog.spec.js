@@ -152,6 +152,7 @@ describe('catalog', function () {
             expect(fixture.rest.calls.first().args[0].params.withCredentials).toEqual(true);
             expect(fixture.rest.calls.first().args[0].params.method).toEqual('GET');
             expect(fixture.rest.calls.first().args[0].params.url).toEqual('api/entity/catalog-item?id=item-id');
+            expect(fixture.rest.calls.first().args[0].params.params).toEqual({treatInputAsId: true});
         });
 
         it('set carousel header when requesting item', function () {
@@ -2293,7 +2294,8 @@ describe('catalog', function () {
                         it('invoke writer', function () {
                             expect(writer.data()).toEqual({
                                 price: 2066,
-                                context: 'update'
+                                context: 'update',
+                                treatInputAsId: true
                             });
                         });
 
