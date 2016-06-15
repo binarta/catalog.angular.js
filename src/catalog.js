@@ -773,11 +773,16 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                             };
 
                         if (scope.rendererScope.catalogItemPriceForm.$valid) {
-                            scope.item.price = Math.round(scope.rendererScope.price * 100);
+                            var price = Math.round(scope.rendererScope.price * 100);
                             var ctx = usecaseAdapterFactory(scope.rendererScope);
-                            ctx.data = scope.item;
+                            ctx.data = {
+                                id: scope.item.id,
+                                type: scope.item.type,
+                                price: price
+                            };
                             ctx.data.context = 'update';
                             ctx.success = function () {
+                                scope.item.price = price;
                                 scope.rendererScope.close();
                             };
                             updateCatalogItem(ctx);

@@ -2128,6 +2128,9 @@ describe('catalog', function () {
         describe('when item has no unitPrice defined', function () {
             beforeEach(inject(function ($compile) {
                 scope.item = {
+                    id: 'id',
+                    type: 'type',
+                    custom: 'custom field',
                     price: 1050
                 };
                 $compile(element)(scope);
@@ -2293,17 +2296,29 @@ describe('catalog', function () {
 
                         it('invoke writer', function () {
                             expect(writer.data()).toEqual({
+                                id: 'id',
+                                type: 'type',
                                 price: 2066,
                                 context: 'update',
                                 treatInputAsId: true
                             });
                         });
 
-                        it('on success', function () {
-                            writer.success();
+                        describe('on success', function () {
+                            beforeEach(function () {
+                                writer.success();
+                            });
 
-                            expect(editModeRenderer.close).toHaveBeenCalled();
+                            it('update price on item', function () {
+                                expect(scope.item.price).toEqual(2066);
+                            });
+
+                            it('close', function () {
+                                expect(editModeRenderer.close).toHaveBeenCalled();
+                            });
+
                         });
+
                     });
 
                     describe('on update with invalid form', function () {
