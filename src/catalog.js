@@ -1,4 +1,4 @@
-angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint'])
+angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application'])
     .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])
@@ -8,6 +8,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .factory('findCatalogItemsByPartition', ['config', 'restServiceHandler', FindCatalogItemsByPartitionFactory])
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
+    .service('binCurrency', ['$q', 'config', 'applicationDataService', 'restServiceHandler', BinCurrencyService])
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
     .controller('AddToCatalogController', ['$scope', '$routeParams', 'topicRegistry', 'findAllCatalogItemTypes', 'addCatalogItem', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
@@ -18,8 +19,8 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
     .controller('ViewCatalogItemController', ['$scope', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
-    .controller('ConfigureVatRateController', ['$scope', 'config', 'configReader', 'configWriter', 'activeUserHasPermission', ConfigureVatRateController])
-    .directive('catalogItemPrice', ['editMode', 'editModeRenderer', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', '$locale', 'configReader', 'configWriter', CatalogItemPriceDirective])
+    .controller('ConfigureVatRateController', ['$scope', 'config', 'configReader', 'configWriter', 'activeUserHasPermission', 'binCurrency', ConfigureVatRateController])
+    .directive('catalogItemPrice', ['editMode', 'editModeRenderer', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'configReader', 'configWriter', 'binCurrency', CatalogItemPriceDirective])
     .directive('splitInRows', splitInRowsDirectiveFactory)
     .config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function(args) {
@@ -739,25 +740,35 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
     });
 }
 
-function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem, usecaseAdapterFactory, ngRegisterTopicHandler, $locale, reader, writer) {
+function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem, usecaseAdapterFactory, ngRegisterTopicHandler, reader, writer, binCurrency) {
     return {
         restrict: 'A',
         scope: {
             item: '=catalogItemPrice'
         },
-        template: '<span ng-if="item.price">{{(item.unitPrice || item.price) / 100 || 0 | currency}}</span>' +
-        '<span ng-if="!item.price && editing" i18n code="catalog.item.price.add.label" read-only ng-bind="::var"></span>',
-        link: function (scope, element) {
+        template: '<span ng-if="price">{{price}}</span>' +
+        '<span ng-if="!price && editing" i18n code="catalog.item.price.add.label" read-only ng-bind="::var"></span>',
+        link: function (scope, element, attrs) {
             ngRegisterTopicHandler(scope, 'edit.mode', function (editMode) {
                 scope.editing = editMode;
             });
 
-            editMode.bindEvent({
-                scope: scope,
-                element: element,
-                permission: 'catalog.item.update',
-                onClick: open
+            scope.$watch('item', function () {
+                scope.price = getPresentablePrice();
             });
+
+            if (attrs.readOnly == undefined) {
+                editMode.bindEvent({
+                    scope: scope,
+                    element: element,
+                    permission: 'catalog.item.update',
+                    onClick: open
+                });
+            }
+
+            function getPresentablePrice() {
+                return scope.item.presentableUnitPrice || (scope.item.unitPrice || scope.item.price) / 100 || 0;
+            }
 
             function open() {
                 var vatOnPriceKey = 'shop.vat.on.price.interpreted.as';
@@ -782,7 +793,6 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                             };
                             ctx.data.context = 'update';
                             ctx.success = function () {
-                                scope.item.price = price;
                                 scope.rendererScope.close();
                             };
                             updateCatalogItem(ctx);
@@ -795,8 +805,11 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                             value: scope.rendererScope.vatOnPrice ? 'included' : 'excluded'
                         });
                         scope.rendererScope.price = getItemPrice();
-                    },
-                    currencySymbol: $locale.NUMBER_FORMATS.CURRENCY_SYM
+                    }
+                });
+
+                binCurrency.getActiveCurrency().then(function (c) {
+                    scope.rendererScope.currencySymbol = c.symbol || c.code;
                 });
 
                 reader({
@@ -822,8 +835,8 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                     '<small ng-if="vatOnPrice == 1" i18n code="catalog.item.price.vat.incl" read-only ng-bind="::var"></small>' +
                     '<small ng-if="vatOnPrice == 0" i18n code="catalog.item.price.vat.excl" read-only ng-bind="::var"></small>' +
                     '<div class="input-group">' +
-                    '<input type="number" min="0" step="any" name="catalogItemPrice" id="catalogItemPrice" ng-model="price" autofocus>' +
                     '<div class="input-group-addon" ng-bind="::currencySymbol"></div>' +
+                    '<input type="number" min="0" step="any" name="catalogItemPrice" id="catalogItemPrice" ng-model="price" autofocus>' +
                     '</div>' +
                     '<div class="help-block text-danger" ng-repeat="v in violations[\'price\']"' +
                     'i18n code="catalog.item.price.{{v}}" default="{{v}}" read-only ng-bind="var">' +
@@ -859,10 +872,13 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
     }
 }
 
-function ConfigureVatRateController($scope, config, reader, writer, permission) {
+function ConfigureVatRateController($scope, config, reader, writer, permission, binCurrency) {
     var self = this;
 
     permission({
+        no: function () {
+            self.checkForVatRate = false;
+        },
         yes: function () {
             self.countries = config.countries;
             var countryCodeKey = 'shop.country.code';
@@ -888,6 +904,14 @@ function ConfigureVatRateController($scope, config, reader, writer, permission) 
                 notFound: function () {
                     self.checkForVatRate = true;
                 }
+            });
+
+            binCurrency.getAll().then(function (data) {
+                self.currencies = data;
+            });
+
+            binCurrency.getActiveCurrency().then(function (data) {
+                self.activeCurrency = data;
             });
 
             self.isValid = function () {
@@ -916,12 +940,84 @@ function ConfigureVatRateController($scope, config, reader, writer, permission) 
                         value: self.vatRate / 100
                     });
 
+                    binCurrency.updateActiveCurrency(self.activeCurrency.code);
+
                     self.checkForVatRate = false;
                 }
             }
         },
         scope: $scope
     }, 'catalog.item.add');
+}
+
+function BinCurrencyService($q, config, applicationData, rest)  {
+    var defaultCurrency = {
+        code: 'EUR',
+        symbol: '€'
+    };
+    var activeCurrency;
+    var currencies;
+
+    this.getAll = function () {
+        var deferred = $q.defer();
+        
+        if (currencies) deferred.resolve(currencies);
+        else {
+            rest({
+                params: {
+                    method: 'GET',
+                    url: config.baseUri + 'api/usecase?h.usecase=find.all.supported.currencies',
+                    withCredentials: true
+                }
+            }).then(function (result) {
+                currencies = result.data;
+                deferred.resolve(currencies);
+            });
+        }
+
+        return deferred.promise;
+    };
+    
+    this.getActiveCurrency = function () {
+        var deferred = $q.defer();
+
+        if (activeCurrency) deferred.resolve(activeCurrency);
+        else {
+            applicationData.then(function (data) {
+                activeCurrency = data.currency || defaultCurrency;
+                deferred.resolve(activeCurrency);
+            });
+        }
+
+        return deferred.promise;
+    };
+
+    this.updateActiveCurrency = function (code) {
+        rest({
+            params: {
+                method: 'POST',
+                url: config.baseUri + 'api/usecase',
+                withCredentials: true,
+                data: {
+                    headers: {
+                        usecase: 'set.active.currency'
+                    },
+                    payload: {
+                        currency: code
+                    }
+                }
+            }
+        }).finally(function () {
+            rest({
+                params: {
+                    method: 'GET',
+                    url: config.baseUri + 'api/usecase?h.usecase=get.active.currency&h.namespace=' + config.namespace
+                }
+            }).then(function (result) {
+                activeCurrency = result.data;
+            });
+        });
+    };
 }
 
 // @deprecated use binarta.angularx instead

@@ -17,7 +17,8 @@
     "binarta.web.storage.angular": "0.*.*",
     "binarta.usecase.adapter.angular": "0.*.*",
     "binarta.toggle.edit.mode.angular": "v1.*.*",
-    "binarta.checkpoint.angular": "0.*.*"
+    "binarta.checkpoint.angular": "0.*.*",
+    "binarta.application.angular": "0.*.*"
   },
   "devDependencies": {
     "angular-mocks": "1.*.*",

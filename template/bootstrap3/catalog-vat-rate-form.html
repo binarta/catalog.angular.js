@@ -32,6 +32,23 @@
         </div>
     </div>
 
+    <div class="form-group" ng-class="{'has-error': form['config-currency'].$invalid}"
+         ng-if="vat.currencies && vat.activeCurrency">
+        <label i18n code="catalog.config.currency.label" read-only for="config-currency" ng-bind="::var"></label>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-6">
+                <div class="input-group">
+                    <select class="form-control" id="config-currency"
+                            name="config-currency"
+                            ng-model="vat.activeCurrency"
+                            ng-options="c.code for c in vat.currencies track by c.code" required>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="form-group">
         <button type="submit" class="btn btn-success"
                 ng-disabled="working || !vat.isValid()"
