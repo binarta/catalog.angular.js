@@ -2110,7 +2110,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('catalogItemPrice directive', function () {
+    describe('catalogItemPrice directive', function () {
         var element, html, scope, isolateScope, editMode, editModeRenderer, writer, topics, configReader, configWriter,
             getActiveCurrencyDeferred;
 
