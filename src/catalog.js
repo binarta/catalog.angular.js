@@ -20,7 +20,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('ViewCatalogItemController', ['$scope', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .controller('ConfigureVatRateController', ['$scope', 'config', 'configReader', 'configWriter', 'activeUserHasPermission', 'binCurrency', ConfigureVatRateController])
-    .directive('catalogItemPrice', ['editMode', 'editModeRenderer', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'configReader', 'configWriter', 'binCurrency', CatalogItemPriceDirective])
+    .directive('catalogItemPrice', ['$templateCache', 'editMode', 'editModeRenderer', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'configReader', 'configWriter', 'binCurrency', CatalogItemPriceDirective])
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
     .config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function(args) {
@@ -740,7 +740,7 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
     });
 }
 
-function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem, usecaseAdapterFactory, ngRegisterTopicHandler, reader, writer, binCurrency) {
+function CatalogItemPriceDirective($templateCache, editMode, editModeRenderer, updateCatalogItem, usecaseAdapterFactory, ngRegisterTopicHandler, reader, writer, binCurrency) {
     return {
         restrict: 'A',
         scope: {
@@ -828,43 +828,7 @@ function CatalogItemPriceDirective(editMode, editModeRenderer, updateCatalogItem
                 }
 
                 editModeRenderer.open({
-                    template: '<form name="catalogItemPriceForm" ng-submit="update()">' +
-                    '<div class="bin-menu-edit-body">' +
-                    '<div class="form-group">' +
-                    '<label for="catalogItemPrice" i18n code="catalog.item.price.label" read-only ng-bind="::var"></label> ' +
-                    '<small ng-if="vatOnPrice == 1" i18n code="catalog.item.price.vat.incl" read-only ng-bind="::var"></small>' +
-                    '<small ng-if="vatOnPrice == 0" i18n code="catalog.item.price.vat.excl" read-only ng-bind="::var"></small>' +
-                    '<div class="input-group">' +
-                    '<div class="input-group-addon" ng-bind="::currencySymbol"></div>' +
-                    '<input type="number" min="0" step="any" name="catalogItemPrice" id="catalogItemPrice" ng-model="price" autofocus>' +
-                    '</div>' +
-                    '<div class="help-block text-danger" ng-repeat="v in violations[\'price\']"' +
-                    'i18n code="catalog.item.price.{{v}}" default="{{v}}" read-only ng-bind="var">' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="form-group">' +
-                    '<div class="row">' +
-                    '<div class="col-xs-12 col-sm-6">' +
-                    '<table class="table">' +
-                    '<tr>' +
-                    '<th i18n code="catalog.item.price.input.vat.included" read-only ng-bind="::var"></th>' +
-                    '<td>' +
-                    '<div class="checkbox-switch" ng-show="vatOnPrice != undefined">' +
-                    '<input type="checkbox" id="vat-on-price-switch" ng-model="vatOnPrice" ng-change="toggleVatOnPrice()">' +
-                    '<label for="vat-on-price-switch"></label>' +
-                    '</div>' +
-                    '</td>' +
-                    '</tr>' +
-                    '</table>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="bin-menu-edit-actions">' +
-                    '<button type="submit" class="btn btn-primary" i18n code="clerk.menu.save.button" read-only ng-bind="::var"></button>' +
-                    '<button type="reset" class="btn btn-default" ng-click="close()" i18n code="clerk.menu.cancel.button" read-only ng-bind="::var"></button>' +
-                    '</div>' +
-                    '</form>',
+                    template: $templateCache.get('catalog-item-price-edit.html'),
                     scope: scope.rendererScope
                 });
             }
