@@ -773,7 +773,7 @@ function CatalogItemPriceDirective($templateCache, editMode, editModeRenderer, u
             function open() {
                 var vatOnPriceKey = 'shop.vat.on.price.interpreted.as';
 
-                scope.rendererScope = angular.extend(scope.$new(), {
+                scope.rendererScope = angular.extend(scope.$new(true), {
                     close: function () {
                         editModeRenderer.close();
                     },

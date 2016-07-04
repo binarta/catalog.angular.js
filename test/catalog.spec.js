@@ -2214,6 +2214,10 @@ describe('catalog', function () {
                             rendererScope = isolateScope.rendererScope;
                         });
 
+                        it('scope is isolated', function () {
+                            expect(rendererScope.item).toBeUndefined();
+                        });
+
                         describe('get current currency symbol', function () {
                             it('when symbol is known', function () {
                                 getActiveCurrencyDeferred.resolve({code: 'USD', symbol: '$'});
