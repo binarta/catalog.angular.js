@@ -21,7 +21,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .controller('ConfigureVatRateController', ['$scope', 'config', 'configReader', 'configWriter', 'activeUserHasPermission', 'binCurrency', ConfigureVatRateController])
     .directive('catalogItemPrice', ['editMode', 'editModeRenderer', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'configReader', 'configWriter', 'binCurrency', CatalogItemPriceDirective])
-    .directive('splitInRows', splitInRowsDirectiveFactory)
+    .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
     .config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function(args) {
             return args.id;
@@ -1020,9 +1020,11 @@ function BinCurrencyService($q, config, applicationData, rest)  {
     };
 }
 
-// @deprecated use binarta.angularx instead
-function splitInRowsDirectiveFactory() {
+// @deprecated
+function splitInRowsDirectiveFactory($log) {
     return function ($scope, el, attrs) {
+        $log.warn('Deprecation warning: splitInRows is no longer maintained, use binSplitInRows instead.');
+
         function splitInRows(items, columns) {
             var rows = [];
             var columnCount = parseInt(columns);
