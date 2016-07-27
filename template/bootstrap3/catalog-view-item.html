@@ -15,13 +15,14 @@
                     <div class="item-price" catalog-item-price="catalogCtrl.item" ng-show="item.price || editing"></div>
 
                     <% if(shop) { %>
-                        <div ng-controller="AddToBasketController" ng-if="catalogCtrl.item.price">
-                            <button class="btn btn-success" ng-disabled="working"
-                                    ng-click="submit(catalogCtrl.item.id, catalogCtrl.item.price)"
-                                    i18n code="catalog.item.add.to.basket.button" read-only>
-                                <i class="fa fa-shopping-cart fa-fw"></i> {{::var}}
-                            </button>
-                        </div>
+                        <bin-basket mode="add-to-basket-button" item="catalogCtrl.item" ng-if="catalogCtrl.item.price"></bin-basket>
+                        <!--<div ng-controller="AddToBasketController" ng-if="catalogCtrl.item.price">-->
+                            <!--<button class="btn btn-success" ng-disabled="working"-->
+                                    <!--ng-click="submit(catalogCtrl.item.id, catalogCtrl.item.price)"-->
+                                    <!--i18n code="catalog.item.add.to.basket.button" read-only>-->
+                                <!--<i class="fa fa-shopping-cart fa-fw"></i> {{::var}}-->
+                            <!--</button>-->
+                        <!--</div>-->
                         <div ng-if="application.pages.contact.active && (!catalogCtrl.item.price || catalogCtrl.item.price == 0)">
                             <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{var}}"
                                class="btn btn-success" i18n code="{{::catalogCtrl.path}}" read-only>
