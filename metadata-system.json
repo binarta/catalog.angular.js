@@ -1,6 +1,6 @@
 {
-  "msgs":{
-    "nl":{
+  "msgs": {
+    "nl": {
       "catalog.item.removed": "Artikel verwijderd",
       "catalog.item.updated": "Artikel bijgewerkt",
       "catalog.partition.name.required": "Verplicht",
@@ -29,6 +29,7 @@
       "catalog.unavailable.message": "Upgrade jouw website om jouw producten of diensten te presenteren in een mooie catalogus.",
       "catalog.upgrade.button": "Upgraden",
       "catalog.item.add.to.basket.button": "In winkelmandje",
+      "catalog.item.add.to.basket.button.success": "Toegevoegd!",
       "catalog.config.vat.country.code.label": "In welk land is uw bedrijf geregistreerd?",
       "catalog.config.vat.rate.label": "Welk BTW percentage wil je hanteren?",
       "catalog.config.currency.label": "In welke valuta moeten de prijzen worden weergegeven?",
@@ -37,7 +38,8 @@
       "catalog.item.price.vat.excl": "(BTW excl.)",
       "catalog.item.price.input.vat.included": "Vul prijs in inclusief BTW.",
       "catalog.item.price.invalid": "Ongeldige prijs"
-    }, "en":{
+    },
+    "en": {
       "catalog.item.removed": "Item removed",
       "catalog.item.updated": "Item updated",
       "catalog.partition.name.required": "Required",
@@ -66,6 +68,7 @@
       "catalog.unavailable.message": "Upgrade your website to showcase your products or services in a beautiful catalog.",
       "catalog.upgrade.button": "Upgrade",
       "catalog.item.add.to.basket.button": "Add to basket",
+      "catalog.item.add.to.basket.button.success": "Added!",
       "catalog.config.vat.country.code.label": "In what country is your company registered?",
       "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?",
       "catalog.config.currency.label": "In what currency should the prices be displayed?",
@@ -74,7 +77,8 @@
       "catalog.item.price.vat.excl": "(VAT excl.)",
       "catalog.item.price.input.vat.included": "Input price with VAT included.",
       "catalog.item.price.invalid": "Invalid price"
-    }, "fr":{
+    },
+    "fr": {
       "catalog.item.removed": "Article supprimé",
       "catalog.item.updated": "Article actualisé",
       "catalog.partition.name.required": "Obligatoire",
@@ -103,6 +107,7 @@
       "catalog.unavailable.message": "Améliorez votre site Web pour présenter vos produits ou services dans un beau catalogue.",
       "catalog.upgrade.button": "Mise à niveau",
       "catalog.item.add.to.basket.button": "Ajouter au panier",
+      "catalog.item.add.to.basket.button.success": "Ajouté!",
       "catalog.config.vat.country.code.label": "Pays d'immatriculation de votre société?",
       "catalog.config.vat.rate.label": "Taux TVA?",
       "catalog.config.currency.label": "Dans quelle devise les prix doivent être affichés?",
@@ -111,7 +116,8 @@
       "catalog.item.price.vat.excl": "(TVA excl.)",
       "catalog.item.price.input.vat.included": "Mettez le prix TVA inclus.",
       "catalog.item.price.invalid": "Prix incorrect"
-    }, "de":{
+    },
+    "de": {
       "catalog.item.removed": "Artikel gelöscht",
       "catalog.item.updated": "Artikel überarbeitet",
       "catalog.partition.name.required": "Required",
@@ -140,6 +146,7 @@
       "catalog.unavailable.message": "Upgrade your website to showcase your products or services in a beautiful catalog.",
       "catalog.upgrade.button": "Upgraden",
       "catalog.item.add.to.basket.button": "Add to basket",
+      "catalog.item.add.to.basket.button.success": "Added!",
       "catalog.config.vat.country.code.label": "In what country is your company registered?",
       "catalog.config.vat.rate.label": "What is the VAT rate you want to apply?",
       "catalog.config.currency.label": "In what currency should the prices be displayed?",
