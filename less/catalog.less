@@ -3,6 +3,8 @@
 }
 
 .bin-catalog {
+  @catalog-item-min-height: 80px;
+
   overflow: hidden;
   padding-bottom: 20px;
 
@@ -22,15 +24,18 @@
         background-position: center;
         background-color: rgba(0,0,0,0.02);
         display: block;
-        height: 80px;
+        height: @catalog-item-min-height;
+        margin: 0;
       }
 
       .item-title {
         font-size: 16px;
+        margin: 0;
       }
 
       .item-price {
-        margin-bottom: 0;
+        padding-top: 20px;
+        margin: 0;
       }
     }
   }
@@ -80,6 +85,7 @@
 
         .caption {
           margin-left: 100px + 4px;
+          min-height: @catalog-item-min-height;
 
           .item-title {
             margin-top: 0;
@@ -101,7 +107,10 @@
         .item-image {
           height: 100px;
           width: 100%;
-          margin-bottom: 10px;
+        }
+
+        .item-title {
+          margin-top: 10px;
         }
       }
     }
