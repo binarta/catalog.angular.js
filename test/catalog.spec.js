@@ -826,7 +826,9 @@ describe('catalog', function () {
                                     },
                                     withCredentials: true
                                 },
-                                success: jasmine.any(Function)
+                                success: jasmine.any(Function),
+                                rejected: jasmine.any(Function)
+
                             };
                             if (scope.item.type) ctx.params.data.type = scope.item.type;
                             if (scope.item.name) ctx.params.data.name = scope.item.name;
@@ -971,7 +973,9 @@ describe('catalog', function () {
                             },
                             withCredentials: true
                         },
-                        success: jasmine.any(Function)
+                        success: jasmine.any(Function),
+                        rejected: jasmine.any(Function)
+
                     });
                 }
 
@@ -1117,6 +1121,15 @@ describe('catalog', function () {
             scope.submit();
             rest.calls.first().args[0].success({id: '/item-id'});
             expect(editMode.enable).toHaveBeenCalled();
+        });
+
+        it('on rejected', function () {
+            subscriptions['app.start']();
+            itemTypesLoaded();
+            scope.init(params);
+            scope.submit();
+            rest.calls.first().args[0].rejected({"partition": ["upperbound"]});
+            expect(scope.violations).toEqual({"partition": ["upperbound"]});
         });
     });
 

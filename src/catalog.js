@@ -9,7 +9,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
-    .controller('AddToCatalogController', ['$scope', '$routeParams', 'topicRegistry', 'findAllCatalogItemTypes', 'addCatalogItem', AddToCatalogController])
+    .controller('AddToCatalogController', ['$scope', '$routeParams', 'topicRegistry', 'findAllCatalogItemTypes', 'addCatalogItem', 'usecaseAdapterFactory', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
     .controller('RemoveItemFromCatalogController', ['config', '$scope', 'i18nLocation', 'catalogPathProcessor', 'topicMessageDispatcher', 'scopedRestServiceHandler', RemoveItemFromCatalogController])
     .controller('QueryCatalogController', ['$scope', 'ngRegisterTopicHandler', 'findCatalogItemsByPartition', 'findCatalogItemById', 'topicMessageDispatcher', '$q', QueryCatalogController])
@@ -388,12 +388,13 @@ function AddCatalogItemFactory($location, config, localeResolver, restServiceHan
                 if (args.redirectTo) $location.path(args.redirectTo);
                 if (args.redirectToView) i18nLocation.path('/view' + item.id);
                 if (args.editMode) editMode.enable();
-            }
+            },
+            rejected: args.rejected
         });
     }
 }
 
-function AddToCatalogController($scope, $routeParams, topicRegistry, findAllCatalogItemTypes, addCatalogItem) {
+function AddToCatalogController($scope, $routeParams, topicRegistry, findAllCatalogItemTypes, addCatalogItem, usecaseAdapterFactory) {
     var self = this;
 
     var preselectedType, locale;
@@ -436,6 +437,9 @@ function AddToCatalogController($scope, $routeParams, topicRegistry, findAllCata
                 defaultName: ['required']
             };
         }
+
+        var ctx = usecaseAdapterFactory($scope);
+
         if (!$scope.violations) {
             $scope.item.partition = $scope.partition;
             $scope.item.locale = locale;
@@ -443,6 +447,7 @@ function AddToCatalogController($scope, $routeParams, topicRegistry, findAllCata
             addCatalogItem({
                 item: $scope.item,
                 success: onSuccess,
+                rejected: ctx.rejected,
                 redirectTo: $scope.redirectTo,
                 redirectToView: $scope.config && $scope.config.redirectToView,
                 editMode: $scope.config && $scope.config.editMode
@@ -751,7 +756,6 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
         $scope.idle = true;
     });
 }
-
 // @deprecated
 function splitInRowsDirectiveFactory($log) {
     return function ($scope, el, attrs) {
