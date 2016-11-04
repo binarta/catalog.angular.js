@@ -19,8 +19,8 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('ViewCatalogItemController', ['$scope', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
-    .config(['catalogItemUpdatedDecoratorProvider', function(catalogItemUpdatedDecoratorProvider) {
-        catalogItemUpdatedDecoratorProvider.add('updatePriority', function(args) {
+    .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
+        catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
             return args.id;
         })
     }])
@@ -34,12 +34,24 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
             [':d0', ':d1', ':d2', ':d3', ':d4'],
             [':d0', ':d1', ':d2', ':d3', ':d4', ':d5']
         ].forEach(function (it) {
-                var path = it.length ? '/' + it.join('/') : '';
-                $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: 'BrowseCatalogController as catalogCtrl'});
-                $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html', controller: 'ViewCatalogItemController as catalogCtrl'});
-                $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html', controller: 'BrowseCatalogController as catalogCtrl'});
-                $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html', controller: 'ViewCatalogItemController as catalogCtrl'});
+            var path = it.length ? '/' + it.join('/') : '';
+            $routeProvider.when('/browse' + path + '/', {
+                templateUrl: 'partials/catalog/browse.html',
+                controller: 'BrowseCatalogController as catalogCtrl'
             });
+            $routeProvider.when('/view' + path, {
+                templateUrl: 'partials/catalog/item.html',
+                controller: 'ViewCatalogItemController as catalogCtrl'
+            });
+            $routeProvider.when('/:locale/browse' + path + '/', {
+                templateUrl: 'partials/catalog/browse.html',
+                controller: 'BrowseCatalogController as catalogCtrl'
+            });
+            $routeProvider.when('/:locale/view' + path, {
+                templateUrl: 'partials/catalog/item.html',
+                controller: 'ViewCatalogItemController as catalogCtrl'
+            });
+        });
     }]);
 
 function FindCatalogPartitionsFactory(config, $http) {
@@ -154,7 +166,7 @@ function CatalogPathParserFactory(catalogPathProcessor) {
         for (var i = 0; i < 6; i++)
             path += params['d' + i] ? params['d' + i] + '/' : '';
         path = path + (path.slice(-1) == '/' ? '' : '/');
-        return  path;
+        return path;
     };
 
     return function (params, type) {
@@ -182,11 +194,11 @@ function BrowseCatalogController($scope, $routeParams, catalogPathParser) {
 function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItemsByPartition, findCatalogItemById, topicMessageDispatcher, $q) {
     $scope.items = [];
 
-    $scope.decorator = function(item) {
+    $scope.decorator = function (item) {
         $scope.items.push(item);
     };
 
-    $scope.filtersCustomizer = function(args) {
+    $scope.filtersCustomizer = function (args) {
         var deferred = $q.defer();
         args.filters.offset = args.subset.offset;
         args.filters.count = args.subset.count;
@@ -674,15 +686,15 @@ function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseA
 
 function CatalogItemUpdatedDecoratorsFactory() {
     var decorators = {};
-    var defaultDecorator = function(args) {
+    var defaultDecorator = function (args) {
         return args;
     };
     return {
-        add: function(context, decorator) {
+        add: function (context, decorator) {
             decorators[context] = decorator;
         },
-        $get: function() {
-            return function(args) {
+        $get: function () {
+            return function (args) {
                 return decorators[args.context] ? decorators[args.context](args) : defaultDecorator(args);
             }
         }
@@ -724,7 +736,10 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
             priority: self.item.priority
         };
         ctx.success = function () {
-            topicMessageDispatcher.fire('catalog.item.paste', {id: sessionStorage.moveCatalogItemClipboard, priority: self.item.priority});
+            topicMessageDispatcher.fire('catalog.item.paste', {
+                id: sessionStorage.moveCatalogItemClipboard,
+                priority: self.item.priority
+            });
         };
         updateCatalogItem(ctx);
     };

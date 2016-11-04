@@ -478,172 +478,172 @@ describe('catalog', function () {
             'scope',
             'controller'
         ].forEach(function (c) {
-                describe('with ' + c, function () {
-                    var ctx;
+            describe('with ' + c, function () {
+                var ctx;
 
+                beforeEach(function () {
+                    ctx = (c == 'scope') ? scope : ctrl;
+                });
+
+                it('simple search', function () {
+                    ctx.init({query: 'ownedBy', owner: '/parent/'});
+                    subscribers['app.start']();
+                    expect(request().query).toEqual('ownedBy');
+                    expect(request().filters.owner).toEqual('/parent/');
+                });
+
+                it('with sortings', function () {
+                    ctx.init({query: 'ownedBy', owner: '/parent/', sortings: [{on: 'name', orientation: 'asc'}]});
+                    subscribers['app.start']();
+                    expect(request().sortings).toEqual([{on: 'name', orientation: 'asc'}]);
+                });
+
+                it('with sub set', function () {
+                    ctx.init({query: 'ownedBy', owner: '/parent/', subset: {offset: 0, count: 2}});
+                    subscribers['app.start']();
+                    expect(request().subset).toEqual({offset: 0, count: 2});
+                });
+
+                describe('on search results', function () {
                     beforeEach(function () {
-                        ctx = (c == 'scope') ? scope : ctrl;
-                    });
-
-                    it('simple search', function () {
-                        ctx.init({query: 'ownedBy', owner: '/parent/'});
-                        subscribers['app.start']();
-                        expect(request().query).toEqual('ownedBy');
-                        expect(request().filters.owner).toEqual('/parent/');
-                    });
-
-                    it('with sortings', function () {
-                        ctx.init({query: 'ownedBy', owner: '/parent/', sortings: [{on: 'name', orientation: 'asc'}]});
-                        subscribers['app.start']();
-                        expect(request().sortings).toEqual([{on: 'name', orientation: 'asc'}]);
-                    });
-
-                    it('with sub set', function () {
                         ctx.init({query: 'ownedBy', owner: '/parent/', subset: {offset: 0, count: 2}});
                         subscribers['app.start']();
-                        expect(request().subset).toEqual({offset: 0, count: 2});
+                        request().success([{id: 1}]);
                     });
 
-                    describe('on search results', function () {
-                        beforeEach(function () {
-                            ctx.init({query: 'ownedBy', owner: '/parent/', subset: {offset: 0, count: 2}});
-                            subscribers['app.start']();
-                            request().success([{id: 1}]);
-                        });
+                    it('expose results on scope', function () {
+                        expect(ctx.partitions.length).toEqual(1);
+                        expect(ctx.partitions[0].id).toEqual(1);
+                    });
 
-                        it('expose results on scope', function () {
-                            expect(ctx.partitions.length).toEqual(1);
-                            expect(ctx.partitions[0].id).toEqual(1);
+                    it('increment offset with count', function () {
+                        expect(request().subset).toEqual({offset: 1, count: 2});
+                    });
+
+                    describe('when searching for more', function () {
+                        beforeEach(function () {
+                            fixture.query.calls.reset();
+                            ctx.searchForMore();
+                            request().success([{id: 2}]);
                         });
 
                         it('increment offset with count', function () {
-                            expect(request().subset).toEqual({offset: 1, count: 2});
+                            expect(request().subset).toEqual({offset: 2, count: 2});
                         });
 
-                        describe('when searching for more', function () {
-                            beforeEach(function () {
-                                fixture.query.calls.reset();
-                                ctx.searchForMore();
-                                request().success([{id: 2}]);
-                            });
-
-                            it('increment offset with count', function () {
-                                expect(request().subset).toEqual({offset: 2, count: 2});
-                            });
-
-                            it('extends the results', function () {
-                                expect(ctx.partitions.length).toEqual(2);
-                                expect(ctx.partitions[0].id).toEqual(1);
-                                expect(ctx.partitions[1].id).toEqual(2);
-                            });
+                        it('extends the results', function () {
+                            expect(ctx.partitions.length).toEqual(2);
+                            expect(ctx.partitions[0].id).toEqual(1);
+                            expect(ctx.partitions[1].id).toEqual(2);
                         });
                     });
+                });
 
-                    describe('with deprecated initializer', function () {
+                describe('with deprecated initializer', function () {
+                    beforeEach(function () {
+                        ctx.init('ownedBy', '/parent/');
+                    });
+
+                    it('wait for app.start notification', function () {
+                        expect(fixture.query).not.toHaveBeenCalled();
+                    });
+
+                    it('expose partition and parent on scope', function () {
+                        expect(ctx.partition).toEqual('/parent/');
+                        expect(ctx.parent).toEqual('/');
+                    });
+
+                    describe('when app.start notification received', function () {
                         beforeEach(function () {
-                            ctx.init('ownedBy', '/parent/');
+                            subscribers['app.start']();
                         });
 
-                        it('wait for app.start notification', function () {
-                            expect(fixture.query).not.toHaveBeenCalled();
+                        it('request partitions', function () {
+                            expect(fixture.query.calls.first().args[0].query).toEqual('ownedBy');
+                            expect(fixture.query.calls.first().args[0].filters.owner).toEqual('/parent/');
                         });
 
-                        it('expose partition and parent on scope', function () {
-                            expect(ctx.partition).toEqual('/parent/');
-                            expect(ctx.parent).toEqual('/');
-                        });
-
-                        describe('when app.start notification received', function () {
+                        describe('and partitions received', function () {
                             beforeEach(function () {
-                                subscribers['app.start']();
+                                payload = [
+                                    {id: '/parent/path/'},
+                                    {id: '/parent/another/'}
+                                ];
+                                fixture.query.calls.first().args[0].success(payload);
                             });
 
-                            it('request partitions', function () {
-                                expect(fixture.query.calls.first().args[0].query).toEqual('ownedBy');
-                                expect(fixture.query.calls.first().args[0].filters.owner).toEqual('/parent/');
+                            it('mark the current partition with css class active', function () {
+                                expect(ctx.partitions).toEqual(payload);
                             });
 
-                            describe('and partitions received', function () {
-                                beforeEach(function () {
-                                    payload = [
-                                        {id: '/parent/path/'},
-                                        {id: '/parent/another/'}
-                                    ];
-                                    fixture.query.calls.first().args[0].success(payload);
-                                });
+                            describe('on catalog.partition.added notification', function () {
+                                var partition;
 
-                                it('mark the current partition with css class active', function () {
-                                    expect(ctx.partitions).toEqual(payload);
-                                });
-
-                                describe('on catalog.partition.added notification', function () {
-                                    var partition;
-
-                                    function raiseForPath(path) {
-                                        return function () {
-                                            partition = {
-                                                owner: path,
-                                                name: 'name'
-                                            };
-                                            subscribers['catalog.partition.added'](partition);
-                                        }
+                                function raiseForPath(path) {
+                                    return function () {
+                                        partition = {
+                                            owner: path,
+                                            name: 'name'
+                                        };
+                                        subscribers['catalog.partition.added'](partition);
                                     }
+                                }
 
-                                    beforeEach(function () {
-                                        ctx.partitions = [];
-                                    });
+                                beforeEach(function () {
+                                    ctx.partitions = [];
+                                });
 
-                                    describe('and partition exists in listed path', function () {
-                                        beforeEach(raiseForPath('/parent/'));
+                                describe('and partition exists in listed path', function () {
+                                    beforeEach(raiseForPath('/parent/'));
 
-                                        it('payload is added to the partition list', function () {
-                                            expect(ctx.partitions).toEqual([partition]);
-                                        });
-                                    });
-
-                                    describe('and partition does not exist in listed path', function () {
-                                        beforeEach(raiseForPath('/another/'));
-
-                                        it('payload is not added to the partition list', function () {
-                                            expect(ctx.partitions).toEqual([]);
-                                        });
+                                    it('payload is added to the partition list', function () {
+                                        expect(ctx.partitions).toEqual([partition]);
                                     });
                                 });
 
-                                it('catalog.partition.removed notification removes the partition', function () {
-                                    ctx.partitions = [
-                                        {id: 'partition-1'},
-                                        {id: 'partition-2'}
-                                    ];
+                                describe('and partition does not exist in listed path', function () {
+                                    beforeEach(raiseForPath('/another/'));
 
-                                    subscribers['catalog.partition.removed']('partition-1');
-
-                                    expect(ctx.partitions).toEqual([
-                                        {id: 'partition-2'}
-                                    ]);
+                                    it('payload is not added to the partition list', function () {
+                                        expect(ctx.partitions).toEqual([]);
+                                    });
                                 });
                             });
 
+                            it('catalog.partition.removed notification removes the partition', function () {
+                                ctx.partitions = [
+                                    {id: 'partition-1'},
+                                    {id: 'partition-2'}
+                                ];
+
+                                subscribers['catalog.partition.removed']('partition-1');
+
+                                expect(ctx.partitions).toEqual([
+                                    {id: 'partition-2'}
+                                ]);
+                            });
+                        });
+
+                    });
+                });
+
+                [
+                    {path: '/', parent: undefined},
+                    {path: '/sub/', parent: '/'},
+                    {path: '/parent/sub/', parent: '/parent/'}
+                ].forEach(function (el) {
+                    describe('on init with path=' + el.path, function () {
+                        beforeEach(function () {
+                            ctx.init('query-name', el.path);
+                        });
+
+                        it('exposes parent field', function () {
+                            expect(ctx.parent).toEqual(el.parent);
                         });
                     });
-
-                    [
-                        {path: '/', parent: undefined},
-                        {path: '/sub/', parent: '/'},
-                        {path: '/parent/sub/', parent: '/parent/'}
-                    ].forEach(function (el) {
-                            describe('on init with path=' + el.path, function () {
-                                beforeEach(function () {
-                                    ctx.init('query-name', el.path);
-                                });
-
-                                it('exposes parent field', function () {
-                                    expect(ctx.parent).toEqual(el.parent);
-                                });
-                            });
-                        });
                 });
             });
+        });
     });
 
     describe('RemoveCatalogPartitionController', function () {
@@ -899,10 +899,12 @@ describe('catalog', function () {
                 var passedItem;
 
                 beforeEach(function () {
-                    scope.init({partition: 'partition', type: 'type', locale: 'locale', success: function (item) {
-                        executed = true;
-                        passedItem = item;
-                    }});
+                    scope.init({
+                        partition: 'partition', type: 'type', locale: 'locale', success: function (item) {
+                            executed = true;
+                            passedItem = item;
+                        }
+                    });
                 });
 
                 describe('on submit', function () {
@@ -1139,36 +1141,36 @@ describe('catalog', function () {
         [
             {params: {id: 'id'}, queryString: 'id=/id'}
         ].forEach(function (el) {
-                describe('on init with params=' + JSON.stringify(el), function () {
-                    it('on init fetch item details', inject(function (topicRegistryMock) {
-                        Object.keys(el.params).forEach(function (key) {
-                            params[key] = el.params[key];
-                        });
+            describe('on init with params=' + JSON.stringify(el), function () {
+                it('on init fetch item details', inject(function (topicRegistryMock) {
+                    Object.keys(el.params).forEach(function (key) {
+                        params[key] = el.params[key];
+                    });
 
-                        //$httpBackend.expect('GET', 'api/entity/catalog-item?' + el.queryString).respond(200, {});
-                        scope.init();
-                        topicRegistryMock['app.start']();
-                        //$httpBackend.flush();
-                        $httpBackend.verifyNoOutstandingExpectation();
-                        $httpBackend.verifyNoOutstandingRequest();
-                        expect(fixture.entity.calls.first().args[0]).toEqual(el.params.id);
+                    //$httpBackend.expect('GET', 'api/entity/catalog-item?' + el.queryString).respond(200, {});
+                    scope.init();
+                    topicRegistryMock['app.start']();
+                    //$httpBackend.flush();
+                    $httpBackend.verifyNoOutstandingExpectation();
+                    $httpBackend.verifyNoOutstandingRequest();
+                    expect(fixture.entity.calls.first().args[0]).toEqual(el.params.id);
 
-                        fixture.entity.calls.first().args[1]({
-                            id: 'id',
-                            type: 'type',
-                            name: 'name',
-                            locale: 'en'
-                        });
-                        expect(scope.id).toEqual('id');
-                        expect(scope.type).toEqual('type');
-                        expect(scope.name).toEqual('name');
-                        expect(scope.locale).toBeUndefined();
-                        expect(scope.item.id).toEqual('id');
-                        expect(scope.item.type).toEqual('type');
-                        expect(scope.item.name).toEqual('name');
-                    }));
-                });
+                    fixture.entity.calls.first().args[1]({
+                        id: 'id',
+                        type: 'type',
+                        name: 'name',
+                        locale: 'en'
+                    });
+                    expect(scope.id).toEqual('id');
+                    expect(scope.type).toEqual('type');
+                    expect(scope.name).toEqual('name');
+                    expect(scope.locale).toBeUndefined();
+                    expect(scope.item.id).toEqual('id');
+                    expect(scope.item.type).toEqual('type');
+                    expect(scope.item.name).toEqual('name');
+                }));
             });
+        });
 
         it('generates a default template url', function () {
             expect(scope.templateUri()).toEqual('partials/catalog/item/default.html');
@@ -1551,138 +1553,138 @@ describe('catalog', function () {
             name: 'dir-5'
         }
     ].forEach(function (el) {
-            var parts = el.parts;
-            var path = '/' + parts.join('/') + (parts.length > 0 ? '/' : '');
+        var parts = el.parts;
+        var path = '/' + parts.join('/') + (parts.length > 0 ? '/' : '');
 
-            describe('with catalog path', function () {
-                beforeEach(inject(function ($rootScope) {
-                    scope = $rootScope.$new();
-                    params = {};
-                    parts.reduce(function (p, c, i) {
-                        p['d' + i] = c;
-                        return p;
-                    }, params);
-                }));
+        describe('with catalog path', function () {
+            beforeEach(inject(function ($rootScope) {
+                scope = $rootScope.$new();
+                params = {};
+                parts.reduce(function (p, c, i) {
+                    p['d' + i] = c;
+                    return p;
+                }, params);
+            }));
 
-                function assertPathDetailsExposedOnScope(path) {
-                    it('exposes path on scope', function () {
-                        expect(scope.path).toEqual(path);
-                    });
-
-                    it('exposes head on scope', function () {
-                        expect(scope.head).toEqual(el.head);
-                    });
-
-                    it('exposes name on scope', function () {
-                        expect(scope.name).toEqual(el.name);
-                    });
-
-                    it('exposes parent on scope', function () {
-                        expect(scope.parent).toEqual(el.parent);
-                    });
-
-                    it('exposes breadcrumbs on scope', function () {
-                        expect(scope.breadcrumbs).toEqual(parts.map(function (it, idx) {
-                            var active = idx + 1 == scope.breadcrumbs.length;
-                            return {
-                                path: '/' + parts.slice(0, idx + 1).join('/') + (path.slice(-1) != '/' && active ? '' : '/'),
-                                name: it,
-                                active: active
-                            };
-                        }));
-                    });
-                }
-
-                function assertPathDetailsExposedOnController(path) {
-                    it('exposes path on ctrl', function () {
-                        expect(ctrl.path).toEqual(path);
-                    });
-
-                    it('exposes head on ctrl', function () {
-                        expect(ctrl.head).toEqual(el.head);
-                    });
-
-                    it('exposes name on ctrl', function () {
-                        expect(ctrl.name).toEqual(el.name);
-                    });
-
-                    it('exposes parent on ctrl', function () {
-                        expect(ctrl.parent).toEqual(el.parent);
-                    });
-
-                    it('exposes breadcrumbs on ctrl', function () {
-                        expect(ctrl.breadcrumbs).toEqual(parts.map(function (it, idx) {
-                            var active = idx + 1 == scope.breadcrumbs.length;
-                            return {
-                                path: '/' + parts.slice(0, idx + 1).join('/') + (path.slice(-1) != '/' && active ? '' : '/'),
-                                name: it,
-                                active: active
-                            };
-                        }));
-                    });
-                }
-
-                describe('view catalog item controller', function () {
-                    describe('constructor', function () {
-                        var findItemById = jasmine.createSpy('findItemById');
-                        var filePath;
-
-                        beforeEach(inject(function ($controller) {
-                            filePath = path.slice(0, path.length - 1);
-                            ctrl = $controller(ViewCatalogItemController, {
-                                $scope: scope,
-                                $routeParams: params,
-                                findCatalogItemById: findItemById
-                            });
-                        }));
-
-                        assertPathDetailsExposedOnScope(path.slice(0, path.length - 1));
-                        assertPathDetailsExposedOnController(path.slice(0, path.length - 1));
-
-                        describe('on init using scope', function () {
-                            beforeEach(function () {
-                                scope.init(filePath)
-                            });
-
-                            it('and app.start notification received', inject(function (config, topicRegistryMock) {
-                                if (filePath) {
-                                    topicRegistryMock['app.start']();
-                                    expect(findItemById.calls.first().args[0]).toEqual(filePath);
-                                }
-                            }));
-                        });
-
-                        describe('on init using controller', function () {
-                            beforeEach(function () {
-                                ctrl.init(filePath)
-                            });
-
-                            it('and app.start notification received', inject(function (config, topicRegistryMock) {
-                                if (filePath) {
-                                    topicRegistryMock['app.start']();
-                                    expect(findItemById.calls.first().args[0]).toEqual(filePath);
-                                }
-                            }));
-                        });
-
-                    });
+            function assertPathDetailsExposedOnScope(path) {
+                it('exposes path on scope', function () {
+                    expect(scope.path).toEqual(path);
                 });
 
-                describe('browse catalog controller', function () {
-                    describe('constructor', function () {
-                        beforeEach(inject(function ($controller) {
-                            ctrl = $controller(BrowseCatalogController, {
-                                $scope: scope,
-                                $routeParams: params
-                            });
-                        }));
+                it('exposes head on scope', function () {
+                    expect(scope.head).toEqual(el.head);
+                });
 
-                        assertPathDetailsExposedOnScope(path);
-                        assertPathDetailsExposedOnController(path);
+                it('exposes name on scope', function () {
+                    expect(scope.name).toEqual(el.name);
+                });
+
+                it('exposes parent on scope', function () {
+                    expect(scope.parent).toEqual(el.parent);
+                });
+
+                it('exposes breadcrumbs on scope', function () {
+                    expect(scope.breadcrumbs).toEqual(parts.map(function (it, idx) {
+                        var active = idx + 1 == scope.breadcrumbs.length;
+                        return {
+                            path: '/' + parts.slice(0, idx + 1).join('/') + (path.slice(-1) != '/' && active ? '' : '/'),
+                            name: it,
+                            active: active
+                        };
+                    }));
+                });
+            }
+
+            function assertPathDetailsExposedOnController(path) {
+                it('exposes path on ctrl', function () {
+                    expect(ctrl.path).toEqual(path);
+                });
+
+                it('exposes head on ctrl', function () {
+                    expect(ctrl.head).toEqual(el.head);
+                });
+
+                it('exposes name on ctrl', function () {
+                    expect(ctrl.name).toEqual(el.name);
+                });
+
+                it('exposes parent on ctrl', function () {
+                    expect(ctrl.parent).toEqual(el.parent);
+                });
+
+                it('exposes breadcrumbs on ctrl', function () {
+                    expect(ctrl.breadcrumbs).toEqual(parts.map(function (it, idx) {
+                        var active = idx + 1 == scope.breadcrumbs.length;
+                        return {
+                            path: '/' + parts.slice(0, idx + 1).join('/') + (path.slice(-1) != '/' && active ? '' : '/'),
+                            name: it,
+                            active: active
+                        };
+                    }));
+                });
+            }
+
+            describe('view catalog item controller', function () {
+                describe('constructor', function () {
+                    var findItemById = jasmine.createSpy('findItemById');
+                    var filePath;
+
+                    beforeEach(inject(function ($controller) {
+                        filePath = path.slice(0, path.length - 1);
+                        ctrl = $controller(ViewCatalogItemController, {
+                            $scope: scope,
+                            $routeParams: params,
+                            findCatalogItemById: findItemById
+                        });
+                    }));
+
+                    assertPathDetailsExposedOnScope(path.slice(0, path.length - 1));
+                    assertPathDetailsExposedOnController(path.slice(0, path.length - 1));
+
+                    describe('on init using scope', function () {
+                        beforeEach(function () {
+                            scope.init(filePath)
+                        });
+
+                        it('and app.start notification received', inject(function (config, topicRegistryMock) {
+                            if (filePath) {
+                                topicRegistryMock['app.start']();
+                                expect(findItemById.calls.first().args[0]).toEqual(filePath);
+                            }
+                        }));
                     });
+
+                    describe('on init using controller', function () {
+                        beforeEach(function () {
+                            ctrl.init(filePath)
+                        });
+
+                        it('and app.start notification received', inject(function (config, topicRegistryMock) {
+                            if (filePath) {
+                                topicRegistryMock['app.start']();
+                                expect(findItemById.calls.first().args[0]).toEqual(filePath);
+                            }
+                        }));
+                    });
+
+                });
+            });
+
+            describe('browse catalog controller', function () {
+                describe('constructor', function () {
+                    beforeEach(inject(function ($controller) {
+                        ctrl = $controller(BrowseCatalogController, {
+                            $scope: scope,
+                            $routeParams: params
+                        });
+                    }));
+
+                    assertPathDetailsExposedOnScope(path);
+                    assertPathDetailsExposedOnController(path);
                 });
             });
         });
+    });
 
     describe('UpdateCatalogItemController', function () {
         var topics, fixture, unbindWatchCalled, writer;
@@ -2109,7 +2111,7 @@ describe('catalog', function () {
             })
         });
     });
-    
+
     describe('splitInRows directive', function () {
         var element, html, scope;
 
@@ -2197,19 +2199,19 @@ describe('catalog', function () {
             ]
             }
         ].forEach(function (value) {
-                describe('creates rows for collection', function () {
-                    beforeEach(inject(function ($rootScope, $compile) {
-                        html = '<div split-in-rows="collection" columns="' + value.columns + '"></div>';
-                        element = angular.element(html);
-                        $compile(element)(scope);
-                        scope.$digest();
-                    }));
+            describe('creates rows for collection', function () {
+                beforeEach(inject(function ($rootScope, $compile) {
+                    html = '<div split-in-rows="collection" columns="' + value.columns + '"></div>';
+                    element = angular.element(html);
+                    $compile(element)(scope);
+                    scope.$digest();
+                }));
 
-                    it('given column count ' + value.columns, function () {
-                        expect(scope.rows).toEqual(value.expected);
-                    });
+                it('given column count ' + value.columns, function () {
+                    expect(scope.rows).toEqual(value.expected);
                 });
             });
+        });
 
         it('when the collection is undefined', function () {
             scope.collection = undefined;
