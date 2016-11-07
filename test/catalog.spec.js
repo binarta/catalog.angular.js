@@ -1,6 +1,6 @@
 describe('catalog', function () {
     var usecase, ctrl, scope, params, $httpBackend, dispatcher, location, i18nLocation, payload, notifications;
-    var onSuccess, receivedPayload, rest, i18n;
+    var onSuccess, receivedPayload, rest, i18n, $q;
 
     beforeEach(module('catalog'));
     beforeEach(module('config'));
@@ -10,7 +10,8 @@ describe('catalog', function () {
     beforeEach(module('i18n'));
     beforeEach(module('test.app'));
 
-    beforeEach(inject(function ($injector, $location, _i18nLocation_, config) {
+    beforeEach(inject(function ($injector, $location, _i18nLocation_, config, _$q_) {
+        $q = _$q_;
         config.namespace = 'namespace';
         scope = {
             $watch: function (expression, callback) {
@@ -176,6 +177,15 @@ describe('catalog', function () {
             fixture.usecase('type', onSuccess);
             fixture.rest.calls.first().args[0].success(payload);
             expect(receivedPayload).toEqual(payload);
+        });
+
+        it('propagates promise from rest service', function () {
+            var expected = 'promise';
+            fixture.rest.and.returnValue(expected);
+
+            var actual = fixture.usecase('item-id');
+
+            expect(actual).toEqual(expected);
         });
     });
 
@@ -1240,8 +1250,13 @@ describe('catalog', function () {
             });
 
             describe('on item refresh', function () {
+                var actual, expected;
+
                 beforeEach(function () {
-                    ctrl.refresh();
+                    expected = 'promise';
+                    fixture.entity.and.returnValue('promise');
+
+                    actual = ctrl.refresh();
                 });
 
                 it('request catalog item', function () {
@@ -1264,6 +1279,10 @@ describe('catalog', function () {
                     it('update item on controller', function () {
                         expect(ctrl.item).toEqual(payload);
                     });
+                });
+
+                it('promise is propagated', function () {
+                    expect(actual).toEqual(expected);
                 });
             });
         });

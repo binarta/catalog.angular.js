@@ -76,7 +76,7 @@ function FindCatalogPartitionsFactory(config, $http) {
 
 function FindCatalogItemByIdFactory(config, restServiceHandler) {
     return function (id, onSuccess) {
-        restServiceHandler({
+        return restServiceHandler({
             params: {
                 method: 'GET',
                 url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + encodeURIComponent(id),
@@ -523,7 +523,7 @@ function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topi
 
     this.refresh = function (args) {
         var id = args ? args.id : self.item.id;
-        findCatalogItemById(id, function (item) {
+        return findCatalogItemById(id, function (item) {
             $scope.item = item;
             self.item = item;
         });
