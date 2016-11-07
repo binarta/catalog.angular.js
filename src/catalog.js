@@ -521,17 +521,18 @@ function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topi
         });
     }
 
-    var updated = function (args) {
-        findCatalogItemById(args.id, function (item) {
+    this.refresh = function (args) {
+        var id = args ? args.id : self.item.id;
+        findCatalogItemById(id, function (item) {
             $scope.item = item;
             self.item = item;
         });
     };
 
-    topicRegistry.subscribe('catalog.item.updated', updated);
+    topicRegistry.subscribe('catalog.item.updated', self.refresh);
 
     $scope.$on('$destroy', function () {
-        topicRegistry.unsubscribe('catalog.item.updated', updated);
+        topicRegistry.unsubscribe('catalog.item.updated', self.refresh);
     });
 }
 

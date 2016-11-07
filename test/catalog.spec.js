@@ -1238,6 +1238,34 @@ describe('catalog', function () {
                 expect(scope.templateUri()).toEqual('partials/catalog/item/type.html');
                 expect(ctrl.templateUri()).toEqual('partials/catalog/item/type.html');
             });
+
+            describe('on item refresh', function () {
+                beforeEach(function () {
+                    ctrl.refresh();
+                });
+
+                it('request catalog item', function () {
+                    expect(fixture.entity.calls.first().args[0]).toEqual('id');
+                });
+
+                describe('when catalog item received', function () {
+                    payload = {
+                        id: 'newId'
+                    };
+
+                    beforeEach(function () {
+                        fixture.entity.calls.first().args[1](payload);
+                    });
+
+                    it('update item on local scope', function () {
+                        expect(scope.item).toEqual(payload);
+                    });
+
+                    it('update item on controller', function () {
+                        expect(ctrl.item).toEqual(payload);
+                    });
+                });
+            });
         });
 
         describe('catalog.item.updated notification received', function () {
