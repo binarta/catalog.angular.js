@@ -1,6 +1,6 @@
 describe('catalog', function () {
     var usecase, ctrl, scope, params, $httpBackend, dispatcher, location, i18nLocation, payload, notifications;
-    var onSuccess, receivedPayload, rest, i18n, $q;
+    var onSuccess, receivedPayload, rest, i18n, $q, binarta;
 
     beforeEach(module('catalog'));
     beforeEach(module('config'));
@@ -10,8 +10,9 @@ describe('catalog', function () {
     beforeEach(module('i18n'));
     beforeEach(module('test.app'));
 
-    beforeEach(inject(function ($injector, $location, _i18nLocation_, config, _$q_) {
+    beforeEach(inject(function ($injector, $location, _i18nLocation_, config, _$q_, _binarta_) {
         $q = _$q_;
+        binarta = _binarta_;
         config.namespace = 'namespace';
         scope = {
             $watch: function (expression, callback) {
@@ -148,11 +149,30 @@ describe('catalog', function () {
             };
         }));
 
+        it('on execute without supported languages includes default locale in rest call', function () {
+            binarta.application.gateway.updateApplicationProfile({supportedLanguages: []});
+            binarta.application.refresh();
+            binarta.application.setLocaleForPresentation(undefined);
+
+            fixture.usecase('item-id', onSuccess);
+
+            expect(fixture.rest.calls.first().args[0].params.url).toEqual('api/entity/catalog-item?id=item-id&locale=default');
+        });
+
+        it('on execute with locale for presentation included in rest call', function () {
+            binarta.application.gateway.updateApplicationProfile({supportedLanguages: ['en', 'nl']});
+            binarta.application.refresh();
+            binarta.application.setLocaleForPresentation('en');
+
+            fixture.usecase('item-id', onSuccess);
+
+            expect(fixture.rest.calls.first().args[0].params.url).toEqual('api/entity/catalog-item?id=item-id&locale=en');
+        });
+
         it('on execute perform rest call', function () {
             fixture.usecase('item-id', onSuccess);
             expect(fixture.rest.calls.first().args[0].params.withCredentials).toEqual(true);
             expect(fixture.rest.calls.first().args[0].params.method).toEqual('GET');
-            expect(fixture.rest.calls.first().args[0].params.url).toEqual('api/entity/catalog-item?id=item-id');
             expect(fixture.rest.calls.first().args[0].params.params).toEqual({treatInputAsId: true});
         });
 
@@ -164,7 +184,7 @@ describe('catalog', function () {
         it('on execute with baseUri', function () {
             fixture.config.baseUri = 'http://host/context/';
             fixture.usecase('item/id', onSuccess);
-            expect(fixture.rest.calls.first().args[0].params.url).toEqual(fixture.config.baseUri + 'api/entity/catalog-item?id=' + encodeURIComponent('item/id'));
+            expect(fixture.rest.calls.first().args[0].params.url).toEqual(fixture.config.baseUri + 'api/entity/catalog-item?id=' + encodeURIComponent('item/id') + '&locale=undefined');
         });
 
         it('unexpected responses resolve to an empty set', function () {
@@ -1159,6 +1179,10 @@ describe('catalog', function () {
                 $routeParams: params,
                 findCatalogItemById: fixture.entity
             });
+
+            binarta.application.gateway.updateApplicationProfile({supportedLanguages: []});
+            binarta.application.refresh();
+            binarta.application.setLocaleForPresentation(undefined);
         }));
 
         [
@@ -1171,7 +1195,6 @@ describe('catalog', function () {
                     });
 
                     scope.init();
-                    topicRegistryMock['app.start']();
                     $httpBackend.verifyNoOutstandingExpectation();
                     $httpBackend.verifyNoOutstandingRequest();
                     expect(fixture.entity.calls.first().args[0]).toEqual(el.params.id);
@@ -1203,7 +1226,6 @@ describe('catalog', function () {
                 params.id = 'id';
 
                 scope.init();
-                topicRegistryMock['app.start']();
                 expect(fixture.entity.calls.first().args[0]).toEqual('id');
                 fixture.entity.calls.first().args[1]({
                     id: 'id',
@@ -1289,7 +1311,6 @@ describe('catalog', function () {
                 if (ctx.onRouteParams)
                     params.id = ctx.id;
                 scope.init(ctx.onInitializer ? ctx.id : undefined);
-                topicRegistryMock['app.start']();
                 fixture.entity.calls.first().args[1]({
                     id: 'id',
                     localizedId: '/products/localized-id',
@@ -1639,6 +1660,10 @@ describe('catalog', function () {
                     p['d' + i] = c;
                     return p;
                 }, params);
+
+                binarta.application.gateway.updateApplicationProfile({supportedLanguages: []});
+                binarta.application.refresh();
+                binarta.application.setLocaleForPresentation(undefined);
             }));
 
             function assertPathDetailsExposedOnScope(path) {
@@ -1723,7 +1748,6 @@ describe('catalog', function () {
 
                         it('and app.start notification received', inject(function (config, topicRegistryMock) {
                             if (filePath) {
-                                topicRegistryMock['app.start']();
                                 expect(findItemById.calls.first().args[0]).toEqual(filePath);
                             }
                         }));
@@ -1736,7 +1760,6 @@ describe('catalog', function () {
 
                         it('and app.start notification received', inject(function (config, topicRegistryMock) {
                             if (filePath) {
-                                topicRegistryMock['app.start']();
                                 expect(findItemById.calls.first().args[0]).toEqual(filePath);
                             }
                         }));

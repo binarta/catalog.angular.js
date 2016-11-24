@@ -1,10 +1,10 @@
-angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price'])
+angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price'])
     .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])
     .factory('findAllCatalogItemTypes', ['config', '$http', FindAllCatalogItemTypesFactory])
     .factory('findCatalogPartitions', ['config', '$http', FindCatalogPartitionsFactory])
-    .factory('findCatalogItemById', ['config', 'restServiceHandler', FindCatalogItemByIdFactory])
+    .factory('findCatalogItemById', ['config', 'restServiceHandler', 'binarta', FindCatalogItemByIdFactory])
     .factory('findCatalogItemsByPartition', ['config', 'restServiceHandler', FindCatalogItemsByPartitionFactory])
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
@@ -16,7 +16,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
     .controller('UpdateCatalogItemController', ['config', '$scope', 'updateCatalogItem', 'usecaseAdapterFactory', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
     .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
-    .controller('ViewCatalogItemController', ['$scope', 'i18nLocation', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
+    .controller('ViewCatalogItemController', ['$scope', 'i18nLocation', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', 'binarta', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
@@ -74,12 +74,13 @@ function FindCatalogPartitionsFactory(config, $http) {
     }
 }
 
-function FindCatalogItemByIdFactory(config, restServiceHandler) {
+function FindCatalogItemByIdFactory(config, restServiceHandler, binarta) {
     return function (id, onSuccess) {
+        var locale = binarta.application.localeForPresentation() || binarta.application.locale();
         return restServiceHandler({
             params: {
                 method: 'GET',
-                url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + encodeURIComponent(id),
+                url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + encodeURIComponent(id) + '&locale=' + locale,
                 headers: {'X-Binarta-Carousel': true},
                 params: {
                     treatInputAsId: true
@@ -471,7 +472,7 @@ function AddToCatalogController($scope, $routeParams, topicRegistry, findAllCata
     });
 }
 
-function ViewCatalogItemController($scope, $location, $routeParams, catalogPathParser, topicRegistry, findCatalogItemById) {
+function ViewCatalogItemController($scope, $location, $routeParams, catalogPathParser, topicRegistry, findCatalogItemById, binarta) {
     var self = this;
     var current = catalogPathParser($routeParams, 'file');
     var requestedId;
@@ -521,7 +522,7 @@ function ViewCatalogItemController($scope, $location, $routeParams, catalogPathP
     this.init = init;
 
     function init(path) {
-        topicRegistry.subscribe('app.start', function () {
+        binarta.schedule(function() {
             requestedId = $routeParams.id || path;
             findCatalogItemById(requestedId, applyItemToScope);
         });
