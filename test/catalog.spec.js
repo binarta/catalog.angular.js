@@ -1170,10 +1170,8 @@ describe('catalog', function () {
                         params[key] = el.params[key];
                     });
 
-                    //$httpBackend.expect('GET', 'api/entity/catalog-item?' + el.queryString).respond(200, {});
                     scope.init();
                     topicRegistryMock['app.start']();
-                    //$httpBackend.flush();
                     $httpBackend.verifyNoOutstandingExpectation();
                     $httpBackend.verifyNoOutstandingRequest();
                     expect(fixture.entity.calls.first().args[0]).toEqual(el.params.id);
@@ -1203,12 +1201,6 @@ describe('catalog', function () {
         describe('with item', function () {
             beforeEach(inject(function (topicRegistryMock) {
                 params.id = 'id';
-                //$httpBackend.expect('GET', /.*/).respond(200, {
-                //    id: 'id',
-                //    type: 'type',
-                //    name: 'name',
-                //    locale: 'en'
-                //});
 
                 scope.init();
                 topicRegistryMock['app.start']();
@@ -1219,7 +1211,6 @@ describe('catalog', function () {
                     name: 'name',
                     locale: 'en'
                 });
-                //$httpBackend.flush();
             }));
 
             it('expose details on scope', function () {
@@ -1285,6 +1276,30 @@ describe('catalog', function () {
                     expect(actual).toEqual(expected);
                 });
             });
+        });
+
+        [
+            {id: '/products/id', onRouteParams: true, expectRedirect: true},
+            {id: '/products/id', onInitializer: true, expectRedirect: true},
+            {id: '/products/localized-id', onRouteParams: true, expectRedirect: false},
+            {id: '/products/localized-id', onInitializer: true, expectRedirect: false}
+        ].forEach(function (ctx) {
+            it('given item with localized id then redirect to localized path', inject(function (topicRegistryMock) {
+                location.path('/');
+                if (ctx.onRouteParams)
+                    params.id = ctx.id;
+                scope.init(ctx.onInitializer ? ctx.id : undefined);
+                topicRegistryMock['app.start']();
+                fixture.entity.calls.first().args[1]({
+                    id: 'id',
+                    localizedId: '/products/localized-id',
+                    type: 'type',
+                    name: 'name',
+                    locale: 'en'
+                });
+
+                expect(location.path()).toEqual(ctx.expectRedirect ? '/view/products/localized-id' : '/');
+            }));
         });
 
         describe('catalog.item.updated notification received', function () {

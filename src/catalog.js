@@ -16,7 +16,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
     .controller('UpdateCatalogItemController', ['config', '$scope', 'updateCatalogItem', 'usecaseAdapterFactory', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
     .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
-    .controller('ViewCatalogItemController', ['$scope', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
+    .controller('ViewCatalogItemController', ['$scope', 'i18nLocation', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
@@ -471,9 +471,10 @@ function AddToCatalogController($scope, $routeParams, topicRegistry, findAllCata
     });
 }
 
-function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topicRegistry, findCatalogItemById) {
+function ViewCatalogItemController($scope, $location, $routeParams, catalogPathParser, topicRegistry, findCatalogItemById) {
     var self = this;
     var current = catalogPathParser($routeParams, 'file');
+    var requestedId;
 
     $scope.path = current.path;
     $scope.head = current.head;
@@ -500,9 +501,13 @@ function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topi
     }
 
     var applyItemToScope = function (item) {
-        addItemToScope(item);
-        $scope.item = item;
-        self.item = item;
+        if(item.localizedId && requestedId != item.localizedId) {
+            $location.path('/view' + item.localizedId);
+        } else {
+            addItemToScope(item);
+            $scope.item = item;
+            self.item = item;
+        }
     };
 
     // @deprecated instead put item on $scope.item
@@ -517,16 +522,14 @@ function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topi
 
     function init(path) {
         topicRegistry.subscribe('app.start', function () {
-            findCatalogItemById($routeParams.id || path, applyItemToScope);
+            requestedId = $routeParams.id || path;
+            findCatalogItemById(requestedId, applyItemToScope);
         });
     }
 
     this.refresh = function (args) {
         var id = args ? args.id : self.item.id;
-        return findCatalogItemById(id, function (item) {
-            $scope.item = item;
-            self.item = item;
-        });
+        return findCatalogItemById(id, applyItemToScope);
     };
 
     topicRegistry.subscribe('catalog.item.updated', self.refresh);
