@@ -8,7 +8,7 @@
                     </div>
                 </div>
                 <div class="col-xs-12 col-sm-8">
-                    <div class="item-body" i18n code="{{::catalogCtrl.path}}.body" editor="full" ng-show="var || editing">
+                    <div class="item-body" i18n code="{{::catalogCtrl.item.id}}.body" editor="full" ng-show="var || editing">
                         <p ng-bind-html="var|trust" seo-description></p>
                     </div>
 
@@ -18,13 +18,6 @@
 
                     <% if(shop) { %>
                         <bin-basket mode="add-to-basket-button" item="catalogCtrl.item" ng-if="catalogCtrl.item.price"></bin-basket>
-                        <!--<div ng-controller="AddToBasketController" ng-if="catalogCtrl.item.price">-->
-                            <!--<button class="btn btn-success" ng-disabled="working"-->
-                                    <!--ng-click="submit(catalogCtrl.item.id, catalogCtrl.item.price)"-->
-                                    <!--i18n code="catalog.item.add.to.basket.button" read-only>-->
-                                <!--<i class="fa fa-shopping-cart fa-fw"></i> {{::var}}-->
-                            <!--</button>-->
-                        <!--</div>-->
                         <div ng-if="application.pages.contact.active && (!catalogCtrl.item.price || catalogCtrl.item.price == 0)">
                             <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{var}}"
                                class="btn btn-success" i18n code="{{::catalogCtrl.path}}" read-only>
