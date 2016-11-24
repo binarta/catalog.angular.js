@@ -36,7 +36,7 @@
                             {{var}}
                         </a>
                         <span class="inline" ng-if="::$last && breadcrumb.name != catalogCtrl.head"
-                              i18n code="{{::breadcrumb.path}}"
+                              i18n code="{{::catalogCtrl.item.id || breadcrumb.path}}"
                               default="{{::breadcrumb.name}}" read-only>
                             {{var}}
                         </span>
