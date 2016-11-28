@@ -1,10 +1,10 @@
-angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price'])
+angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price'])
     .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])
     .factory('findAllCatalogItemTypes', ['config', '$http', FindAllCatalogItemTypesFactory])
     .factory('findCatalogPartitions', ['config', '$http', FindCatalogPartitionsFactory])
-    .factory('findCatalogItemById', ['config', 'restServiceHandler', FindCatalogItemByIdFactory])
+    .factory('findCatalogItemById', ['config', 'restServiceHandler', 'binarta', FindCatalogItemByIdFactory])
     .factory('findCatalogItemsByPartition', ['config', 'restServiceHandler', FindCatalogItemsByPartitionFactory])
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
@@ -16,7 +16,7 @@ angular.module('catalog', ['ngRoute', 'catalogx.gateway', 'notifications', 'conf
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
     .controller('UpdateCatalogItemController', ['config', '$scope', 'updateCatalogItem', 'usecaseAdapterFactory', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
     .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
-    .controller('ViewCatalogItemController', ['$scope', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', ViewCatalogItemController])
+    .controller('ViewCatalogItemController', ['$scope', 'i18nLocation', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', 'binarta', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
@@ -74,12 +74,13 @@ function FindCatalogPartitionsFactory(config, $http) {
     }
 }
 
-function FindCatalogItemByIdFactory(config, restServiceHandler) {
+function FindCatalogItemByIdFactory(config, restServiceHandler, binarta) {
     return function (id, onSuccess) {
+        var locale = binarta.application.localeForPresentation() || binarta.application.locale();
         return restServiceHandler({
             params: {
                 method: 'GET',
-                url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + encodeURIComponent(id),
+                url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + encodeURIComponent(id) + '&locale=' + locale,
                 headers: {'X-Binarta-Carousel': true},
                 params: {
                     treatInputAsId: true
@@ -471,9 +472,10 @@ function AddToCatalogController($scope, $routeParams, topicRegistry, findAllCata
     });
 }
 
-function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topicRegistry, findCatalogItemById) {
+function ViewCatalogItemController($scope, $location, $routeParams, catalogPathParser, topicRegistry, findCatalogItemById, binarta) {
     var self = this;
     var current = catalogPathParser($routeParams, 'file');
+    var requestedId;
 
     $scope.path = current.path;
     $scope.head = current.head;
@@ -500,9 +502,13 @@ function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topi
     }
 
     var applyItemToScope = function (item) {
-        addItemToScope(item);
-        $scope.item = item;
-        self.item = item;
+        if(item.localizedId && requestedId != item.localizedId) {
+            $location.path('/view' + item.localizedId);
+        } else {
+            addItemToScope(item);
+            $scope.item = item;
+            self.item = item;
+        }
     };
 
     // @deprecated instead put item on $scope.item
@@ -516,17 +522,15 @@ function ViewCatalogItemController($scope, $routeParams, catalogPathParser, topi
     this.init = init;
 
     function init(path) {
-        topicRegistry.subscribe('app.start', function () {
-            findCatalogItemById($routeParams.id || path, applyItemToScope);
+        binarta.schedule(function() {
+            requestedId = $routeParams.id || path;
+            findCatalogItemById(requestedId, applyItemToScope);
         });
     }
 
     this.refresh = function (args) {
         var id = args ? args.id : self.item.id;
-        return findCatalogItemById(id, function (item) {
-            $scope.item = item;
-            self.item = item;
-        });
+        return findCatalogItemById(id, applyItemToScope);
     };
 
     topicRegistry.subscribe('catalog.item.updated', self.refresh);

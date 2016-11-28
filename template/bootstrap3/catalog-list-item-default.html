@@ -1,14 +1,14 @@
 <div class="bin-catalog-item thumbnail clearfix"
      ng-controller="binImageCarouselHeroController as hero"
      ng-init="hero.init({id: item.id, items: item.carousel})">
-    <a ng-href="#!{{::localePrefix}}/view{{::item.id}}">
+    <a ng-href="#!{{::localePrefix}}/view{{::item.localizedId || item.id}}">
         <div class="item-image">
             <div class="item-image" bin-background-image="{{::hero.image.path}}" read-only ng-if="hero.image"></div>
         </div>
     </a>
 
     <div class="caption">
-        <a ng-href="#!{{::localePrefix}}/view{{::item.id}}">
+        <a ng-href="#!{{::localePrefix}}/view{{::item.localizedId || item.id}}">
             <h3 class="item-title" i18n code="{{::item.id}}" read-only>
                 {{::var}}
             </h3>
