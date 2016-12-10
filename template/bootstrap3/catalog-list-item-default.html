@@ -5,7 +5,6 @@
     <div class="move-button" ng-if="editing"
          checkpoint-permission for="catalog.item.update">
         <form class="no-style" ng-controller="MoveCatalogItemController" ng-init="init(item)">
-            <span>{{item.priority}}</span>
             <button class="btn btn-primary btn-mini" ng-show="idle" type="button" ng-click="cut()"><i class="fa fa-arrows"></i></button>
             <button class="btn btn-warning btn-mini" ng-hide="idle" type="button" ng-click="paste()" ng-disabled="working"><i class="fa fa-level-down"></i></button>
         </form>
