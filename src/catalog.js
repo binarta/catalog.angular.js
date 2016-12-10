@@ -19,6 +19,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .controller('ViewCatalogItemController', ['$scope', 'i18nLocation', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', 'binarta', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
+    .directive('movableItems', ['ngRegisterTopicHandler', MovableItemsDirectiveFactory])
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
             return args.id;
@@ -713,7 +714,7 @@ function CatalogItemUpdatedDecoratorsFactory() {
 
 function UpdateCatalogItemFactory(updateCatalogItemWriter, topicMessageDispatcher, catalogItemUpdatedDecorator) {
     return function (args) {
-        args.data.treatInputAsId = true;
+        if (args.data.treatInputAsId == undefined) args.data.treatInputAsId = true;
         var onSuccess = args.success;
         args.success = function () {
             topicMessageDispatcher.fire('system.success', {
@@ -741,6 +742,7 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
     $scope.paste = function () {
         var ctx = usecaseAdapterFactory($scope);
         ctx.data = {
+            treatInputAsId: false,
             context: 'updatePriority',
             id: {id: sessionStorage.moveCatalogItemClipboard},
             priority: self.item.priority
@@ -761,6 +763,48 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
         $scope.idle = true;
     });
 }
+
+function MovableItemsDirectiveFactory(ngRegisterTopicHandler) {
+    return {
+        scope: {
+            items:'=?movableItems',
+            orientation:'@',
+            when:'=?'
+        },
+        link:function($scope) {
+            if ($scope.items == undefined) $scope.items = [];
+            if ($scope.orientation == undefined) $scope.orientation = 'asc';
+            if ($scope.when == undefined) $scope.when = true;
+            if ($scope.when) ngRegisterTopicHandler($scope, 'catalog.item.paste', function (evt) {
+                var fromIdx = $scope.items.reduce(function (p, c, i) {
+                    return c.id == evt.id ? i : p;
+                }, undefined);
+                var from = $scope.items[fromIdx];
+
+                $scope.items.forEach(function (it) {
+                    if ($scope.orientation == 'asc') {
+                        it.priority += (it.priority <= evt.priority && it.priority > from.priority ? -1 : 0);
+                        it.priority += (it.priority >= evt.priority && it.priority < from.priority ? 1 : 0);
+                    } else {
+                        it.priority += (it.priority >= evt.priority && it.priority < from.priority ? 1 : 0);
+                        it.priority += (it.priority <= evt.priority && it.priority > from.priority ? -1 : 0);
+                    }
+                });
+
+                from.priority = evt.priority;
+
+                $scope.items.sort(function (x, y) {
+                    if ($scope.orientation == 'asc') {
+                        return x.priority - y.priority;
+                    } else {
+                        return y.priority - x.priority;
+                    }
+                });
+            })
+        }
+    }
+}
+
 // @deprecated
 function splitInRowsDirectiveFactory($log) {
     return function ($scope, el, attrs) {

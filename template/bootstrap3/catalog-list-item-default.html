@@ -1,6 +1,16 @@
 <div class="bin-catalog-item thumbnail clearfix"
      ng-controller="binImageCarouselHeroController as hero"
      ng-init="hero.init({id: item.id, items: item.carousel})">
+
+    <div class="move-button" ng-if="editing"
+         checkpoint-permission for="catalog.item.update">
+        <form class="no-style" ng-controller="MoveCatalogItemController" ng-init="init(item)">
+            <span>{{item.priority}}</span>
+            <button class="btn btn-primary btn-mini" ng-show="idle" type="button" ng-click="cut()"><i class="fa fa-arrows"></i></button>
+            <button class="btn btn-warning btn-mini" ng-hide="idle" type="button" ng-click="paste()" ng-disabled="working"><i class="fa fa-level-down"></i></button>
+        </form>
+    </div>
+
     <a ng-href="#!{{::localePrefix}}/view{{::item.localizedId || item.id}}">
         <div class="item-image">
             <div class="item-image" bin-background-image="{{::hero.image.path}}" read-only ng-if="hero.image"></div>

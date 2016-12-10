@@ -2109,6 +2109,7 @@ describe('catalog', function () {
                     });
 
                     it('then priority is updated', function () {
+                        expect(writer.data().treatInputAsId).toBe(false);
                         expect(writer.data().context).toEqual('updatePriority');
                         expect(writer.data().id.id).toEqual('item-1');
                         expect(writer.data().priority).toEqual(2);
@@ -2180,6 +2181,17 @@ describe('catalog', function () {
         it('invoke writer', function () {
             writer.invokedFor(args);
         });
+
+        it('treat input as id is enabled by default', function() {
+            expect(writer.data().treatInputAsId).toBeTruthy();
+        });
+
+        it('treat input as id can be overridden', inject(function(updateCatalogItem) {
+            writer.spy.calls.reset();
+            args.data.treatInputAsId = false;
+            updateCatalogItem(args);
+            expect(writer.data().treatInputAsId).toBeFalsy();
+        }));
 
         describe('on write success', function () {
             beforeEach(function () {
@@ -2332,6 +2344,120 @@ describe('catalog', function () {
                 [13]
             ]);
         });
+    });
+
+    describe('movable-items directive', function() {
+        var $scope, $compile;
+
+        beforeEach(inject(function($rootScope, _$compile_, topicRegistryMock) {
+            $scope = $rootScope.$new();
+            $compile = _$compile_;
+            notifications = topicRegistryMock;
+
+        }));
+
+        it('directive receives default configuration values', function() {
+            var element = $compile('<div movable-items></div>')($scope);
+            expect(element.isolateScope().items).toEqual([]);
+            expect(element.isolateScope().orientation).toEqual('asc');
+            expect(element.isolateScope().when).toEqual(true);
+        });
+
+        it('directive can be configured', function() {
+            $scope.items = ['one', 'two'];
+            $scope.enabled = false;
+            var element = $compile('<div movable-items="items" orientation="desc" when="enabled"></div>')($scope);
+            expect(element.isolateScope().items).toEqual($scope.items);
+            expect(element.isolateScope().orientation).toEqual('desc');
+            expect(element.isolateScope().when).toEqual($scope.enabled);
+        });
+
+        describe('when directive is enabled for asc', function() {
+            var element;
+
+            beforeEach(function() {
+                $scope.items = [
+                    {id:'I1', priority:1},
+                    {id:'I2', priority:2},
+                    {id:'I3', priority:3}
+                ];
+                element = $compile('<div movable-items="items"></div>')($scope);
+            });
+
+            describe('and catalog.item.paste is fired', function() {
+                it('first to middle', function () {
+                    notifications['catalog.item.paste']({id: 'I1', priority: 2});
+                    expect($scope.items[0]).toEqual({id: 'I2', priority: 1});
+                    expect($scope.items[1]).toEqual({id: 'I1', priority: 2});
+                    expect($scope.items[2]).toEqual({id: 'I3', priority: 3});
+                });
+
+                it('first to last', function () {
+                    notifications['catalog.item.paste']({id: 'I1', priority: 3});
+                    expect($scope.items[0]).toEqual({id: 'I2', priority: 1});
+                    expect($scope.items[1]).toEqual({id: 'I3', priority: 2});
+                    expect($scope.items[2]).toEqual({id: 'I1', priority: 3});
+                });
+
+                it('last to first', function () {
+                    notifications['catalog.item.paste']({id: 'I3', priority: 1});
+                    expect($scope.items[0]).toEqual({id: 'I3', priority: 1});
+                    expect($scope.items[1]).toEqual({id: 'I1', priority: 2});
+                    expect($scope.items[2]).toEqual({id: 'I2', priority: 3});
+                });
+
+                it('to self', function () {
+                    notifications['catalog.item.paste']({id: 'I2', priority: 2});
+                    expect($scope.items[0]).toEqual({id: 'I1', priority: 1});
+                    expect($scope.items[1]).toEqual({id: 'I2', priority: 2});
+                    expect($scope.items[2]).toEqual({id: 'I3', priority: 3});
+                });
+            });
+        });
+
+        describe('when directive is enabled for desc', function() {
+            var element;
+
+            beforeEach(function() {
+                $scope.items = [
+                    {id:'I3', priority:3},
+                    {id:'I2', priority:2},
+                    {id:'I1', priority:1}
+                ];
+                element = $compile('<div movable-items="items" orientation="desc"></div>')($scope);
+            });
+
+            describe('and catalog.item.paste is fired', function() {
+                it('first to middle', function () {
+                    notifications['catalog.item.paste']({id: 'I3', priority: 2});
+                    expect($scope.items[0]).toEqual({id: 'I2', priority: 3});
+                    expect($scope.items[1]).toEqual({id: 'I3', priority: 2});
+                    expect($scope.items[2]).toEqual({id: 'I1', priority: 1});
+                });
+
+                it('first to last', function () {
+                    notifications['catalog.item.paste']({id: 'I3', priority: 1});
+                    expect($scope.items[0]).toEqual({id: 'I2', priority: 3});
+                    expect($scope.items[1]).toEqual({id: 'I1', priority: 2});
+                    expect($scope.items[2]).toEqual({id: 'I3', priority: 1});
+                });
+
+                it('last to first', function () {
+                    notifications['catalog.item.paste']({id: 'I1', priority: 3});
+                    expect($scope.items[0]).toEqual({id: 'I1', priority: 3});
+                    expect($scope.items[1]).toEqual({id: 'I3', priority: 2});
+                    expect($scope.items[2]).toEqual({id: 'I2', priority: 1});
+                });
+
+                it('to self', function () {
+                    notifications['catalog.item.paste']({id: 'I2', priority: 2});
+                    expect($scope.items[0]).toEqual({id: 'I3', priority: 3});
+                    expect($scope.items[1]).toEqual({id: 'I2', priority: 2});
+                    expect($scope.items[2]).toEqual({id: 'I1', priority: 1});
+                });
+            });
+        });
+
     });
 });
 

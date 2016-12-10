@@ -1,5 +1,6 @@
 <div bin-group-by="partition" on="searchCtrl.results">
-    <div ng-repeat="group in groups track by group.id" ng-hide="editing && $index > 0">
+    <div ng-repeat="group in groups track by group.id" ng-hide="editing && $index > 0"
+         movable-items="group.items" orientation="desc" when="$index == 0">
 
         <div class="row" ng-if="::catalogCtrl.path != group.items[0].partition">
             <div class="col-xs-12">
