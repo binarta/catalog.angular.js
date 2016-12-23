@@ -1,29 +1,50 @@
-<div class="bin-catalog-item thumbnail clearfix"
-     ng-controller="binImageCarouselHeroController as hero"
-     ng-init="hero.init({id: item.id, items: item.carousel})">
+<div ng-controller="PinItemController as pinner" ng-init="pinner.init($ctrl.item)">
+    <bin-edit>
+        <bin-edit-actions>
+            <div ng-hide="$ctrl.item.pinned" checkpoint-permission for="catalog.item.pin">
+                <bin-edit-action action="pinner.pin">
+                    <span i18n code="catalog.item.pin.button">{{::var}}</span>
+                </bin-edit-action>
+            </div>
+            <div ng-show="$ctrl.item.pinned" checkpoint-permission for="catalog.item.unpin">
+                <bin-edit-action action="pinner.unpin">
+                    <span i18n code="catalog.item.unpin.button">{{::var}}</span>
+                </bin-edit-action>
+            </div>
+        </bin-edit-actions>
+        <bin-edit-body>
+            <div class="bin-catalog-item thumbnail clearfix"
+                 ng-controller="binImageCarouselHeroController as hero"
+                 ng-init="hero.init({id: $ctrl.item.id, items: $ctrl.item.carousel})">
 
-    <div class="move-button" ng-if="editing"
-         checkpoint-permission for="catalog.item.update">
-        <form class="no-style" ng-controller="MoveCatalogItemController" ng-init="init(item)">
-            <button class="btn btn-primary btn-mini" ng-show="idle" type="button" ng-click="cut()"><i class="fa fa-arrows"></i></button>
-            <button class="btn btn-warning btn-mini" ng-hide="idle" type="button" ng-click="paste()" ng-disabled="working"><i class="fa fa-level-down"></i></button>
-        </form>
-    </div>
+                <div class="move-button" ng-if="$root.editing && $ctrl.movable == 'true'"
+                     checkpoint-permission for="catalog.item.update">
+                    <form class="no-style" ng-controller="MoveCatalogItemController" ng-init="init($ctrl.item)">
+                        <button class="btn btn-primary btn-mini" ng-show="idle" type="button" ng-click="cut()"><i
+                                class="fa fa-arrows"></i></button>
+                        <button class="btn btn-warning btn-mini" ng-hide="idle" type="button" ng-click="paste()"
+                                ng-disabled="working"><i class="fa fa-level-down"></i></button>
+                    </form>
+                </div>
 
-    <a ng-href="#!{{::localePrefix}}/view{{::item.localizedId || item.id}}">
-        <div class="item-image">
-            <div class="item-image" bin-background-image="{{::hero.image.path}}" read-only ng-if="hero.image"></div>
-        </div>
-    </a>
+                <a ng-href="#!{{::localePrefix}}/view{{::$ctrl.item.localizedId || $ctrl.item.id}}">
+                    <div class="item-image">
+                        <div class="item-image" bin-background-image="{{::hero.image.path}}" read-only
+                             ng-if="hero.image"></div>
+                    </div>
+                </a>
 
-    <div class="caption">
-        <a ng-href="#!{{::localePrefix}}/view{{::item.localizedId || item.id}}">
-            <h3 class="item-title" i18n code="{{::item.id}}" read-only>
-                {{::var}}
-            </h3>
-        </a>
-        <div class="item-price">
-            <bin-price catalog-item="item" read-only></bin-price>
-        </div>
-    </div>
+                <div class="caption">
+                    <a ng-href="#!{{::localePrefix}}/view{{::$ctrl.item.localizedId || $ctrl.item.id}}">
+                        <h3 class="item-title" i18n code="{{::$ctrl.item.id}}" read-only>
+                            {{::var}}
+                        </h3>
+                    </a>
+                    <div class="item-price">
+                        <bin-price catalog-item="$ctrl.item" read-only></bin-price>
+                    </div>
+                </div>
+            </div>
+        </bin-edit-body>
+    </bin-edit>
 </div>

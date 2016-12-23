@@ -1,0 +1,7 @@
+<div ng-show="$ctrl.results.length > 0">
+    <h3 i18n code="catalog.spotlight.header">{{::var}}</h3>
+    <ng-transclude>
+        <bin-catalog-list-rows items="$ctrl.results" partition="$ctrl.partition"></bin-catalog-list-rows>
+    </ng-transclude>
+    <hr>
+</div>

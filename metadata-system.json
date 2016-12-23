@@ -29,7 +29,10 @@
       "catalog.unavailable.message": "Upgrade jouw website om jouw producten of diensten te presenteren in een mooie catalogus.",
       "catalog.upgrade.button": "Upgraden",
       "catalog.item.add.to.basket.button": "In winkelmandje",
-      "catalog.item.add.to.basket.button.success": "Toegevoegd!"
+      "catalog.item.add.to.basket.button.success": "Toegevoegd!",
+      "catalog.spotlight.header":"In de kijker",
+      "catalog.item.pin.button":"Vastzetten",
+      "catalog.item.unpin.button":"Losmaken"
     },
     "en": {
       "catalog.item.removed": "Item removed",
@@ -60,7 +63,10 @@
       "catalog.unavailable.message": "Upgrade your website to showcase your products or services in a beautiful catalog.",
       "catalog.upgrade.button": "Upgrade",
       "catalog.item.add.to.basket.button": "Add to basket",
-      "catalog.item.add.to.basket.button.success": "Added!"
+      "catalog.item.add.to.basket.button.success": "Added!",
+      "catalog.spotlight.header":"In the spotlight",
+      "catalog.item.pin.button":"Pin",
+      "catalog.item.unpin.button":"Unpin"
     },
     "fr": {
       "catalog.item.removed": "Article supprimé",
@@ -91,7 +97,10 @@
       "catalog.unavailable.message": "Améliorez votre site Web pour présenter vos produits ou services dans un beau catalogue.",
       "catalog.upgrade.button": "Mise à niveau",
       "catalog.item.add.to.basket.button": "Ajouter au panier",
-      "catalog.item.add.to.basket.button.success": "Ajouté!"
+      "catalog.item.add.to.basket.button.success": "Ajouté!",
+      "catalog.spotlight.header":"Mis en lumière",
+      "catalog.item.pin.button":"Fixer",
+      "catalog.item.unpin.button":"Couper"
     },
     "de": {
       "catalog.item.removed": "Artikel gelöscht",
@@ -122,7 +131,10 @@
       "catalog.unavailable.message": "Upgrade your website to showcase your products or services in a beautiful catalog.",
       "catalog.upgrade.button": "Upgraden",
       "catalog.item.add.to.basket.button": "Add to basket",
-      "catalog.item.add.to.basket.button.success": "Added!"
+      "catalog.item.add.to.basket.button.success": "Added!",
+      "catalog.spotlight.header":"In the spotlight",
+      "catalog.item.pin.button":"Befestigen",
+      "catalog.item.unpin.button":"Trennen"
     }
   }
 }

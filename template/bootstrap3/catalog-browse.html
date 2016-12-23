@@ -32,6 +32,8 @@
                     <hr>
                 </div>
 
+                <bin-catalog-spotlight type="catalogCtrl.head" partition="listCtrl.partition" partition-exact="true" size="12"></bin-catalog-spotlight>
+
                 <div ng-controller="BinartaSearchController as searchCtrl" ng-init="searchCtrl.init({
                             entity:'catalog-item',
                             context:'search',
@@ -54,7 +56,7 @@
                         </div>
                     </div>
 
-                    <ng-include src="'catalog-list-rows.html'"></ng-include>
+                    <bin-catalog-list-rows items="searchCtrl.results" partition="catalogCtrl.path" movable="true"></bin-catalog-list-rows>
                     <ng-include src="'search-for-more.html'"></ng-include>
                 </div>
             </div>

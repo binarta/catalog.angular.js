@@ -8,6 +8,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .factory('findCatalogItemsByPartition', ['config', 'restServiceHandler', FindCatalogItemsByPartitionFactory])
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
+    .factory('itemPinner', ['topicMessageDispatcher', 'restServiceHandler', 'config', ItemPinnerFactory])
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
     .controller('AddToCatalogController', ['$scope', '$routeParams', 'topicRegistry', 'findAllCatalogItemTypes', 'addCatalogItem', 'usecaseAdapterFactory', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
@@ -18,8 +19,13 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
     .controller('ViewCatalogItemController', ['$scope', 'i18nLocation', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', 'binarta', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
+    .controller('PinItemController', ['$scope', 'itemPinner', 'ngRegisterTopicHandler', PinItemController])
+    .controller('BinCatalogSpotlightController', ['topicRegistry', 'binartaSearch', BinCatalogSpotlightController])
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
     .directive('movableItems', ['ngRegisterTopicHandler', MovableItemsDirectiveFactory])
+    .component('binCatalogListRows', new BinCatalogListRowsComponent())
+    .component('binCatalogListItem', new BinCatalogListItemComponent())
+    .component('binCatalogSpotlight', new BinCatalogSpotlightComponent())
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
             return args.id;
@@ -803,6 +809,147 @@ function MovableItemsDirectiveFactory(ngRegisterTopicHandler) {
             })
         }
     }
+}
+
+function PinItemController($scope, pinner, ngRegisterTopicHandler) {
+    var self = this;
+
+    self.init = function(item) {
+        self.item = item;
+        ngRegisterTopicHandler($scope, 'catalog.item.pinned.' + item.id, pin);
+        ngRegisterTopicHandler($scope, 'catalog.item.unpinned.' + item.id, unpin);
+    };
+
+    self.pin = function() {
+        pinner.pin({item:self.item, success:pin});
+    };
+
+    self.unpin = function() {
+        pinner.unpin({item:self.item, success: unpin});
+    };
+
+    function pin() {
+        self.item.pinned = true;
+    }
+
+    function unpin() {
+        self.item.pinned = false;
+    }
+}
+
+function ItemPinnerFactory(topics, rest, config) {
+    function params(usecase, ctx) {
+        usecase = usecase || 'catalog.item.pin';
+        return {
+            method:'POST',
+            withCredentials:true,
+            url: (config.baseUri || '') + 'api/usecase',
+            data: {
+                headers:{usecase: usecase},
+                payload: {id:ctx.item.id}
+            }
+        }
+    }
+    function sucessAndFireTopic(topic, ctx) {
+        return function(payload) {
+            topics.fire(topic, ctx.item);
+            topics.fire(topic + '.' + ctx.item.id, ctx.item);
+            if (ctx.success) ctx.success(payload);
+        }
+    }
+
+    return {
+        pin: function(ctx) {
+            rest({
+                params:params('catalog.item.pin', ctx),
+                success: sucessAndFireTopic('catalog.item.pinned', ctx)
+            })
+        },
+        unpin: function(ctx) {
+            rest({
+                params:params('catalog.item.unpin', ctx),
+                success: sucessAndFireTopic('catalog.item.unpinned', ctx)
+
+            })
+        }
+    }
+}
+
+function BinCatalogListRowsComponent() {
+    this.bindings = {
+        items:'=',
+        partition:'<',
+        movable:'@'
+    };
+    this.templateUrl = 'catalog-list-rows.html';
+}
+
+function BinCatalogListItemComponent() {
+    this.bindings = {
+        item:'<',
+        movable:'@'
+    };
+    this.templateUrl = 'catalog-list-item-default.html'
+}
+
+function BinCatalogSpotlightComponent() {
+    this.transclude = true;
+    this.bindings = {
+        type: '<',
+        partition:'<',
+        partitionExact:'@',
+        size: '@',
+        recursive:'@'
+    };
+    this.templateUrl = 'catalog-spotlight.html';
+    this.controller = 'BinCatalogSpotlightController';
+}
+
+function BinCatalogSpotlightController(topics, search) {
+    var self = this;
+    this.$onInit = function() {
+        topics.subscribe('catalog.item.pinned', self.onPinned);
+        topics.subscribe('catalog.item.unpinned', self.onUnpinned);
+        var args = {
+            entity:'catalog-item',
+            action:'search',
+            subset: {
+                offset: 0,
+                count: self.size
+            },
+            includeCarouselItems:true,
+            sortings:[
+                {on:'creationTime', orientation:'desc'}
+            ],
+            filters: {
+                type: self.type,
+                pinned: true
+            },
+            success:self.render
+        };
+        if (self.partition != undefined && self.recursive == 'true') args.filters.recursivelyByPartition = self.partition;
+        else if (self.partition != undefined && self.partitionExact == 'true') args.filters.partition = self.partition;
+        search(args)
+    };
+    this.onPinned = function(item) {
+        self.results.push(item);
+    };
+    this.onUnpinned = function(item) {
+        var idx = self.results.reduce(function(p, c, i) {
+            if (c.id == item.id) return i;
+            return p;
+        }, -1);
+        if (idx > -1) self.results.splice(idx, 1);
+    };
+    this.render = function(items) {
+        self.results = items;
+    };
+
+    this.$onDestroy = function() {
+        topics.unsubscribe('catalog.item.pinned', self.onPinned);
+        topics.unsubscribe('catalog.item.unpinned', self.onUnpinned);
+    }
+
 }
 
 // @deprecated

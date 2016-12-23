@@ -9,6 +9,7 @@ describe('catalog', function () {
     beforeEach(module('web.storage'));
     beforeEach(module('i18n'));
     beforeEach(module('test.app'));
+    beforeEach(module('binarta.search'));
 
     beforeEach(inject(function ($injector, $location, _i18nLocation_, config, _$q_, _binarta_) {
         $q = _$q_;
@@ -2458,6 +2459,267 @@ describe('catalog', function () {
             });
         });
 
+    });
+
+    describe('itemPinner', function() {
+        var pinner, rest, config;
+        var ctx;
+        var isSuccess;
+
+        beforeEach(inject(function(itemPinner, restServiceHandler, _config_) {
+            pinner = itemPinner;
+            rest = restServiceHandler;
+            config = _config_;
+            config.baseUri = 'base-uri/';
+            rest.calls.reset();
+            ctx = {
+                item: {
+                    id:1
+                },
+                success:function() {
+                    isSuccess = true;
+                }
+            }
+        }));
+
+        function request() {
+            return rest.calls.argsFor(0)[0];
+        }
+
+        describe('when pinning an item', function() {
+            beforeEach(function() {
+                pinner.pin(ctx);
+            });
+
+            it('usecase request is sent', function() {
+                expect(request().params.method).toEqual('POST');
+                expect(request().params.withCredentials).toEqual(true);
+                expect(request().params.url).toEqual(config.baseUri + 'api/usecase');
+                expect(request().params.data.headers.usecase).toEqual('catalog.item.pin');
+                expect(request().params.data.payload.id).toEqual(ctx.item.id);
+            });
+
+            describe('on success', function() {
+                beforeEach(function() {
+                    request().success('data');
+                });
+
+                it('success handler is executed', function() {
+                    expect(isSuccess).toEqual(true);
+                });
+
+                it('catalog.item.pinned events are fired', inject(function(topicMessageDispatcherMock) {
+                    expect(topicMessageDispatcherMock['catalog.item.pinned']).toEqual(ctx.item);
+                    expect(topicMessageDispatcherMock['catalog.item.pinned.' + ctx.item.id]).toEqual(ctx.item);
+                }))
+            });
+        });
+
+        describe('when unpinning an item', function() {
+            beforeEach(function() {
+                pinner.unpin(ctx);
+            });
+
+            it('usecase request is sent', function() {
+                expect(request().params.method).toEqual('POST');
+                expect(request().params.withCredentials).toEqual(true);
+                expect(request().params.url).toEqual(config.baseUri + 'api/usecase');
+                expect(request().params.data.headers.usecase).toEqual('catalog.item.unpin');
+                expect(request().params.data.payload.id).toEqual(ctx.item.id);
+            });
+
+            describe('on success', function() {
+                beforeEach(function() {
+                    request().success('data');
+                });
+
+                it('success handler is executed', function() {
+                    expect(isSuccess).toEqual(true);
+                });
+
+                it('catalog.item.unpinned events are fired', inject(function(topicMessageDispatcherMock) {
+                    expect(topicMessageDispatcherMock['catalog.item.unpinned']).toEqual(ctx.item);
+                    expect(topicMessageDispatcherMock['catalog.item.unpinned.' + ctx.item.id]).toEqual(ctx.item);
+                }))
+            });
+        });
+    });
+
+    describe('PinItemController', function() {
+        var ctrl, pinner, item;
+
+        beforeEach(inject(function($controller, itemPinner, $rootScope) {
+            spyOn(itemPinner, 'pin');
+            spyOn(itemPinner, 'unpin');
+            ctrl = $controller('PinItemController', {$scope:$rootScope.$new()});
+            item = {
+                id:1
+            };
+            ctrl.init(item);
+        }));
+
+        describe('when pinning', function() {
+            beforeEach(function() {
+                ctrl.pin();
+            });
+
+            it('call the item pinner', inject(function(itemPinner) {
+                expect(itemPinner.pin.calls.argsFor(0)[0].item.id).toEqual(item.id);
+            }));
+
+            describe('with success', function() {
+                beforeEach(inject(function(itemPinner) {
+                    itemPinner.pin.calls.argsFor(0)[0].success();
+                }));
+
+                it('the item is flagged as pinned', function() {
+                    expect(item.pinned).toBe(true);
+                })
+            });
+        });
+
+        describe('when unpinning', function() {
+            beforeEach(function() {
+                ctrl.unpin();
+            });
+
+            it('call the item pinner', inject(function(itemPinner) {
+                expect(itemPinner.unpin.calls.argsFor(0)[0].item.id).toEqual(item.id);
+            }));
+
+            describe('with success', function() {
+                beforeEach(inject(function(itemPinner) {
+                    itemPinner.unpin.calls.argsFor(0)[0].success();
+                }));
+
+                it('the item is flagged as not pinned', function() {
+                    expect(item.pinned).toBe(false);
+                })
+            });
+        });
+
+        it('when another controller for the same item pins we need to update the flag', inject(function(topicRegistryMock) {
+            topicRegistryMock['catalog.item.pinned.' + item.id](item);
+            expect(item.pinned).toBe(true);
+        }));
+
+        it('when another controller for the same item unpins we need to update the flag', inject(function(topicRegistryMock) {
+            topicRegistryMock['catalog.item.unpinned.' + item.id](item);
+            expect(item.pinned).toBe(false);
+        }))
+    });
+    
+    describe('binCatalogSpotlight', function() {
+        var $componentController, search;
+        var bindings;
+        var component;
+
+        beforeEach(inject(function(_$componentController_, binartaSearch) {
+            bindings = {
+                type:'type',
+                size: 10
+            };
+            $componentController = _$componentController_;
+            search = binartaSearch;
+            component = $componentController('binCatalogSpotlight', null, bindings);
+        }));
+
+        it('when partition is provided and exact matching is enabled then it is passed', function() {
+            bindings.partition = 'partition';
+            bindings.partitionExact = 'true';
+            component = $componentController('binCatalogSpotlight', null, bindings);
+            component.$onInit();
+            expect(args().filters.partition).toEqual(bindings.partition);
+        });
+
+        it('when partition is provided and recursive is enabled pass as recursive partition search param', function() {
+            bindings.partition = 'partition';
+            bindings.recursive = 'true';
+            component = $componentController('binCatalogSpotlight', null, bindings);
+            component.$onInit();
+            expect(args().filters.partition).toBeUndefined();
+            expect(args().filters.recursivelyByPartition).toEqual(bindings.partition);
+        });
+
+        function args() {
+            return search.calls.argsFor(0)[0];
+        }
+
+        describe('when component is constructed', function() {
+            beforeEach(inject(function() {
+                component.$onInit();
+            }));
+
+            it('topic handlers are installed', inject(function(topicRegistryMock) {
+                expect(topicRegistryMock['catalog.item.pinned']).toBeDefined();
+                expect(topicRegistryMock['catalog.item.unpinned']).toBeDefined();
+            }));
+
+
+            it('search is executed', inject(function(binartaSearch) {
+                expect(args().entity).toEqual('catalog-item');
+                expect(args().action).toEqual('search');
+                expect(args().subset).toEqual({
+                    offset: 0,
+                    count: bindings.size
+                });
+                expect(args().includeCarouselItems).toBe(true);
+                expect(args().sortings).toEqual([
+                    {on:'creationTime', orientation:'desc'}
+                ]);
+                expect(args().filters).toEqual({
+                    type: bindings.type,
+                    pinned: true
+                });
+            }));
+
+            describe('with success', function() {
+                var items;
+
+                beforeEach(inject(function(binartaSearch) {
+                    items = [
+                        {id: 1},
+                        {id: 2}
+                    ];
+                    binartaSearch.calls.argsFor(0)[0].success(items)
+                }));
+
+                it('then items are exposed', function() {
+                    expect(component.results).toEqual(items);
+                });
+
+                describe('and catalog.item.pinned event is received', function() {
+                    beforeEach(inject(function(topicRegistryMock) {
+                        topicRegistryMock['catalog.item.pinned']({id:3});
+                    }));
+
+                    it('item is added to the list', function() {
+                        expect(component.results[2]).toEqual({id:3})
+                    });
+
+                    describe('and catalog.item.unpinned event is received', function() {
+                        beforeEach(inject(function(topicRegistryMock) {
+                            topicRegistryMock['catalog.item.unpinned']({id:3});
+                        }));
+
+                        it('item is removed again', function() {
+                            expect(component.results.length).toEqual(2);
+                        })
+                    });
+                });
+            });
+
+            describe('and component is destroyed', function() {
+                beforeEach(function() {
+                    component.$onDestroy();
+                });
+
+                it('then topic handlers are uninstalled', inject(function(topicRegistryMock) {
+                    expect(topicRegistryMock['catalog.item.pinned']).toBeUndefined();
+                    expect(topicRegistryMock['catalog.item.unpinned']).toBeUndefined();
+                }));
+            });
+        });
     });
 });
 
