@@ -7,8 +7,8 @@
                 </bin-edit-action>
             </div>
             <div ng-show="$ctrl.item.pinned" checkpoint-permission for="catalog.item.unpin">
-                <bin-edit-action action="pinner.unpin" read-only>
-                    <span i18n code="catalog.item.unpin.button">{{::var}}</span>
+                <bin-edit-action action="pinner.unpin">
+                    <span i18n code="catalog.item.unpin.button" read-only>{{::var}}</span>
                 </bin-edit-action>
             </div>
         </bin-edit-actions>
