@@ -30,7 +30,6 @@
       "catalog.upgrade.button": "Upgraden",
       "catalog.item.add.to.basket.button": "In winkelmandje",
       "catalog.item.add.to.basket.button.success": "Toegevoegd!",
-      "catalog.spotlight.header":"In de kijker",
       "catalog.item.pin.button":"Vastzetten",
       "catalog.item.unpin.button":"Losmaken"
     },
@@ -64,7 +63,6 @@
       "catalog.upgrade.button": "Upgrade",
       "catalog.item.add.to.basket.button": "Add to basket",
       "catalog.item.add.to.basket.button.success": "Added!",
-      "catalog.spotlight.header":"In the spotlight",
       "catalog.item.pin.button":"Pin",
       "catalog.item.unpin.button":"Unpin"
     },
@@ -98,7 +96,6 @@
       "catalog.upgrade.button": "Mise à niveau",
       "catalog.item.add.to.basket.button": "Ajouter au panier",
       "catalog.item.add.to.basket.button.success": "Ajouté!",
-      "catalog.spotlight.header":"Mis en lumière",
       "catalog.item.pin.button":"Fixer",
       "catalog.item.unpin.button":"Couper"
     },
@@ -132,7 +129,6 @@
       "catalog.upgrade.button": "Upgraden",
       "catalog.item.add.to.basket.button": "Add to basket",
       "catalog.item.add.to.basket.button.success": "Added!",
-      "catalog.spotlight.header":"In the spotlight",
       "catalog.item.pin.button":"Befestigen",
       "catalog.item.unpin.button":"Trennen"
     }
