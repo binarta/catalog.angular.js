@@ -2,12 +2,12 @@
     <bin-edit>
         <bin-edit-actions>
             <div ng-hide="$ctrl.item.pinned" checkpoint-permission for="catalog.item.pin">
-                <bin-edit-action action="pinner.pin">
+                <bin-edit-action action="pinner.pin()">
                     <span i18n code="catalog.item.pin.button" read-only>{{::var}}</span>
                 </bin-edit-action>
             </div>
             <div ng-show="$ctrl.item.pinned" checkpoint-permission for="catalog.item.unpin">
-                <bin-edit-action action="pinner.unpin">
+                <bin-edit-action action="pinner.unpin()">
                     <span i18n code="catalog.item.unpin.button" read-only>{{::var}}</span>
                 </bin-edit-action>
             </div>
