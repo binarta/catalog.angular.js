@@ -1,24 +1,11 @@
 <div bin-group-by="partition" on="$ctrl.items">
-    <div ng-repeat="group in groups track by group.id" ng-hide="editing && $index > 0"
-         movable-items="group.items" orientation="desc" when="$index == 0">
-
+    <div ng-repeat="group in groups track by group.id">
         <div class="row" ng-if="::$ctrl.partition != group.items[0].partition">
             <div class="col-xs-12">
                 <h2 class="partition-title" i18n code="{{::group.items[0].partition}}" read-only ng-bind="::var"></h2>
             </div>
         </div>
 
-        <div class="row bin-catalog-items">
-            <div ng-repeat="item in group.items track by item.id">
-                <div ng-class="{
-                    'clearfix': ($index % 3 == 0) || ($index % 4 == 0),
-                    'visible-sm-block': $index % 3 == 0,
-                    'visible-md-block visible-lg-block': $index % 4 == 0
-                }"></div>
-                <div class="col-xs-12 col-sm-4 col-md-3">
-                    <bin-catalog-list-item item="item" movable="{{$ctrl.movable}}"></bin-catalog-list-item>
-                </div>
-            </div>
-        </div>
+        <bin-catalog-item-list items="group.items" movable="{{::$ctrl.movable}}"></bin-catalog-item-list>
     </div>
 </div>

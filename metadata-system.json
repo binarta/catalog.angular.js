@@ -31,7 +31,12 @@
       "catalog.item.add.to.basket.button": "In winkelmandje",
       "catalog.item.add.to.basket.button.success": "Toegevoegd!",
       "catalog.item.pin.button":"Vastzetten",
-      "catalog.item.unpin.button":"Losmaken"
+      "catalog.item.unpin.button":"Losmaken",
+      "catalog.item.move": "Verplaats",
+      "catalog.item.move.up": "Omhoog",
+      "catalog.item.move.down": "Omlaag",
+      "catalog.item.move.top": "Eerste",
+      "catalog.item.move.bottom": "Laatste"
     },
     "en": {
       "catalog.item.removed": "Item removed",
@@ -64,7 +69,12 @@
       "catalog.item.add.to.basket.button": "Add to basket",
       "catalog.item.add.to.basket.button.success": "Added!",
       "catalog.item.pin.button":"Pin",
-      "catalog.item.unpin.button":"Unpin"
+      "catalog.item.unpin.button":"Unpin",
+      "catalog.item.move": "Move",
+      "catalog.item.move.up": "Up",
+      "catalog.item.move.down": "Down",
+      "catalog.item.move.top": "Top",
+      "catalog.item.move.bottom": "Bottom"
     },
     "fr": {
       "catalog.item.removed": "Article supprimé",
@@ -97,7 +107,12 @@
       "catalog.item.add.to.basket.button": "Ajouter au panier",
       "catalog.item.add.to.basket.button.success": "Ajouté!",
       "catalog.item.pin.button":"Fixer",
-      "catalog.item.unpin.button":"Couper"
+      "catalog.item.unpin.button":"Couper",
+      "catalog.item.move": "Move",
+      "catalog.item.move.up": "Up",
+      "catalog.item.move.down": "Down",
+      "catalog.item.move.top": "Top",
+      "catalog.item.move.bottom": "Bottom"
     },
     "de": {
       "catalog.item.removed": "Artikel gelöscht",
@@ -130,7 +145,12 @@
       "catalog.item.add.to.basket.button": "Add to basket",
       "catalog.item.add.to.basket.button.success": "Added!",
       "catalog.item.pin.button":"Befestigen",
-      "catalog.item.unpin.button":"Trennen"
+      "catalog.item.unpin.button":"Trennen",
+      "catalog.item.move": "Move",
+      "catalog.item.move.up": "Up",
+      "catalog.item.move.down": "Down",
+      "catalog.item.move.top": "Top",
+      "catalog.item.move.bottom": "Bottom"
     }
   }
 }

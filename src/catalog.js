@@ -23,6 +23,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .controller('BinCatalogSpotlightController', ['topicRegistry', 'binartaSearch', BinCatalogSpotlightController])
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
     .directive('movableItems', ['ngRegisterTopicHandler', MovableItemsDirectiveFactory])
+    .component('binCatalogItemList', new BinCatalogItemListComponent())
     .component('binCatalogListRows', new BinCatalogListRowsComponent())
     .component('binCatalogListItem', new BinCatalogListItemComponent())
     .component('binCatalogSpotlight', new BinCatalogSpotlightComponent())
@@ -875,9 +876,103 @@ function ItemPinnerFactory(topics, rest, config) {
     }
 }
 
+function BinCatalogItemListComponent() {
+    this.bindings = {
+        items:'<',
+        movable:'@'
+    };
+    this.templateUrl = 'catalog-item-list.html';
+
+    this.controller = ['$q', 'updateCatalogItemWriter', function ($q, updateCatalogItem) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            if ($ctrl.movable == 'true') {
+                $ctrl.moveUp = function (item) {
+                    var newPriority;
+                    for (var i = 0; i < $ctrl.items.length; i++) {
+                        if ($ctrl.items[i] == item) break;
+                        newPriority = $ctrl.items[i].priority;
+                    }
+
+                    if (newPriority) return update({
+                        priority: newPriority,
+                        item: item
+                    });
+                };
+
+                $ctrl.moveDown = function (item) {
+                    var newPriority;
+                    for (var i = 0; i < $ctrl.items.length - 1; i++) {
+                        if ($ctrl.items[i] == item) {
+                            newPriority = $ctrl.items[++i].priority;
+                            break;
+                        }
+                    }
+
+                    if (newPriority) return update({
+                        priority: newPriority,
+                        item: item
+                    });
+                };
+
+                $ctrl.moveTop = function (item) {
+                    var firstItem = $ctrl.items[0];
+                    if (firstItem != item) return update({
+                        priority: firstItem.priority,
+                        item: item
+                    });
+                };
+
+                $ctrl.moveBottom = function (item) {
+                    var lastItem = $ctrl.items[$ctrl.items.length - 1];
+                    if (lastItem != item) return update({
+                        priority: lastItem.priority,
+                        item: item
+                    });
+                };
+            }
+
+            function update(args) {
+                var deferred = $q.defer();
+                updateCatalogItem({
+                    data: {
+                        treatInputAsId: false,
+                        context: 'updatePriority',
+                        id: {id: args.item.id},
+                        priority: args.priority
+                    },
+                    success: onSuccess
+                });
+                return deferred.promise;
+
+                function onSuccess() {
+                    rearrangePriorities(args);
+                    sort();
+                    deferred.resolve();
+                }
+            }
+
+            function rearrangePriorities(args) {
+                $ctrl.items.forEach(function (it) {
+                    it.priority += (it.priority >= args.priority && it.priority < args.item.priority ? 1 : 0);
+                    it.priority += (it.priority <= args.priority && it.priority > args.item.priority ? -1 : 0);
+                });
+                args.item.priority = args.priority;
+            }
+
+            function sort() {
+                $ctrl.items.sort(function (x, y) {
+                    return y.priority - x.priority;
+                });
+            }
+        };
+    }];
+}
+
 function BinCatalogListRowsComponent() {
     this.bindings = {
-        items:'=',
+        items:'<',
         partition:'<',
         movable:'@'
     };
@@ -885,11 +980,41 @@ function BinCatalogListRowsComponent() {
 }
 
 function BinCatalogListItemComponent() {
+    this.templateUrl = 'catalog-list-item-default.html';
     this.bindings = {
         item:'<',
-        movable:'@'
+        isFirst: '<',
+        isLast: '<'
     };
-    this.templateUrl = 'catalog-list-item-default.html'
+    this.require = {
+        listCtrl: '^binCatalogItemList'
+    };
+
+    this.controller = [function () {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            $ctrl.movable = $ctrl.listCtrl.movable;
+
+            if ($ctrl.movable == 'true') {
+                $ctrl.moveUp = function () {
+                    return $ctrl.listCtrl.moveUp($ctrl.item);
+                };
+
+                $ctrl.moveDown = function () {
+                    return $ctrl.listCtrl.moveDown($ctrl.item);
+                };
+
+                $ctrl.moveTop = function () {
+                    return $ctrl.listCtrl.moveTop($ctrl.item);
+                };
+
+                $ctrl.moveBottom = function () {
+                    return $ctrl.listCtrl.moveBottom($ctrl.item);
+                };
+            }
+        };
+    }];
 }
 
 function BinCatalogSpotlightComponent() {

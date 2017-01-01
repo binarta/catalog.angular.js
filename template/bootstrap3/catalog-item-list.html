@@ -1,0 +1,12 @@
+<div class="row bin-catalog-items">
+    <div ng-repeat="item in $ctrl.items track by item.id">
+        <div ng-class="{
+            'clearfix': ($index % 3 == 0) || ($index % 4 == 0),
+            'visible-sm-block': $index % 3 == 0,
+            'visible-md-block visible-lg-block': $index % 4 == 0
+        }"></div>
+        <div class="col-xs-12 col-sm-4 col-md-3">
+            <bin-catalog-list-item item="item" is-first="$first" is-last="$last"></bin-catalog-list-item>
+        </div>
+    </div>
+</div>
