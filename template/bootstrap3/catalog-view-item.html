@@ -19,14 +19,14 @@
                     <% if(shop) { %>
                         <bin-basket mode="add-to-basket-button" item="catalogCtrl.item" ng-if="catalogCtrl.item.price"></bin-basket>
                         <div ng-if="application.pages.contact.active && (!catalogCtrl.item.price || catalogCtrl.item.price == 0)">
-                            <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{var}}"
+                            <a bin-href="/contact?subject=More info about {{var}}"
                                class="btn btn-success" i18n code="{{::catalogCtrl.item.id}}" read-only>
                                 <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
                             </a>
                         </div>
                     <% } else { %>
                         <div ng-if="application.pages.contact.active">
-                            <a ng-href="#!{{::localePrefix}}/contact?subject=More info about {{var}}"
+                            <a bin-href="/contact?subject=More info about {{var}}"
                                class="btn btn-success" i18n code="{{::catalogCtrl.item.id}}" read-only>
                                 <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
                             </a>

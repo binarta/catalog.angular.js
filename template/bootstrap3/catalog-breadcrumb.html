@@ -4,12 +4,12 @@
             <div ng-if="::catalogCtrl.breadcrumbs">
                 <ol class="breadcrumb" ng-if="viewport.xs && catalogCtrl.breadcrumbs.length > 1">
                     <li>
-                        <a ng-href="#!{{::localePrefix}}/browse{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].path}}"
+                        <a bin-href="/browse{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].path}}"
                            i18n code="navigation.label.{{::catalogCtrl.head}}" read-only
                            ng-if="::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].name == catalogCtrl.head">
                             <i class="fa fa-angle-left fa-fw"></i> {{var}}
                         </a>
-                        <a class="inline" ng-href="#!{{::localePrefix}}/browse{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].path}}"
+                        <a class="inline" bin-href="/browse{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].path}}"
                            i18n code="{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].path}}"
                            default="{{::catalogCtrl.breadcrumbs[breadcrumbs.length - 2].name}}"
                            read-only
@@ -20,7 +20,7 @@
                 </ol>
                 <ol class="breadcrumb" ng-if="!viewport.xs">
                     <li ng-class="::{active: $last}" ng-repeat="breadcrumb in ::catalogCtrl.breadcrumbs">
-                        <a ng-href="#!{{::localePrefix}}/browse{{::breadcrumb.path}}"
+                        <a bin-href="/browse{{::breadcrumb.path}}"
                            i18n code="navigation.label.{{::catalogCtrl.head}}" read-only
                            ng-if="::!$last && breadcrumb.name == catalogCtrl.head">
                             {{var}}
@@ -29,7 +29,7 @@
                               i18n code="navigation.label.{{::catalogCtrl.head}}" read-only>
                             {{var}}
                         </span>
-                        <a class="inline" ng-href="#!{{::localePrefix}}/browse{{::breadcrumb.path}}"
+                        <a class="inline" bin-href="/browse{{::breadcrumb.path}}"
                                   i18n code="{{::breadcrumb.path}}"
                                   default="{{::breadcrumb.name}}" read-only
                                   ng-if="::!$last && breadcrumb.name != catalogCtrl.head">
@@ -46,7 +46,7 @@
             <div ng-if="::searchCtrl.filters.type">
                 <ol class="breadcrumb">
                     <li class="inline" i18n code="navigation.label.{{::searchCtrl.filters.type}}" read-only>
-                        <a ng-href="#!{{::localePrefix}}/browse/{{::searchCtrl.filters.type}}/">
+                        <a bin-href="/browse/{{::searchCtrl.filters.type}}/">
                             <i class="fa fa-angle-left fa-fw"></i> {{var}}
                         </a>
                     </li>

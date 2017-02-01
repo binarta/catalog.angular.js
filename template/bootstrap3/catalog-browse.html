@@ -8,11 +8,11 @@
                  ng-if="listCtrl.partitions.length > 1 || catalogCtrl.parent != '/' || editing">
                 <div class="list-group">
                     <a class="list-group-item" ng-if="::catalogCtrl.parent != '/'"
-                       ng-href="#!{{::localePrefix}}/browse{{::catalogCtrl.parent}}">
+                       bin-href="/browse{{::catalogCtrl.parent}}">
                         <i class="fa fa-folder-o fa-fw"></i> ..
                     </a>
                     <a class="list-group-item" ng-repeat="partition in listCtrl.partitions track by partition.id"
-                       ng-href="#!{{::localePrefix}}/browse{{::partition.id}}"
+                       bin-href="/browse{{::partition.id}}"
                        i18n code="{{::partition.id}}" default="{{::partition.name}}" read-only>
                         {{::var}}
                         <span class="pull-right">
