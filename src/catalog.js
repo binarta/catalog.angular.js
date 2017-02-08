@@ -27,6 +27,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .component('binCatalogListRows', new BinCatalogListRowsComponent())
     .component('binCatalogListItem', new BinCatalogListItemComponent())
     .component('binCatalogSpotlight', new BinCatalogSpotlightComponent())
+    .component('binPinnedItemsToggle', new BinPinnedItemsToggle())
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
             return args.id;
@@ -1075,6 +1076,13 @@ function BinCatalogSpotlightController(topics, search) {
         topics.unsubscribe('catalog.item.unpinned', self.onUnpinned);
     }
 
+}
+
+function BinPinnedItemsToggle() {
+    this.bindings = {
+        section: '@'
+    };
+    this.templateUrl = 'bin-pinned-items-toggle.html';
 }
 
 // @deprecated

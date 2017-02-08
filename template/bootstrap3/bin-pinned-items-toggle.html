@@ -1,0 +1,11 @@
+<div class="row text-center" ng-if="$root.editing">
+    <div class="col-xs-1 col-centered">
+        <span>Recent Items</span>
+    </div>
+    <div class="col-xs-1 col-centered" ng-controller="binConfigController as configCtrl" ng-init="configCtrl.init({key:'application.page.home.section.' + $ctrl.section + '.pinned.items', scope:'public'})">
+        <bin-toggle value="config.value" on-change="configCtrl.submit(value)"></bin-toggle>
+    </div>
+    <div class="col-xs-1 col-centered">
+        <span>Pinned Items</span>
+    </div>
+</div>
