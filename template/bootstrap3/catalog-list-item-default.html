@@ -44,7 +44,7 @@
              ng-controller="binImageCarouselHeroController as hero"
              ng-init="hero.init({id: $ctrl.item.id, items: $ctrl.item.carousel})">
             <a bin-href="/view{{::$ctrl.item.localizedId || $ctrl.item.id}}">
-                <div class="item-image">
+                <div class="item-image" ng-class="{'item-image-not-found': !hero.image}">
                     <div class="item-image" bin-background-image="{{::hero.image.path}}" read-only
                          ng-if="hero.image"></div>
                 </div>

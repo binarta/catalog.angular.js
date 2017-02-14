@@ -14,10 +14,13 @@
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center;
-        background-color: rgba(0,0,0,0.02);
         display: block;
         height: @catalog-item-min-height;
         margin: 0;
+
+        &.item-image-not-found {
+          background-color: rgba(0,0,0,0.02);
+        }
       }
 
       .item-title {
