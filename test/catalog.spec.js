@@ -2162,7 +2162,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('on update catalog item', function () {
+    describe('on update catalog item', function () {
         var writer, onSuccessSpy, sut, args;
 
         beforeEach(inject(function (updateCatalogItem, updateCatalogItemWriterSpy, topicMessageDispatcherMock) {
