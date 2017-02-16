@@ -725,14 +725,18 @@ function UpdateCatalogItemFactory(updateCatalogItemWriter, topicMessageDispatche
         if (args.data.treatInputAsId == undefined) args.data.treatInputAsId = true;
         var onSuccess = args.success;
         args.success = function () {
-            topicMessageDispatcher.fire('system.success', {
-                code: 'catalog.item.updated',
-                default: 'Catalog item updated!'
-            });
+            if (args.successNotification != false) fireSuccessNotification();
             topicMessageDispatcher.fire('catalog.item.updated', catalogItemUpdatedDecorator(args.data));
             onSuccess();
         };
         updateCatalogItemWriter(args);
+    };
+
+    function fireSuccessNotification() {
+        topicMessageDispatcher.fire('system.success', {
+            code: 'catalog.item.updated',
+            default: 'Catalog item updated!'
+        });
     }
 }
 

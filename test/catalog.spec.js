@@ -2162,21 +2162,22 @@ describe('catalog', function () {
         });
     });
 
-    describe('on update catalog item', function () {
-        var writer, onSuccessSpy;
-        var args = {
-            data: {
-                id: 'item-id',
-                context: 'update-id'
-            }
-        };
+    fdescribe('on update catalog item', function () {
+        var writer, onSuccessSpy, sut, args;
 
         beforeEach(inject(function (updateCatalogItem, updateCatalogItemWriterSpy, topicMessageDispatcherMock) {
+            sut = updateCatalogItem;
+            args = {
+                data: {
+                    id: 'item-id',
+                    context: 'update-id'
+                }
+            };
             onSuccessSpy = jasmine.createSpy('onSuccessSpy');
             args.success = onSuccessSpy;
             writer = updateCatalogItemWriterSpy;
             dispatcher = topicMessageDispatcherMock;
-            updateCatalogItem(args);
+            sut(args);
         }));
 
         it('invoke writer', function () {
@@ -2187,12 +2188,12 @@ describe('catalog', function () {
             expect(writer.data().treatInputAsId).toBeTruthy();
         });
 
-        it('treat input as id can be overridden', inject(function(updateCatalogItem) {
+        it('treat input as id can be overridden', function() {
             writer.spy.calls.reset();
             args.data.treatInputAsId = false;
-            updateCatalogItem(args);
+            sut(args);
             expect(writer.data().treatInputAsId).toBeFalsy();
-        }));
+        });
 
         describe('on write success', function () {
             beforeEach(function () {
@@ -2220,6 +2221,31 @@ describe('catalog', function () {
                 writer.success();
                 expect(dispatcher['catalog.item.updated']).toEqual({id: 'I'});
             })
+        });
+
+        describe('when success notification is disabled', function () {
+            beforeEach(function () {
+                args.successNotification = false;
+                sut(args);
+            });
+
+            describe('on write success', function () {
+                beforeEach(function () {
+                    writer.success();
+                });
+
+                it('do not raise system success', function () {
+                    expect(dispatcher['system.success']).toBeUndefined();
+                });
+
+                it('raise catalog item updated', function () {
+                    expect(dispatcher['catalog.item.updated']).toEqual(args.data);
+                });
+
+                it('execute on success handler', function () {
+                    expect(onSuccessSpy.calls.first()).toBeTruthy();
+                });
+            });
         });
     });
 
