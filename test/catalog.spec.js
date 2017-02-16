@@ -2961,7 +2961,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('binCatalogListItem component', function () {
+    describe('binCatalogListItem component', function () {
         var $componentController, $ctrl, listCtrl;
 
         beforeEach(inject(function (_$componentController_) {
