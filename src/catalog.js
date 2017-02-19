@@ -21,6 +21,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .controller('PinItemController', ['$scope', 'itemPinner', 'ngRegisterTopicHandler', PinItemController])
     .controller('BinCatalogSpotlightController', ['topicRegistry', 'binartaSearch', BinCatalogSpotlightController])
+    .controller('catalogSectionController', [CatalogSectionController])
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
     .directive('movableItems', ['ngRegisterTopicHandler', MovableItemsDirectiveFactory])
     .component('binCatalogItemList', new BinCatalogItemListComponent())
@@ -1097,6 +1098,16 @@ function BinPinnedItemsToggle() {
         section: '@'
     };
     this.templateUrl = 'bin-pinned-items-toggle.html';
+}
+
+function CatalogSectionController() {
+    var self = this;
+
+    self.totalItemCount = 0;
+
+    self.plus = function(count) {
+        self.totalItemCount += count;
+    }
 }
 
 // @deprecated

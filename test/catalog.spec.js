@@ -3079,6 +3079,23 @@ describe('catalog', function () {
             });
         });
     });
+    
+    describe('catalogSectionController', function() {
+        var ctrl;
+
+        beforeEach(inject(function($controller) {
+            ctrl = $controller('catalogSectionController', null, {});
+        }));
+
+        it('on init total item count is zero', function() {
+            expect(ctrl.totalItemCount).toBe(0);
+        });
+
+        it('count can be incremented', function() {
+            ctrl.plus(1);
+            expect(ctrl.totalItemCount).toBe(1);
+        })
+    });
 });
 
 angular.module('test.app', ['catalog']).config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
