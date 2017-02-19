@@ -2736,16 +2736,23 @@ describe('catalog', function () {
 
                 describe('and catalog.item.pinned event is received', function() {
                     beforeEach(inject(function(topicRegistryMock) {
-                        topicRegistryMock['catalog.item.pinned']({id:3});
+                        topicRegistryMock['catalog.item.pinned']({id:3, type:'type'});
                     }));
 
                     it('item is added to the list', function() {
-                        expect(component.results[2]).toEqual({id:3})
+                        expect(component.results[2]).toEqual({id:3, type:'type'})
                     });
 
                     it('and onPin hook is fired', function() {
                         expect(onPinReceived).toBeTruthy();
                     });
+                    
+                    it('when item.pinned is received for wrong type do not add to list', inject(function(topicRegistryMock) {
+                        onPinReceived = false;
+                        topicRegistryMock['catalog.item.pinned']({id:4, type:'wrong'});
+                        expect(component.results.length).toBe(3);
+                        expect(onPinReceived).toBeFalsy();
+                    }));
 
                     describe('and catalog.item.unpinned event is received', function() {
                         beforeEach(inject(function(topicRegistryMock) {

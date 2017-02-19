@@ -1067,8 +1067,10 @@ function BinCatalogSpotlightController(topics, search) {
         search(args)
     };
     this.onPinned = function(item) {
-        self.results.push(item);
-        self.onPin();
+        if (item.type == self.type) {
+            self.results.push(item);
+            self.onPin();
+        }
     };
     this.onUnpinned = function(item) {
         var idx = self.results.reduce(function(p, c, i) {
