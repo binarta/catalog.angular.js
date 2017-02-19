@@ -1029,7 +1029,11 @@ function BinCatalogSpotlightComponent() {
         partition:'<',
         partitionExact:'@',
         size: '@',
-        recursive:'@'
+        recursive:'@',
+        onRender:'&',
+        onDestroy:'&',
+        onPin:'&',
+        onUnpin:'&'
     };
     this.templateUrl = 'catalog-spotlight.html';
     this.controller = 'BinCatalogSpotlightController';
@@ -1063,21 +1067,27 @@ function BinCatalogSpotlightController(topics, search) {
     };
     this.onPinned = function(item) {
         self.results.push(item);
+        self.onPin();
     };
     this.onUnpinned = function(item) {
         var idx = self.results.reduce(function(p, c, i) {
             if (c.id == item.id) return i;
             return p;
         }, -1);
-        if (idx > -1) self.results.splice(idx, 1);
+        if (idx > -1) {
+            self.results.splice(idx, 1);
+            self.onUnpin();
+        }
     };
     this.render = function(items) {
         self.results = items;
+        self.onRender({size:items.length});
     };
 
     this.$onDestroy = function() {
         topics.unsubscribe('catalog.item.pinned', self.onPinned);
         topics.unsubscribe('catalog.item.unpinned', self.onUnpinned);
+        self.onDestroy({size:self.results.length});
     }
 
 }

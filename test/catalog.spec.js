@@ -2639,11 +2639,27 @@ describe('catalog', function () {
         var $componentController, search;
         var bindings;
         var component;
+        var onRenderArgs;
+        var onDestroyArgs;
+        var onPinReceived;
+        var onUnpinReceived;
 
         beforeEach(inject(function(_$componentController_, binartaSearch) {
             bindings = {
                 type:'type',
-                size: 10
+                size: 10,
+                onRender: function(args) {
+                    onRenderArgs = args;
+                },
+                onPin: function() {
+                    onPinReceived = true;
+                },
+                onUnpin:function() {
+                    onUnpinReceived = true;
+                },
+                onDestroy:function(args) {
+                    onDestroyArgs = args;
+                }
             };
             $componentController = _$componentController_;
             search = binartaSearch;
@@ -2714,6 +2730,10 @@ describe('catalog', function () {
                     expect(component.results).toEqual(items);
                 });
 
+                it('and onRender hooks is provided with length of set', function() {
+                    expect(onRenderArgs.size).toEqual(items.length);
+                });
+
                 describe('and catalog.item.pinned event is received', function() {
                     beforeEach(inject(function(topicRegistryMock) {
                         topicRegistryMock['catalog.item.pinned']({id:3});
@@ -2723,6 +2743,10 @@ describe('catalog', function () {
                         expect(component.results[2]).toEqual({id:3})
                     });
 
+                    it('and onPin hook is fired', function() {
+                        expect(onPinReceived).toBeTruthy();
+                    });
+
                     describe('and catalog.item.unpinned event is received', function() {
                         beforeEach(inject(function(topicRegistryMock) {
                             topicRegistryMock['catalog.item.unpinned']({id:3});
@@ -2730,21 +2754,30 @@ describe('catalog', function () {
 
                         it('item is removed again', function() {
                             expect(component.results.length).toEqual(2);
+                        });
+
+                        it('and onUnpin hook is fired', function() {
+                            expect(onUnpinReceived).toBeTruthy();
                         })
                     });
                 });
-            });
 
-            describe('and component is destroyed', function() {
-                beforeEach(function() {
-                    component.$onDestroy();
+                describe('and component is destroyed', function() {
+                    beforeEach(function() {
+                        component.$onDestroy();
+                    });
+
+                    it('then topic handlers are uninstalled', inject(function(topicRegistryMock) {
+                        expect(topicRegistryMock['catalog.item.pinned']).toBeUndefined();
+                        expect(topicRegistryMock['catalog.item.unpinned']).toBeUndefined();
+                    }));
+
+                    it('and onDestroy hook is called with set size', function() {
+                        expect(onDestroyArgs.size).toEqual(items.length);
+                    })
                 });
-
-                it('then topic handlers are uninstalled', inject(function(topicRegistryMock) {
-                    expect(topicRegistryMock['catalog.item.pinned']).toBeUndefined();
-                    expect(topicRegistryMock['catalog.item.unpinned']).toBeUndefined();
-                }));
             });
+
         });
     });
 
