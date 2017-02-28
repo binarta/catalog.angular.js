@@ -15,7 +15,8 @@
                                         confirm-message="{{::var}}"
                                         ng-disabled="working"
                                         ng-if="::var">
-                                    <i class="fa fa-times fa-fw"></i>
+                                    <span ng-hide="working"><i class="fa fa-times fa-fw"></i></span>
+                                    <span ng-show="working"><i class="fa fa-spinner fa-spin fa-fw"></i></span>
                                     <span i18n code="catalog.remove.item.button" read-only ng-bind="::var"></span>
                                 </button>
                             </span>
