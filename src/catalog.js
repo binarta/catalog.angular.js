@@ -20,15 +20,16 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .controller('ViewCatalogItemController', ['$scope', 'i18nLocation', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', 'binarta', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .controller('PinItemController', ['$scope', 'itemPinner', 'ngRegisterTopicHandler', PinItemController])
-    .controller('BinCatalogSpotlightController', ['topicRegistry', 'binartaSearch', BinCatalogSpotlightController])
-    .controller('catalogSectionController', [CatalogSectionController])
+    .controller('binSpotlightController', ['topicRegistry', 'binarta', 'configWriter', BinSpotlightController])
+    .controller('binSpotlightItemsController', ['topicRegistry', 'binartaSearch', 'viewport', BinSpotlightItemsController])
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
     .directive('movableItems', ['ngRegisterTopicHandler', MovableItemsDirectiveFactory])
     .component('binCatalogItemList', new BinCatalogItemListComponent())
     .component('binCatalogListRows', new BinCatalogListRowsComponent())
     .component('binCatalogListItem', new BinCatalogListItemComponent())
-    .component('binCatalogSpotlight', new BinCatalogSpotlightComponent())
     .component('binPinnedItemsToggle', new BinPinnedItemsToggle())
+    .component('binSpotlight', new BinSpotlightComponent())
+    .component('binSpotlightItems', new BinSpotlightItemsComponent())
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
             return args.id;
@@ -1023,47 +1024,97 @@ function BinCatalogListItemComponent() {
     }];
 }
 
-function BinCatalogSpotlightComponent() {
-    this.transclude = true;
+function BinSpotlightComponent() {
+    this.bindings = {
+        type:'@'
+    };
+    this.templateUrl = 'bin-spotlight.html';
+    this.controller = 'binSpotlightController';
+}
+
+function BinSpotlightController(topics, binarta, configWriter) {
+    var self = this;
+    self.totalItemCount = 0;
+
+        this.$onInit = function() {
+            topics.subscribe('edit.mode', onEditMode);
+
+            binarta.schedule(function() {
+                binarta.application.config.findPublic('catalog.' + self.type + '.pinned.items', function(value) {
+                    self.pinnedItems = value == 'true';
+                });
+                binarta.application.config.findPublic('catalog.' + self.type + '.recent.items', function(value) {
+                    self.recentItems = value == 'true';
+                });
+                self.applicationPageObserver = binarta.application.config.observePublic('application.pages.' + self.type + '.active', function(value) {
+                    self.active = (value == 'true' || value === true);
+                })
+            })
+        };
+
+        this.$onDestroy = function() {
+            self.applicationPageObserver.disconnect();
+            topics.unsubscribe('edit.mode', onEditMode);
+        };
+
+        this.plus = function(size) {
+            this.totalItemCount += size;
+        };
+
+        this.togglePinnedItems = function() {
+            self.pinnedItems = !self.pinnedItems;
+            configWriter({key:'catalog.' + self.type + '.pinned.items', value:self.pinnedItems, scope:'public'});
+        };
+        this.toggleRecentItems = function() {
+            self.recentItems = !self.recentItems;
+            configWriter({key:'catalog.' + self.type + '.recent.items', value:self.recentItems, scope:'public'});
+        };
+
+        function onEditMode(editing) {
+            self.editing = editing;
+        }       
+}
+
+function BinSpotlightItemsComponent() {
     this.bindings = {
         type: '<',
-        partition:'<',
-        partitionExact:'@',
-        size: '@',
-        recursive:'@',
+        pinned:'@',
         onRender:'&',
         onDestroy:'&',
         onPin:'&',
         onUnpin:'&'
     };
-    this.templateUrl = 'catalog-spotlight.html';
-    this.controller = 'BinCatalogSpotlightController';
+    this.templateUrl = 'bin-spotlight-items.html';
+    this.controller = 'binSpotlightItemsController';
 }
 
-function BinCatalogSpotlightController(topics, search) {
+function BinSpotlightItemsController(topics, search, viewport) {
     var self = this;
+
     this.$onInit = function() {
-        topics.subscribe('catalog.item.pinned', self.onPinned);
-        topics.subscribe('catalog.item.unpinned', self.onUnpinned);
+        self.results = [];
+        if (self.pinned == 'true')
+            initPinnedConfiguration();
+        topics.subscribe('edit.mode', onEditMode);
+
         var args = {
             entity:'catalog-item',
             action:'search',
             subset: {
                 offset: 0,
-                count: self.size
+                count: viewport.visibleXs() ? 6 : 8
             },
             includeCarouselItems:true,
             sortings:[
                 {on:'creationTime', orientation:'desc'}
             ],
             filters: {
-                type: self.type,
-                pinned: true
+                type: self.type
             },
+            complexResult:true,
             success:self.render
         };
-        if (self.partition != undefined && self.recursive == 'true') args.filters.recursivelyByPartition = self.partition;
-        else if (self.partition != undefined && self.partitionExact == 'true') args.filters.partition = self.partition;
+        if (self.pinned == 'true') args.filters.pinned = true;
         search(args)
     };
     this.onPinned = function(item) {
@@ -1082,17 +1133,32 @@ function BinCatalogSpotlightController(topics, search) {
             self.onUnpin();
         }
     };
-    this.render = function(items) {
-        self.results = items;
-        self.onRender({size:items.length});
+    this.render = function(data) {
+        self.results = data.results;
+        if (self.pinned != 'true') self.searchForMore = data.hasMore;
+        self.onRender({size:self.results.length});
     };
 
     this.$onDestroy = function() {
+
+        if (self.pinned == 'true') {
+            uninstallPinnedTopics();
+        }
+        self.onDestroy({size:self.results.length});
+    };
+
+    function onEditMode(editing) {
+        self.editing = editing;
+    }
+    function initPinnedConfiguration() {
+        topics.subscribe('catalog.item.pinned', self.onPinned);
+        topics.subscribe('catalog.item.unpinned', self.onUnpinned);
+        self.searchForMore = true;
+    }
+    function uninstallPinnedTopics() {
         topics.unsubscribe('catalog.item.pinned', self.onPinned);
         topics.unsubscribe('catalog.item.unpinned', self.onUnpinned);
-        self.onDestroy({size:self.results.length});
     }
-
 }
 
 function BinPinnedItemsToggle() {
@@ -1100,16 +1166,6 @@ function BinPinnedItemsToggle() {
         section: '@'
     };
     this.templateUrl = 'bin-pinned-items-toggle.html';
-}
-
-function CatalogSectionController() {
-    var self = this;
-
-    self.totalItemCount = 0;
-
-    self.plus = function(count) {
-        self.totalItemCount += count;
-    }
 }
 
 // @deprecated

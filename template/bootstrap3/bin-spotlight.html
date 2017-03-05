@@ -1,0 +1,35 @@
+<div class="bin-spotlight" ng-show="$ctrl.active && ($ctrl.editing || $ctrl.totalItemCount > 0)">
+    <div class="container">
+        <bin-edit>
+            <bin-edit-actions>
+                <div class="bin-dropdown-menu-item">
+                    <a class="bin-link" bin-href="/browse/{{::$ctrl.type}}/" i18n code="catalog.{{::$ctrl.type}}.add.more.button" read-only ng-bind="::var"></a>
+                </div>
+                <bin-edit-action action="$ctrl.togglePinnedItems()">
+                    <span ng-if="!$ctrl.pinnedItems" i18n code="catalog.show.pinned" read-only ng-bind="::var"></span>
+                    <span ng-if="$ctrl.pinnedItems" i18n code="catalog.hide.pinned" read-only ng-bind="::var"></span>
+                </bin-edit-action>
+                <bin-edit-action action="$ctrl.toggleRecentItems()">
+                    <span ng-if="!$ctrl.recentItems" i18n code="catalog.show.recent" read-only ng-bind="::var"></span>
+                    <span ng-if="$ctrl.recentItems" i18n code="catalog.hide.recent" read-only ng-bind="::var"></span>
+                </bin-edit-action>
+            </bin-edit-actions>
+            <bin-edit-body>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="section-title">
+                            <h1 i18n code="navigation.label.{{::$ctrl.type}}" ng-bind="var"></h1>
+                        </div>
+                    </div>
+                </div>
+                <div ng-if="$ctrl.pinnedItems">
+                    <bin-spotlight-items type="::$ctrl.type" pinned="true" on-render="$ctrl.plus(size)"  on-pin="$ctrl.plus(1)" on-unpin="$ctrl.plus(-1)" on-destroy="$ctrl.plus(-size)"></bin-spotlight-items>
+                </div>
+
+                <div ng-if="$ctrl.recentItems">
+                    <bin-spotlight-items type="::$ctrl.type" on-render="$ctrl.plus(size)"  on-destroy="$ctrl.plus(-size)"></bin-spotlight-items>
+                </div>
+            </bin-edit-body>
+        </bin-edit>
+    </div>
+</div>

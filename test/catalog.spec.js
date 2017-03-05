@@ -2634,87 +2634,217 @@ describe('catalog', function () {
             expect(item.pinned).toBe(false);
         }))
     });
-    
-    describe('binCatalogSpotlight', function() {
-        var $componentController, search;
-        var bindings;
+
+    describe('binSpotlightController', function() {
         var component;
+        var binarta = {
+            application:{config:{
+                findPublic:jasmine.createSpy('findPublic'),
+                observePublic:jasmine.createSpy('observePublic')
+            }},
+            schedule:function(fn) {
+                this.scheduledFn = fn;
+            }
+        };
+        var configWriter = jasmine.createSpy('configWriter');
+        var disconnectObserver = jasmine.createSpy('disconnectObserver')
+
+        beforeEach(inject(function($controller) {
+            component = $controller('binSpotlightController', {binarta:binarta, configWriter:configWriter});
+            component.type = 'type';
+            binarta.application.config.findPublic.calls.reset();
+            binarta.application.config.observePublic.calls.reset();
+            configWriter.calls.reset();
+            disconnectObserver.calls.reset();
+            binarta.application.config.observePublic.and.returnValue({disconnect:disconnectObserver});
+        }));
+
+        it('total item count initializes to 0', function() {
+            expect(component.totalItemCount).toEqual(0);
+        });
+
+        describe('$onInit', function() {
+            beforeEach(function() {
+                component.$onInit();
+            });
+
+            describe('and edit.mode was fired', function() {
+                beforeEach(inject(function(topicRegistryMock) {
+                    topicRegistryMock['edit.mode'](true);
+                }));
+
+                it('then editing flag is updated', function() {
+                    expect(component.editing).toBe(true);
+                })
+            });
+
+            describe('and scheduled action was executed', function() {
+                beforeEach(function() {
+                    binarta.scheduledFn();
+                });
+
+                it('public config was consulted', function() {
+                    expect(binarta.application.config.findPublic.calls.argsFor(0)[0]).toEqual('catalog.type.pinned.items');
+                    expect(binarta.application.config.findPublic.calls.argsFor(1)[0]).toEqual('catalog.type.recent.items');
+                    expect(binarta.application.config.observePublic.calls.argsFor(0)[0]).toEqual('application.pages.type.active');
+                });
+
+                describe('and public config results are triggered', function() {
+                    beforeEach(function() {
+                        binarta.application.config.findPublic.calls.argsFor(0)[1]('true');
+                        binarta.application.config.findPublic.calls.argsFor(1)[1]('true');
+                        binarta.application.config.observePublic.calls.argsFor(0)[1]('true');
+                    });
+
+                    it('then flags are set', function() {
+                        expect(component.pinnedItems).toBe(true);
+                        expect(component.recentItems).toBe(true);
+                        expect(component.active).toBe(true);
+                    });
+
+                    it('when consulting the observable for application pages active we support booleans as well', function() {
+                        component.active = false;
+                        binarta.application.config.observePublic.calls.argsFor(0)[1](true);
+                        expect(component.active).toBe(true);
+                    });
+
+                    describe('and pinned items are toggled', function() {
+                        beforeEach(function() {
+                            component.togglePinnedItems();
+                        });
+
+                        it('then the flag is updated', function() {
+                            expect(component.pinnedItems).toBe(false);
+                        });
+
+                        it('and config is written', function() {
+                            expect(configWriter.calls.argsFor(0)[0]).toEqual({
+                                key:'catalog.type.pinned.items',
+                                value:component.pinnedItems,
+                                scope:'public'
+                            });
+                        });
+                    });
+
+                    describe('and recent items are toggled', function() {
+                        beforeEach(function() {
+                            component.toggleRecentItems();
+                        });
+
+                        it('then the flag is updated', function() {
+                            expect(component.recentItems).toBe(false);
+                        });
+
+                        it('and config is written', function() {
+                            expect(configWriter.calls.argsFor(0)[0]).toEqual({
+                                key:'catalog.type.recent.items',
+                                value:component.recentItems,
+                                scope:'public'
+                            });
+                        });
+                    });
+                });
+
+                describe('and $onDestroy', function() {
+                    beforeEach(function() {
+                        component.$onDestroy();
+                    });
+
+                    it('unsubscribed from edit.mode', inject(function(topicRegistryMock) {
+                        expect(topicRegistryMock['edit.mode']).toBeUndefined();
+                    }));
+
+                    it('and disconnected from observable', function() {
+                        expect(disconnectObserver).toHaveBeenCalled();
+                    })
+                });
+            });
+        });
+
+        it('total item count can be manipulated', function() {
+            component.plus(1);
+            expect(component.totalItemCount).toEqual(1);
+        })
+    });
+    
+    describe('binSpotlightItemsController', function() {
+        var ctrl;
+        var visibleXs;
+        var viewport = {
+            visibleXs:function() { return visibleXs; }
+        };
+        var search;
         var onRenderArgs;
         var onDestroyArgs;
         var onPinReceived;
         var onUnpinReceived;
 
-        beforeEach(inject(function(_$componentController_, binartaSearch) {
-            bindings = {
-                type:'type',
-                size: 10,
-                onRender: function(args) {
-                    onRenderArgs = args;
-                },
-                onPin: function() {
-                    onPinReceived = true;
-                },
-                onUnpin:function() {
-                    onUnpinReceived = true;
-                },
-                onDestroy:function(args) {
-                    onDestroyArgs = args;
-                }
+        beforeEach(inject(function($controller, binartaSearch) {
+            ctrl = $controller('binSpotlightItemsController', {viewport:viewport});
+            ctrl.type = 'type';
+            ctrl.onRender = function(args) {
+                onRenderArgs = args;
             };
-            $componentController = _$componentController_;
+            ctrl.onDestroy = function(args) {
+                onDestroyArgs = args;
+            };
+            ctrl.onPin = function() {
+                onPinReceived = true;
+            };
+            ctrl.onUnpin = function() {
+                onUnpinReceived = true;
+            };
+            visibleXs = false;
             search = binartaSearch;
-            component = $componentController('binCatalogSpotlight', null, bindings);
         }));
-
-        it('when partition is provided and exact matching is enabled then it is passed', function() {
-            bindings.partition = 'partition';
-            bindings.partitionExact = 'true';
-            component = $componentController('binCatalogSpotlight', null, bindings);
-            component.$onInit();
-            expect(args().filters.partition).toEqual(bindings.partition);
-        });
-
-        it('when partition is provided and recursive is enabled pass as recursive partition search param', function() {
-            bindings.partition = 'partition';
-            bindings.recursive = 'true';
-            component = $componentController('binCatalogSpotlight', null, bindings);
-            component.$onInit();
-            expect(args().filters.partition).toBeUndefined();
-            expect(args().filters.recursivelyByPartition).toEqual(bindings.partition);
-        });
 
         function args() {
             return search.calls.argsFor(0)[0];
         }
-
-        describe('when component is constructed', function() {
+    //
+        describe('$onInit', function() {
             beforeEach(inject(function() {
-                component.$onInit();
+                ctrl.$onInit();
             }));
 
-            it('topic handlers are installed', inject(function(topicRegistryMock) {
-                expect(topicRegistryMock['catalog.item.pinned']).toBeDefined();
-                expect(topicRegistryMock['catalog.item.unpinned']).toBeDefined();
-            }));
+            it('results are initialized to empty list', function() {
+                expect(ctrl.results.length).toEqual(0);
+            });
 
+            describe('on edit.mode was fired', function() {
+                beforeEach(inject(function(topicRegistryMock) {
+                    topicRegistryMock['edit.mode'](true);
+                }));
+
+                it('then editing flag is updated', function() {
+                    expect(ctrl.editing).toBe(true);
+                })
+            });
 
             it('search is executed', inject(function(binartaSearch) {
                 expect(args().entity).toEqual('catalog-item');
                 expect(args().action).toEqual('search');
                 expect(args().subset).toEqual({
                     offset: 0,
-                    count: bindings.size
+                    count: 8
                 });
                 expect(args().includeCarouselItems).toBe(true);
                 expect(args().sortings).toEqual([
                     {on:'creationTime', orientation:'desc'}
                 ]);
                 expect(args().filters).toEqual({
-                    type: bindings.type,
-                    pinned: true
+                    type: ctrl.type
                 });
+                expect(args().complexResult).toBe(true);
             }));
 
+            it('when viewport is for small device we limit to search pages of 6 items', function() {
+                visibleXs = true;
+                search.calls.reset();
+                ctrl.$onInit();
+                expect(args().subset.count).toEqual(6);
+            });
+    //
             describe('with success', function() {
                 var items;
 
@@ -2723,61 +2853,28 @@ describe('catalog', function () {
                         {id: 1},
                         {id: 2}
                     ];
-                    binartaSearch.calls.argsFor(0)[0].success(items)
+                    binartaSearch.calls.argsFor(0)[0].success({
+                        hasMore:true,
+                        results: items
+                    })
                 }));
 
                 it('then items are exposed', function() {
-                    expect(component.results).toEqual(items);
+                    expect(ctrl.results).toEqual(items);
+                });
+
+                it('search for more flag is exposed', function() {
+                    expect(ctrl.searchForMore).toBe(true);
                 });
 
                 it('and onRender hooks is provided with length of set', function() {
                     expect(onRenderArgs.size).toEqual(items.length);
                 });
 
-                describe('and catalog.item.pinned event is received', function() {
-                    beforeEach(inject(function(topicRegistryMock) {
-                        topicRegistryMock['catalog.item.pinned']({id:3, type:'type'});
-                    }));
-
-                    it('item is added to the list', function() {
-                        expect(component.results[2]).toEqual({id:3, type:'type'})
-                    });
-
-                    it('and onPin hook is fired', function() {
-                        expect(onPinReceived).toBeTruthy();
-                    });
-                    
-                    it('when item.pinned is received for wrong type do not add to list', inject(function(topicRegistryMock) {
-                        onPinReceived = false;
-                        topicRegistryMock['catalog.item.pinned']({id:4, type:'wrong'});
-                        expect(component.results.length).toBe(3);
-                        expect(onPinReceived).toBeFalsy();
-                    }));
-
-                    describe('and catalog.item.unpinned event is received', function() {
-                        beforeEach(inject(function(topicRegistryMock) {
-                            topicRegistryMock['catalog.item.unpinned']({id:3});
-                        }));
-
-                        it('item is removed again', function() {
-                            expect(component.results.length).toEqual(2);
-                        });
-
-                        it('and onUnpin hook is fired', function() {
-                            expect(onUnpinReceived).toBeTruthy();
-                        })
-                    });
-                });
-
                 describe('and component is destroyed', function() {
                     beforeEach(function() {
-                        component.$onDestroy();
+                        ctrl.$onDestroy();
                     });
-
-                    it('then topic handlers are uninstalled', inject(function(topicRegistryMock) {
-                        expect(topicRegistryMock['catalog.item.pinned']).toBeUndefined();
-                        expect(topicRegistryMock['catalog.item.unpinned']).toBeUndefined();
-                    }));
 
                     it('and onDestroy hook is called with set size', function() {
                         expect(onDestroyArgs.size).toEqual(items.length);
@@ -2785,6 +2882,79 @@ describe('catalog', function () {
                 });
             });
 
+        });
+
+        describe('$onInit with pinned configuration', function() {
+            beforeEach(function() {
+                ctrl.pinned = 'true';
+                ctrl.$onInit();
+                search.calls.argsFor(0)[0].success({
+                    hasMore:true,
+                    results: [
+                        {id: 1},
+                        {id: 2}
+                    ]
+                })
+            });
+
+            it('search for more is always true', function() {
+                expect(ctrl.searchForMore).toBe(true);
+            });
+
+            it('search is filtered by pinned', function() {
+                expect(args().filters.pinned).toBe(true);
+            });
+
+            it('topic handlers are installed', inject(function(topicRegistryMock) {
+                expect(topicRegistryMock['catalog.item.pinned']).toBeDefined();
+                expect(topicRegistryMock['catalog.item.unpinned']).toBeDefined();
+            }));
+
+            describe('and catalog.item.pinned event is received', function() {
+                beforeEach(inject(function(topicRegistryMock) {
+                    topicRegistryMock['catalog.item.pinned']({id:3, type:'type'});
+                }));
+
+                it('item is added to the list', function() {
+                    expect(ctrl.results[2]).toEqual({id:3, type:'type'})
+                });
+
+                it('and onPin hook is fired', function() {
+                    expect(onPinReceived).toBeTruthy();
+                });
+
+                it('when item.pinned is received for wrong type do not add to list', inject(function(topicRegistryMock) {
+                    onPinReceived = false;
+                    topicRegistryMock['catalog.item.pinned']({id:4, type:'wrong'});
+                    expect(ctrl.results.length).toBe(3);
+                    expect(onPinReceived).toBeFalsy();
+                }));
+
+                describe('and catalog.item.unpinned event is received', function() {
+                    beforeEach(inject(function(topicRegistryMock) {
+                        topicRegistryMock['catalog.item.unpinned']({id:3});
+                    }));
+
+                    it('item is removed again', function() {
+                        expect(ctrl.results.length).toEqual(2);
+                    });
+
+                    it('and onUnpin hook is fired', function() {
+                        expect(onUnpinReceived).toBeTruthy();
+                    })
+                });
+
+                describe('and $onDestroy', function() {
+                    beforeEach(function() {
+                        ctrl.$onDestroy();
+                    });
+
+                    it('then topic handlers are uninstalled', inject(function(topicRegistryMock) {
+                        expect(topicRegistryMock['catalog.item.pinned']).toBeUndefined();
+                        expect(topicRegistryMock['catalog.item.unpinned']).toBeUndefined();
+                    }));
+                });
+            });
         });
     });
 
@@ -3085,23 +3255,6 @@ describe('catalog', function () {
                 expect(actual).toBeTruthy();
             });
         });
-    });
-    
-    describe('catalogSectionController', function() {
-        var ctrl;
-
-        beforeEach(inject(function($controller) {
-            ctrl = $controller('catalogSectionController', null, {});
-        }));
-
-        it('on init total item count is zero', function() {
-            expect(ctrl.totalItemCount).toBe(0);
-        });
-
-        it('count can be incremented', function() {
-            ctrl.plus(1);
-            expect(ctrl.totalItemCount).toBe(1);
-        })
     });
 });
 
