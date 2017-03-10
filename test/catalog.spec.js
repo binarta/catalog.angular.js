@@ -3256,6 +3256,141 @@ describe('catalog', function () {
             });
         });
     });
+
+    describe('binBreadcrumb component', function () {
+        var $ctrl, $location;
+
+        beforeEach(inject(function ($componentController, _$location_) {
+            $location = _$location_;
+            $location.path('/browse/p');
+            $ctrl = $componentController('binBreadcrumb');
+        }));
+
+        describe('when on parent', function () {
+            beforeEach(function () {
+                $ctrl.partition = '/';
+                $ctrl.item = '/p/';
+                $ctrl.$onChanges();
+            });
+
+            it('no back link', function () {
+                expect($ctrl.back).toBeUndefined();
+            });
+
+            it('breadcrumb is updated', function () {
+                expect($ctrl.breadcrumb).toEqual([
+                    {id: 'navigation.label.p'}
+                ]);
+            });
+        });
+
+        describe('when partition is not given', function () {
+            beforeEach(function () {
+                $ctrl.item = '/p/';
+                $ctrl.$onChanges();
+            });
+
+            it('breadcrumb is updated', function () {
+                expect($ctrl.breadcrumb).toEqual([
+                    {id: 'navigation.label.p'}
+                ]);
+            });
+
+            describe('and item has no slashes', function () {
+                beforeEach(function () {
+                    $ctrl.item = 'p';
+                    $ctrl.$onChanges();
+                });
+
+                it('breadcrumb is updated', function () {
+                    expect($ctrl.breadcrumb).toEqual([
+                        {id: 'navigation.label.p'}
+                    ]);
+                });
+            });
+        });
+
+        describe('with partition and item', function () {
+            beforeEach(function () {
+                $ctrl.partition = '/p/p1/p2/';
+                $ctrl.item = '/p/p1/p2/item';
+                $ctrl.$onChanges();
+            });
+
+            it('back link is available', function () {
+                expect($ctrl.back).toEqual({id: '/p/p1/p2/', path: '/browse/p/p1/p2/'});
+            });
+
+            it('breadcrumb is available', function () {
+                expect($ctrl.breadcrumb).toEqual([
+                    {id: 'navigation.label.p', path: '/browse/p/'},
+                    {id: '/p/p1/', path: '/browse/p/p1/'},
+                    {id: '/p/p1/p2/', path: '/browse/p/p1/p2/'},
+                    {id: '/p/p1/p2/item'}
+                ]);
+            });
+
+            describe('on change', function () {
+                beforeEach(function () {
+                    $ctrl.partition = '/p/';
+                    $ctrl.item = '/p/p1/';
+                    $ctrl.$onChanges();
+                });
+
+                it('back link is available', function () {
+                    expect($ctrl.back).toEqual({id: 'navigation.label.p', path: '/browse/p/'});
+                });
+
+                it('breadcrumb is updated', function () {
+                    expect($ctrl.breadcrumb).toEqual([
+                        {id: 'navigation.label.p', path: '/browse/p/'},
+                        {id: '/p/p1/'}
+                    ]);
+                });
+            });
+        });
+
+        describe('when not on "browse" path', function () {
+            beforeEach(function () {
+                $location.path('/path');
+            });
+
+            describe('when on parent', function () {
+                beforeEach(function () {
+                    $ctrl.partition = '/';
+                    $ctrl.item = '/p/';
+                    $ctrl.$onChanges();
+                });
+
+                it('back link is available', function () {
+                    expect($ctrl.back).toEqual({id: 'navigation.label.p', path: '/browse/p/'});
+                });
+
+                it('breadcrumb is updated', function () {
+                    expect($ctrl.breadcrumb).toEqual([
+                        {id: 'navigation.label.p', path: '/browse/p/'}
+                    ]);
+                });
+            });
+
+            describe('and item has no slashes', function () {
+                beforeEach(function () {
+                    $ctrl.item = 'p';
+                    $ctrl.$onChanges();
+                });
+
+                it('back link is available', function () {
+                    expect($ctrl.back).toEqual({id: 'navigation.label.p', path: '/browse/p/'});
+                });
+
+                it('breadcrumb is updated', function () {
+                    expect($ctrl.breadcrumb).toEqual([
+                        {id: 'navigation.label.p', path: '/browse/p/'}
+                    ]);
+                });
+            });
+        });
+    });
 });
 
 angular.module('test.app', ['catalog']).config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {

@@ -30,6 +30,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .component('binPinnedItemsToggle', new BinPinnedItemsToggle())
     .component('binSpotlight', new BinSpotlightComponent())
     .component('binSpotlightItems', new BinSpotlightItemsComponent())
+    .component('binBreadcrumb', new BinBreadcrumbComponent())
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
             return args.id;
@@ -1072,7 +1073,7 @@ function BinSpotlightController(topics, binarta, configWriter) {
 
         function onEditMode(editing) {
             self.editing = editing;
-        }       
+        }
 }
 
 function BinSpotlightItemsComponent() {
@@ -1166,6 +1167,69 @@ function BinPinnedItemsToggle() {
         section: '@'
     };
     this.templateUrl = 'bin-pinned-items-toggle.html';
+}
+
+function BinBreadcrumbComponent() {
+    this.templateUrl = 'bin-breadcrumb.html';
+    this.bindings = {
+        partition: '<',
+        item: '<'
+    };
+
+    this.controller = ['$location', function ($location) {
+        var $ctrl = this, breadcrumb, partition, browse = '/browse';
+
+        $ctrl.$onChanges = function () {
+            setBreadcrumb();
+            setBackItem();
+        };
+
+        function setBreadcrumb() {
+            breadcrumb = [];
+            partition = $ctrl.partition || '/';
+            partition.split('/').reduce(transform);
+            breadcrumb.push({id: breadcrumb.length == 0 ? toFirstItemId($ctrl.item) : $ctrl.item});
+            if (isSingleItemAndNotOnBrowsePath()) setBrowsePathOnFirstItem();
+            $ctrl.breadcrumb = breadcrumb;
+        }
+
+        function transform(it, curr) {
+            it += '/' + curr;
+            if (curr) breadcrumb.push({
+                id: breadcrumb.length == 0 ? toFirstItemId(curr) : it + '/',
+                path: browse + it + '/'
+            });
+            return it;
+        }
+
+        function toFirstItemId(item) {
+            return 'navigation.label.' + stripSlashes(item);
+        }
+
+        function isSingleItemAndNotOnBrowsePath() {
+            return breadcrumb.length == 1 && isNotOnBrowsePath();
+        }
+
+        function isNotOnBrowsePath() {
+            return $location.path().indexOf(browse + '/') == -1;
+        }
+
+        function setBrowsePathOnFirstItem() {
+            breadcrumb[0].path = toBrowsePath($ctrl.item);
+        }
+
+        function toBrowsePath(item) {
+            return browse + '/' + stripSlashes(item) + '/';
+        }
+
+        function setBackItem() {
+            $ctrl.back = isSingleItemAndNotOnBrowsePath() ? breadcrumb[0] : breadcrumb[breadcrumb.length - 2];
+        }
+
+        function stripSlashes(item) {
+            return item.replace(/\//g, '');
+        }
+    }];
 }
 
 // @deprecated
