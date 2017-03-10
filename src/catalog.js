@@ -1029,6 +1029,10 @@ function BinSpotlightComponent() {
     this.bindings = {
         type:'@'
     };
+    this.transclude = {
+        header: '?binSpotlightHeader',
+        footer: '?binSpotlightFooter'
+    };
     this.templateUrl = 'bin-spotlight.html';
     this.controller = 'binSpotlightController';
 }
@@ -1084,6 +1088,9 @@ function BinSpotlightItemsComponent() {
         onDestroy:'&',
         onPin:'&',
         onUnpin:'&'
+    };
+    this.transclude = {
+        footer: '?binSpotlightFooter'
     };
     this.templateUrl = 'bin-spotlight-items.html';
     this.controller = 'binSpotlightItemsController';
