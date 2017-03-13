@@ -1,11 +1,7 @@
 {
   "name": "binarta.catalog.angular",
   "main": [
-    "./src/catalog.js",
-    "./src/catalog-tpls-bootstrap3.js",
-    "./less/catalog.less",
-    "./metadata-system.json",
-    "./sources.json"
+    "./src/catalog.js"
   ],
   "dependencies": {
     "binarta.angularx": "0.*.*",

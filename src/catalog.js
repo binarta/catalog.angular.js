@@ -1038,56 +1038,45 @@ function BinSpotlightComponent() {
 }
 
 function BinSpotlightController(topics, binarta, configWriter) {
-    var self = this;
-    self.totalItemCount = 0;
+    var $ctrl = this;
+    $ctrl.totalItemCount = 0;
+    $ctrl.pinnedItemCount = 0;
 
-        this.$onInit = function() {
-            topics.subscribe('edit.mode', onEditMode);
+    this.$onInit = function () {
+        topics.subscribe('edit.mode', onEditMode);
 
-            binarta.schedule(function() {
-                binarta.application.config.findPublic('catalog.' + self.type + '.pinned.items', function(value) {
-                    self.pinnedItems = value == 'true';
-                });
-                binarta.application.config.findPublic('catalog.' + self.type + '.recent.items', function(value) {
-                    self.recentItems = value == 'true';
-                });
-                self.applicationPageObserver = binarta.application.config.observePublic('application.pages.' + self.type + '.active', function(value) {
-                    self.active = (value == 'true' || value === true);
-                })
-            })
-        };
+        binarta.schedule(function () {
+            binarta.application.config.findPublic('catalog.' + $ctrl.type + '.recent.items', function (value) {
+                $ctrl.recentItems = (value == 'true' || value === true);
+            });
+        });
 
-        this.$onDestroy = function() {
-            self.applicationPageObserver.disconnect();
+        $ctrl.$onDestroy = function () {
             topics.unsubscribe('edit.mode', onEditMode);
         };
+    };
 
-        this.plus = function(size) {
-            this.totalItemCount += size;
-        };
+    this.plus = function (args) {
+        $ctrl.totalItemCount += args.size;
+        if (args.isPinned) $ctrl.pinnedItemCount += args.size;
+    };
 
-        this.togglePinnedItems = function() {
-            self.pinnedItems = !self.pinnedItems;
-            configWriter({key:'catalog.' + self.type + '.pinned.items', value:self.pinnedItems, scope:'public'});
-        };
-        this.toggleRecentItems = function() {
-            self.recentItems = !self.recentItems;
-            configWriter({key:'catalog.' + self.type + '.recent.items', value:self.recentItems, scope:'public'});
-        };
+    this.toggleRecentItems = function () {
+        $ctrl.recentItems = !$ctrl.recentItems;
+        configWriter({key: 'catalog.' + $ctrl.type + '.recent.items', value: $ctrl.recentItems, scope: 'public'});
+    };
 
-        function onEditMode(editing) {
-            self.editing = editing;
-        }
+    function onEditMode(editing) {
+        $ctrl.editing = editing;
+    }
 }
 
 function BinSpotlightItemsComponent() {
     this.bindings = {
-        type: '<',
-        pinned:'@',
-        onRender:'&',
-        onDestroy:'&',
-        onPin:'&',
-        onUnpin:'&'
+        pinned:'@'
+    };
+    this.require = {
+        spotlightCtrl: '^binSpotlight'
     };
     this.transclude = {
         footer: '?binSpotlightFooter'
@@ -1097,75 +1086,77 @@ function BinSpotlightItemsComponent() {
 }
 
 function BinSpotlightItemsController(topics, search, viewport) {
-    var self = this;
+    var $ctrl = this, isPinned;
 
-    this.$onInit = function() {
-        self.results = [];
-        if (self.pinned == 'true')
-            initPinnedConfiguration();
+    this.$onInit = function () {
+        isPinned = $ctrl.pinned == 'true';
+        $ctrl.results = [];
+        if (isPinned) initPinnedConfiguration();
         topics.subscribe('edit.mode', onEditMode);
 
         var args = {
-            entity:'catalog-item',
-            action:'search',
+            entity: 'catalog-item',
+            action: 'search',
             subset: {
                 offset: 0,
                 count: viewport.visibleXs() ? 6 : 8
             },
-            includeCarouselItems:true,
-            sortings:[
-                {on:'creationTime', orientation:'desc'}
+            includeCarouselItems: true,
+            sortings: [
+                {on: 'creationTime', orientation: 'desc'}
             ],
             filters: {
-                type: self.type
+                type: $ctrl.spotlightCtrl.type
             },
-            complexResult:true,
-            success:self.render
+            complexResult: true,
+            success: render
         };
-        if (self.pinned == 'true') args.filters.pinned = true;
-        search(args)
-    };
-    this.onPinned = function(item) {
-        if (item.type == self.type) {
-            self.results.push(item);
-            self.onPin();
+        if (isPinned) args.filters.pinned = true;
+        search(args);
+
+        function render(data) {
+            $ctrl.results = data.results;
+            if ($ctrl.pinned != 'true') $ctrl.searchForMore = data.hasMore;
+            $ctrl.spotlightCtrl.plus({size: $ctrl.results.length, isPinned: isPinned});
         }
+
+        $ctrl.$onDestroy = function() {
+            if ($ctrl.pinned == 'true') uninstallPinnedTopics();
+            $ctrl.spotlightCtrl.plus({size: -$ctrl.results.length, isPinned: isPinned});
+        };
     };
-    this.onUnpinned = function(item) {
-        var idx = self.results.reduce(function(p, c, i) {
+
+    function onEditMode(editing) {
+        $ctrl.editing = editing;
+    }
+
+    function initPinnedConfiguration() {
+        topics.subscribe('catalog.item.pinned', onPinned);
+        topics.subscribe('catalog.item.unpinned', onUnpinned);
+        $ctrl.searchForMore = true;
+    }
+
+    function uninstallPinnedTopics() {
+        topics.unsubscribe('catalog.item.pinned', onPinned);
+        topics.unsubscribe('catalog.item.unpinned', onUnpinned);
+    }
+
+    function onPinned(item) {
+        if (item.type == $ctrl.spotlightCtrl.type) {
+            $ctrl.results.push(item);
+            $ctrl.spotlightCtrl.plus({size: 1, isPinned: isPinned});
+        }
+    }
+
+    function onUnpinned(item) {
+        var idx = $ctrl.results.reduce(function(p, c, i) {
             if (c.id == item.id) return i;
             return p;
         }, -1);
         if (idx > -1) {
-            self.results.splice(idx, 1);
-            self.onUnpin();
+            $ctrl.results.splice(idx, 1);
+            $ctrl.spotlightCtrl.plus({size: -1, isPinned: isPinned});
         }
-    };
-    this.render = function(data) {
-        self.results = data.results;
-        if (self.pinned != 'true') self.searchForMore = data.hasMore;
-        self.onRender({size:self.results.length});
-    };
-
-    this.$onDestroy = function() {
-
-        if (self.pinned == 'true') {
-            uninstallPinnedTopics();
-        }
-        self.onDestroy({size:self.results.length});
-    };
-
-    function onEditMode(editing) {
-        self.editing = editing;
-    }
-    function initPinnedConfiguration() {
-        topics.subscribe('catalog.item.pinned', self.onPinned);
-        topics.subscribe('catalog.item.unpinned', self.onUnpinned);
-        self.searchForMore = true;
-    }
-    function uninstallPinnedTopics() {
-        topics.unsubscribe('catalog.item.pinned', self.onPinned);
-        topics.unsubscribe('catalog.item.unpinned', self.onUnpinned);
     }
 }
 

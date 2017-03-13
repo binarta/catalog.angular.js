@@ -1,4 +1,4 @@
-<div class="row" ng-show="$ctrl.editing || $ctrl.results.length > 0">
+<div class="row" ng-if="$ctrl.editing || $ctrl.results.length > 0">
     <div ng-repeat="item in $ctrl.results track by item.id">
         <div ng-class="{
             'clearfix': ($index % 3 == 0) || ($index % 4 == 0),

@@ -1,0 +1,16 @@
+{
+  "msgs": {
+    "nl": {
+      "catalog.spotlight.most.recent.title": "Meest recente"
+    },
+    "en": {
+      "catalog.spotlight.most.recent.title": "Most recent"
+    },
+    "fr": {
+      "catalog.spotlight.most.recent.title": "Le plus récent"
+    },
+    "de": {
+      "catalog.spotlight.most.recent.title": "Neueste"
+    }
+  }
+}
