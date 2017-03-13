@@ -2635,7 +2635,7 @@ describe('catalog', function () {
         }))
     });
 
-    fdescribe('binSpotlightController', function() {
+    describe('binSpotlightController', function() {
         var component;
         var binarta = {
             application:{config:{
@@ -2748,7 +2748,7 @@ describe('catalog', function () {
         });
     });
     
-    fdescribe('binSpotlightItemsController', function() {
+    describe('binSpotlightItemsController', function() {
         var $ctrl;
         var visibleXs;
         var viewport = {
@@ -2775,6 +2775,10 @@ describe('catalog', function () {
         describe('$onInit', function() {
             beforeEach(function() {
                 $ctrl.$onInit();
+            });
+
+            it('default template is set', function () {
+                expect($ctrl.templateUrl).toEqual('catalog-list-item-default.html');
             });
 
             it('results are initialized to empty list', function() {
@@ -2935,6 +2939,17 @@ describe('catalog', function () {
                         expect($ctrl.spotlightCtrl.plus).toHaveBeenCalledWith({size: -items.length, isPinned: true});
                     });
                 });
+            });
+        });
+
+        describe('$onInit with specific template', function () {
+            beforeEach(function () {
+                $ctrl.spotlightCtrl.itemTemplateUrl = 'custom.html';
+                $ctrl.$onInit();
+            });
+
+            it('custom template is set', function () {
+                expect($ctrl.templateUrl).toEqual('custom.html');
             });
         });
     });
@@ -3192,6 +3207,17 @@ describe('catalog', function () {
             $ctrl = $componentController('binCatalogListItem', null, {item: 'item'});
             $ctrl.listCtrl = listCtrl;
         }));
+
+        it('with default template', function () {
+            $ctrl.$onInit();
+            expect($ctrl.templateUrl).toEqual('catalog-list-item-default.html');
+        });
+
+        it('with specific template', function () {
+            $ctrl.listCtrl.itemTemplateUrl = 'custom.html';
+            $ctrl.$onInit();
+            expect($ctrl.templateUrl).toEqual('custom.html');
+        });
 
         describe('and items are not movable', function () {
             beforeEach(function () {

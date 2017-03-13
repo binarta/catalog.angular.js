@@ -1,33 +1,5 @@
-<div class="row" ng-if="$ctrl.editing || $ctrl.results.length > 0">
-    <div ng-repeat="item in $ctrl.results track by item.id">
-        <div ng-class="{
-            'clearfix': ($index % 3 == 0) || ($index % 4 == 0),
-            'visible-sm-block': $index % 3 == 0,
-            'visible-md-block visible-lg-block': $index % 4 == 0
-        }"></div>
-        <div class="col-xs-12 col-sm-4 col-md-3">
-            <bin-edit>
-                <bin-edit-actions>
-                    <div ng-controller="PinItemController as pinner" ng-init="pinner.init(item)">
-                        <div ng-hide="item.pinned" checkpoint-permission for="catalog.item.pin">
-                            <bin-edit-action action="pinner.pin()">
-                                <span><i class="fa fa-thumb-tack fa-fw"></i></span>
-                                <span i18n code="catalog.item.pin.button" read-only ng-bind="::var"></span>
-                            </bin-edit-action>
-                        </div>
-                        <div ng-show="item.pinned" checkpoint-permission for="catalog.item.unpin">
-                            <bin-edit-action action="pinner.unpin()">
-                                <span><i class="fa fa-thumb-tack fa-rotate-90 fa-fw"></i></span>
-                                <span i18n code="catalog.item.unpin.button" read-only ng-bind="::var"></span>
-                            </bin-edit-action>
-                        </div>
-                    </div>
-                </bin-edit-actions>
-                <bin-edit-body>
-                    <ng-include src="'partials/catalog/thumbnail.html'"></ng-include>
-                </bin-edit-body>
-            </bin-edit>
-        </div>
-    </div>
-</div>
+<bin-catalog-item-list items="$ctrl.results"
+                       movable="false"
+                       item-template-url="$ctrl.templateUrl">
+</bin-catalog-item-list>
 <div ng-if="$ctrl.searchForMore || $ctrl.editing" ng-transclude="footer"></div>

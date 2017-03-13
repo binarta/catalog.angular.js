@@ -887,7 +887,8 @@ function ItemPinnerFactory(topics, rest, config) {
 function BinCatalogItemListComponent() {
     this.bindings = {
         items:'<',
-        movable:'@'
+        movable:'@',
+        itemTemplateUrl: '<?'
     };
     this.templateUrl = 'catalog-item-list.html';
 
@@ -988,7 +989,7 @@ function BinCatalogListRowsComponent() {
 }
 
 function BinCatalogListItemComponent() {
-    this.templateUrl = 'catalog-list-item-default.html';
+    this.templateUrl = 'catalog-list-item.html';
     this.bindings = {
         item:'<',
         isFirst: '<',
@@ -1002,6 +1003,7 @@ function BinCatalogListItemComponent() {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
+            $ctrl.templateUrl = $ctrl.listCtrl.itemTemplateUrl || 'catalog-list-item-default.html';
             $ctrl.movable = $ctrl.listCtrl.movable;
 
             if ($ctrl.movable == 'true') {
@@ -1027,7 +1029,8 @@ function BinCatalogListItemComponent() {
 
 function BinSpotlightComponent() {
     this.bindings = {
-        type:'@'
+        type:'@',
+        itemTemplateUrl: '<?'
     };
     this.transclude = {
         header: '?binSpotlightHeader',
@@ -1089,6 +1092,7 @@ function BinSpotlightItemsController(topics, search, viewport) {
     var $ctrl = this, isPinned;
 
     this.$onInit = function () {
+        $ctrl.templateUrl = $ctrl.spotlightCtrl.itemTemplateUrl || 'catalog-list-item-default.html';
         isPinned = $ctrl.pinned == 'true';
         $ctrl.results = [];
         if (isPinned) initPinnedConfiguration();
