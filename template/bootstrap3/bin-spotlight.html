@@ -26,8 +26,9 @@
                 </bin-spotlight-items>
 
                 <div ng-if="$ctrl.recentItems">
-                    <h4 ng-if="$ctrl.pinnedItemCount > 0"
-                        i18n code="catalog.spotlight.most.recent.title" ng-bind="var"></h4>
+                    <h4 ng-if="$ctrl.pinnedItemCount > 0">
+                        <span i18n code="catalog.spotlight.most.recent.title" ng-bind="var"></span>
+                    </h4>
                     <bin-spotlight-items>
                         <bin-spotlight-footer ng-transclude="footer"></bin-spotlight-footer>
                     </bin-spotlight-items>
