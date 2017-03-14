@@ -2952,6 +2952,17 @@ describe('catalog', function () {
                 expect($ctrl.templateUrl).toEqual('custom.html');
             });
         });
+
+        describe('$onInit with cols setting', function () {
+            beforeEach(function () {
+                $ctrl.spotlightCtrl.cols = 'xs-12 sm-6';
+                $ctrl.$onInit();
+            });
+
+            it('cols property is set', function () {
+                expect($ctrl.cols).toEqual('xs-12 sm-6');
+            });
+        });
     });
 
     describe('binCatalogItemList component', function () {

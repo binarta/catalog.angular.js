@@ -888,7 +888,8 @@ function BinCatalogItemListComponent() {
     this.bindings = {
         items:'<',
         movable:'@',
-        itemTemplateUrl: '<?'
+        itemTemplateUrl: '<?',
+        cols: '@'
     };
     this.templateUrl = 'catalog-item-list.html';
 
@@ -1030,6 +1031,7 @@ function BinCatalogListItemComponent() {
 function BinSpotlightComponent() {
     this.bindings = {
         type:'@',
+        cols:'@',
         itemTemplateUrl: '<?'
     };
     this.transclude = {
@@ -1092,6 +1094,7 @@ function BinSpotlightItemsController(topics, search, viewport) {
     var $ctrl = this, isPinned;
 
     this.$onInit = function () {
+        $ctrl.cols = $ctrl.spotlightCtrl.cols;
         $ctrl.templateUrl = $ctrl.spotlightCtrl.itemTemplateUrl || 'catalog-list-item-default.html';
         isPinned = $ctrl.pinned == 'true';
         $ctrl.results = [];
