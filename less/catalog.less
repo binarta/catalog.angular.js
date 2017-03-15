@@ -1,130 +1,74 @@
+@bin-catalog-item-min-height: 80px;
+
 .bin-catalog {
-  @catalog-item-min-height: 80px;
   padding-bottom: 20px;
 
   .alert-unavailable {
     margin: 50px 0;
   }
+}
 
-  .bin-catalog-items {
-    .bin-catalog-item {
-      word-wrap: break-word;
-
-      .item-image {
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        display: block;
-        height: @catalog-item-min-height;
-        margin: 0;
-
-        &.item-image-not-found {
-          background-color: rgba(0,0,0,0.02);
-        }
-      }
-
-      .item-title {
-        font-size: 16px;
-        margin: 0;
-      }
-
-      .item-price {
-        padding-top: 20px;
-        margin: 0;
-      }
-    }
-  }
-
+.bin-catalog-items {
   .bin-catalog-item {
-    .item-title {
-      margin-top: 0;
-      margin-bottom: 20px;
-    }
-
-    .item-lead {
-      font-size: 12px;
-    }
+    word-wrap: break-word;
 
     .item-image {
-      text-align: center;
-      margin-bottom: 20px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      display: block;
+      height: @bin-catalog-item-min-height;
+      margin: 0;
 
-      img {
-        max-height: 250px;
+      &.item-image-not-found {
+        background-color: rgba(0,0,0,0.02);
       }
+    }
+
+    .item-title {
+      font-size: 16px;
+      margin: 0;
     }
 
     .item-price {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 20px;
-      &.text-muted {
-        font-weight: normal;
-      }
+      padding-top: 20px;
+      margin: 0;
     }
+  }
+}
 
-    .item-body {
-      font-size: 14px;
-      line-height: 22px;
-      margin-bottom: 20px;
+.bin-catalog-item {
+  .item-title {
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+
+  .item-lead {
+    font-size: 12px;
+  }
+
+  .item-image {
+    text-align: center;
+    margin-bottom: 20px;
+
+    img {
+      max-height: 250px;
     }
   }
 
-  @media (max-width: 767px) {
-    .bin-catalog-items {
-      .bin-catalog-item {
-        .item-image {
-          width: 100px;
-          float: left;
-        }
-
-        .caption {
-          margin-left: 100px + 4px;
-          min-height: @catalog-item-min-height;
-
-          .item-title {
-            margin-top: 0;
-          }
-        }
-      }
-    }
-
-    .btn-search-more {
-      width: 100%;
+  .item-price {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    &.text-muted {
+      font-weight: normal;
     }
   }
 
-  @media (min-width: 768px) {
-    padding-bottom: 50px;
-
-    .bin-catalog-items {
-      .bin-catalog-item {
-        .item-image {
-          height: 100px;
-          width: 100%;
-        }
-
-        .item-title {
-          margin-top: 10px;
-        }
-      }
-    }
-
-    .bin-catalog-group {
-      .group-title {
-        margin-top: 0;
-      }
-    }
-  }
-
-  @media (min-width: 992px) {
-    .bin-catalog-items {
-      .bin-catalog-item {
-        .item-image {
-          height: 120px;
-        }
-      }
-    }
+  .item-body {
+    font-size: 14px;
+    line-height: 22px;
+    margin-bottom: 20px;
   }
 }
 
@@ -167,4 +111,63 @@
   font-weight: 100;
   text-align: center;
   margin-bottom: 30px;
+}
+
+@media (max-width: 767px) {
+  .bin-catalog-items {
+    .bin-catalog-item {
+      .item-image {
+        width: 100px;
+        float: left;
+      }
+
+      .caption {
+        margin-left: 100px + 4px;
+        min-height: @bin-catalog-item-min-height;
+
+        .item-title {
+          margin-top: 0;
+        }
+      }
+    }
+  }
+
+  .btn-search-more {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .bin-catalog {
+    padding-bottom: 50px;
+  }
+
+  .bin-catalog-items {
+    .bin-catalog-item {
+      .item-image {
+        height: 100px;
+        width: 100%;
+      }
+
+      .item-title {
+        margin-top: 10px;
+      }
+    }
+  }
+
+  .bin-catalog-group {
+    .group-title {
+      margin-top: 0;
+    }
+  }
+}
+
+@media (min-width: 992px) {
+  .bin-catalog-items {
+    .bin-catalog-item {
+      .item-image {
+        height: 120px;
+      }
+    }
+  }
 }
