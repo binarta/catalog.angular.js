@@ -1,39 +1,46 @@
-<div class="bin-spotlight" ng-show="$ctrl.editing || $ctrl.totalItemCount > 0">
-    <div class="container">
-        <bin-edit>
-            <bin-edit-actions>
-                <div class="bin-dropdown-menu-item">
-                    <a class="bin-link" bin-href="/browse/{{::$ctrl.type}}/">
-                        <span><i class="fa fa-plus"></i></span>
-                        <span i18n code="catalog.{{::$ctrl.type}}.add.more.button" read-only ng-bind="::var"></span>
-                    </a>
-                </div>
-                <bin-edit-action action="$ctrl.toggleRecentItems()">
-                    <span ng-if="!$ctrl.recentItems">
-                        <span><i class="fa fa-eye"></i></span>
-                        <span i18n code="catalog.show.recent" read-only ng-bind="::var"></span>
-                    </span>
-                    <span ng-if="$ctrl.recentItems">
-                        <span><i class="fa fa-eye-slash"></i></span>
-                        <span i18n code="catalog.hide.recent" read-only ng-bind="::var"></span>
-                    </span>
-                </bin-edit-action>
-            </bin-edit-actions>
-            <bin-edit-body>
-                <div ng-transclude="header"></div>
-                <bin-spotlight-items pinned="true">
-                    <bin-spotlight-footer ng-transclude="footer" ng-if="!$ctrl.recentItems"></bin-spotlight-footer>
-                </bin-spotlight-items>
+<div ng-show="$ctrl.editing || $ctrl.totalItemCount > 0">
+    <div class="bin-spotlight">
+        <div class="container">
+            <bin-edit>
+                <bin-edit-actions>
+                    <div class="bin-dropdown-menu-item">
+                        <a class="bin-link" bin-href="/browse/{{::$ctrl.type}}/">
+                            <span><i class="fa fa-plus"></i></span>
+                            <span i18n code="catalog.{{::$ctrl.type}}.add.more.button" read-only ng-bind="::var"></span>
+                        </a>
+                    </div>
+                    <bin-edit-action action="$ctrl.toggleRecentItems()">
+                        <span ng-if="!$ctrl.recentItems">
+                            <span><i class="fa fa-eye"></i></span>
+                            <span i18n code="catalog.show.recent" read-only ng-bind="::var"></span>
+                        </span>
+                        <span ng-if="$ctrl.recentItems">
+                            <span><i class="fa fa-eye-slash"></i></span>
+                            <span i18n code="catalog.hide.recent" read-only ng-bind="::var"></span>
+                        </span>
+                    </bin-edit-action>
+                </bin-edit-actions>
+                <bin-edit-body>
+                    <div ng-transclude="header"></div>
+                    <div class="alert alert-info" ng-if="$ctrl.totalItemCount == 0">
+                        <span><i class="fa fa-info-circle fa-fw"></i></span>
+                        <span i18n code="catalog.item.pin.spotlight.info" read-only ng-bind="::var"></span>
+                    </div>
 
-                <div ng-if="$ctrl.recentItems">
-                    <h4 ng-if="$ctrl.pinnedItemCount > 0">
-                        <span i18n code="catalog.spotlight.most.recent.title" ng-bind="var"></span>
-                    </h4>
-                    <bin-spotlight-items>
-                        <bin-spotlight-footer ng-transclude="footer"></bin-spotlight-footer>
+                    <bin-spotlight-items pinned="true">
+                        <bin-spotlight-footer ng-transclude="footer" ng-if="!$ctrl.recentItems"></bin-spotlight-footer>
                     </bin-spotlight-items>
-                </div>
-            </bin-edit-body>
-        </bin-edit>
+
+                    <div ng-if="$ctrl.recentItems">
+                        <h4 ng-if="$ctrl.pinnedItemCount > 0">
+                            <span i18n code="catalog.spotlight.most.recent.title" ng-bind="var"></span>
+                        </h4>
+                        <bin-spotlight-items>
+                            <bin-spotlight-footer ng-transclude="footer"></bin-spotlight-footer>
+                        </bin-spotlight-items>
+                    </div>
+                </bin-edit-body>
+            </bin-edit>
+        </div>
     </div>
 </div>
