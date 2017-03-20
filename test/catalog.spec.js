@@ -2963,6 +2963,17 @@ describe('catalog', function () {
                 expect($ctrl.cols).toEqual('xs-12 sm-6');
             });
         });
+
+        describe('$onInit with center setting', function () {
+            beforeEach(function () {
+                $ctrl.spotlightCtrl.center = 'true';
+                $ctrl.$onInit();
+            });
+
+            it('center property is set', function () {
+                expect($ctrl.center).toEqual('true');
+            });
+        });
     });
 
     describe('binCatalogItemList component', function () {
