@@ -44,7 +44,12 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
             [':d0', ':d1', ':d2'],
             [':d0', ':d1', ':d2', ':d3'],
             [':d0', ':d1', ':d2', ':d3', ':d4'],
-            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5']
+            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5'],
+            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5', ':d6'],
+            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5', ':d6', ':d7'],
+            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5', ':d6', ':d7', ':d8'],
+            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5', ':d6', ':d7', ':d8', ':d9'],
+            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5', ':d6', ':d7', ':d8', ':d9', ':d10']
         ].forEach(function (it) {
             var path = it.length ? '/' + it.join('/') : '';
             $routeProvider.when('/browse' + path + '/', {
