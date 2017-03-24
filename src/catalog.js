@@ -181,7 +181,7 @@ function CatalogPathProcessorFactory() {
 function CatalogPathParserFactory(catalogPathProcessor) {
     var toPath = function (params) {
         var path = '/';
-        for (var i = 0; i < 6; i++)
+        for (var i = 0; i < 11; i++)
             path += params['d' + i] ? params['d' + i] + '/' : '';
         path = path + (path.slice(-1) == '/' ? '' : '/');
         return path;

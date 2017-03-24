@@ -1648,6 +1648,12 @@ describe('catalog', function () {
             parent: '/dir-0/dir-1/dir-2/dir-3/dir-4/',
             head: 'dir-0',
             name: 'dir-5'
+        },
+        {
+            parts: ['dir-0', 'dir-1', 'dir-2', 'dir-3', 'dir-4', 'dir-5', 'dir-6', 'dir-7', 'dir-8', 'dir-9', 'dir-10'],
+            parent: '/dir-0/dir-1/dir-2/dir-3/dir-4/dir-5/dir-6/dir-7/dir-8/dir-9/',
+            head: 'dir-0',
+            name: 'dir-10'
         }
     ].forEach(function (el) {
         var parts = el.parts;
