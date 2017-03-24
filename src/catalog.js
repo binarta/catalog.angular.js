@@ -1187,8 +1187,10 @@ function BinBreadcrumbComponent() {
         var $ctrl = this, breadcrumb, partition, browse = '/browse';
 
         $ctrl.$onChanges = function () {
-            setBreadcrumb();
-            setBackItem();
+            if ($ctrl.item) {
+                setBreadcrumb();
+                setBackItem();
+            }
         };
 
         function setBreadcrumb() {

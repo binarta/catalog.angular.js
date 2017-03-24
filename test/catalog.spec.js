@@ -3301,6 +3301,11 @@ describe('catalog', function () {
             $ctrl = $componentController('binBreadcrumb');
         }));
 
+        it('when item is undefined', function () {
+            $ctrl.$onChanges();
+            expect($ctrl.breadcrumb).toBeUndefined();
+        });
+
         describe('when on parent', function () {
             beforeEach(function () {
                 $ctrl.partition = '/';
