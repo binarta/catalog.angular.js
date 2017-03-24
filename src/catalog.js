@@ -7,7 +7,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .factory('findCatalogItemById', ['config', 'restServiceHandler', 'binarta', FindCatalogItemByIdFactory])
     .factory('findCatalogItemsByPartition', ['config', 'restServiceHandler', FindCatalogItemsByPartitionFactory])
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
-    .factory('catalogPathParser', ['catalogPathProcessor', CatalogPathParserFactory])
+    .factory('catalogPathParser', ['catalogPathProcessor', 'catalogPathLimit', CatalogPathParserFactory])
     .factory('itemPinner', ['topicMessageDispatcher', 'restServiceHandler', 'config', ItemPinnerFactory])
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
     .controller('AddToCatalogController', ['$scope', '$routeParams', 'topicRegistry', 'findAllCatalogItemTypes', 'addCatalogItem', 'usecaseAdapterFactory', AddToCatalogController])
@@ -31,27 +31,15 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .component('binSpotlight', new BinSpotlightComponent())
     .component('binSpotlightItems', new BinSpotlightItemsComponent())
     .component('binBreadcrumb', new BinBreadcrumbComponent())
+    .constant('catalogPathLimit', 10)
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
             return args.id;
         })
     }])
-    .config(['$routeProvider', function ($routeProvider) {
-        [
-            [],
-            [':d0'],
-            [':d0', ':d1'],
-            [':d0', ':d1', ':d2'],
-            [':d0', ':d1', ':d2', ':d3'],
-            [':d0', ':d1', ':d2', ':d3', ':d4'],
-            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5'],
-            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5', ':d6'],
-            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5', ':d6', ':d7'],
-            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5', ':d6', ':d7', ':d8'],
-            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5', ':d6', ':d7', ':d8', ':d9'],
-            [':d0', ':d1', ':d2', ':d3', ':d4', ':d5', ':d6', ':d7', ':d8', ':d9', ':d10']
-        ].forEach(function (it) {
-            var path = it.length ? '/' + it.join('/') : '';
+    .config(['$routeProvider', 'catalogPathLimit', function ($routeProvider, catalogPathLimit) {
+        for (var i = 0; i <= catalogPathLimit; i++) {
+            var path = generatePath(i);
             $routeProvider.when('/browse' + path + '/', {
                 templateUrl: 'partials/catalog/browse.html',
                 controller: 'BrowseCatalogController as catalogCtrl'
@@ -68,7 +56,13 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
                 templateUrl: 'partials/catalog/item.html',
                 controller: 'ViewCatalogItemController as catalogCtrl'
             });
-        });
+        }
+
+        function generatePath(levels) {
+            var path = '';
+            for (var i = 0; i <= levels; i++) path += '/:d' + i;
+            return path;
+        }
     }]);
 
 function FindCatalogPartitionsFactory(config, $http) {
@@ -178,10 +172,10 @@ function CatalogPathProcessorFactory() {
     }
 }
 
-function CatalogPathParserFactory(catalogPathProcessor) {
+function CatalogPathParserFactory(catalogPathProcessor, catalogPathLimit) {
     var toPath = function (params) {
         var path = '/';
-        for (var i = 0; i < 11; i++)
+        for (var i = 0; i <= catalogPathLimit; i++)
             path += params['d' + i] ? params['d' + i] + '/' : '';
         path = path + (path.slice(-1) == '/' ? '' : '/');
         return path;
