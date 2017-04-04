@@ -16,8 +16,7 @@
 
             </div>
             <div class="help-block text-danger" ng-repeat="v in violations['name']"
-                 i18n code="catalog.partition.name.{{::v}}" default="{{::v}}">
-                {{::var}}
+                 i18n code="catalog.partition.name.{{::v}}" default="{{::v}}" read-only ng-bind="::var">
             </div>
         </form>
     </div>
