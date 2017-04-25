@@ -1,5 +1,5 @@
 <div bin-group-by="partition" on="$ctrl.items">
-    <div ng-repeat="group in groups track by group.id">
+    <div ng-repeat="group in groups">
         <div class="row" ng-if="::$ctrl.partition != group.items[0].partition">
             <div class="col-xs-12">
                 <h2 class="partition-title" i18n code="{{::group.items[0].partition}}" read-only ng-bind="::var"></h2>
