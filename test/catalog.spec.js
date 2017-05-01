@@ -1508,6 +1508,48 @@ describe('catalog', function () {
         });
     });
 
+    describe('RemoveCatalogItem factory', function () {
+        var sut, restClient, config, topics;
+
+        beforeEach(inject(function (removeCatalogItem, restServiceHandler, _config_, topicMessageDispatcherMock) {
+            sut = removeCatalogItem;
+            restClient = restServiceHandler;
+            config = _config_;
+            topics = topicMessageDispatcherMock;
+            config.baseUri = 'baseUri/';
+            restClient.and.returnValue('promise');
+        }));
+
+        describe('on delete', function () {
+            var id, result;
+
+            beforeEach(function () {
+                id = 'some id';
+                result = sut({id: id});
+            });
+
+            it('rest client is called', function () {
+                expect(restClient).toHaveBeenCalledWith({
+                    params: {
+                        method: 'DELETE',
+                        url: 'baseUri/api/entity/catalog-item?id=some%20id',
+                        withCredentials: true
+                    },
+                    success: jasmine.any(Function)
+                });
+            });
+
+            it('on success, fire notification', function () {
+                restClient.calls.mostRecent().args[0].success();
+                expect(topics['catalog.item.removed']).toEqual(id);
+            });
+
+            it('returns result of rest service', function () {
+                expect(result).toEqual('promise');
+            });
+        });
+    });
+
     describe('RemoveItemFromCatalogController', function () {
         beforeEach(inject(function ($controller) {
             ctrl = $controller(RemoveItemFromCatalogController, {
