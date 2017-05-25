@@ -1,6 +1,6 @@
 describe('catalog', function () {
     var usecase, ctrl, scope, params, $httpBackend, dispatcher, location, i18nLocation, payload, notifications;
-    var onSuccess, receivedPayload, rest, i18n, $q, binarta;
+    var onSuccess, receivedPayload, rest, i18n, $q, binarta, $rootScope;
 
     beforeEach(module('catalog'));
     beforeEach(module('config'));
@@ -11,9 +11,10 @@ describe('catalog', function () {
     beforeEach(module('test.app'));
     beforeEach(module('binarta.search'));
 
-    beforeEach(inject(function ($injector, $location, _i18nLocation_, config, _$q_, _binarta_) {
+    beforeEach(inject(function ($injector, $location, _i18nLocation_, config, _$q_, _binarta_, _$rootScope_) {
         $q = _$q_;
         binarta = _binarta_;
+        $rootScope = _$rootScope_;
         config.namespace = 'namespace';
         scope = {
             $watch: function (expression, callback) {
@@ -135,15 +136,17 @@ describe('catalog', function () {
     });
 
     describe('findCatalogItemById', function () {
-        var fixture;
+        var fixture, restDeferred;
 
-        beforeEach(inject(function (config, findCatalogItemById, restServiceHandler) {
+        beforeEach(inject(function ($q, config, findCatalogItemById, restServiceHandler) {
             config.namespace = 'namespace';
             fixture = {
                 config: config,
                 rest: restServiceHandler,
                 usecase: findCatalogItemById
             };
+            restDeferred = $q.defer();
+            fixture.rest.and.returnValue(restDeferred.promise);
             payload = undefined;
             onSuccess = function (item) {
                 receivedPayload = item;
@@ -160,53 +163,53 @@ describe('catalog', function () {
             expect(fixture.rest.calls.first().args[0].params.url).toEqual('api/entity/catalog-item?id=item-id&locale=default');
         });
 
-        it('on execute with locale for presentation included in rest call', function () {
-            binarta.application.gateway.updateApplicationProfile({supportedLanguages: ['en', 'nl']});
-            binarta.application.refresh();
-            binarta.application.setLocaleForPresentation('en');
+        describe('with locale for presentation included in rest call', function () {
+            beforeEach(function () {
+                binarta.application.gateway.updateApplicationProfile({supportedLanguages: ['en', 'nl']});
+                binarta.application.refresh();
+                binarta.application.setLocaleForPresentation('en');
+            });
 
-            fixture.usecase('item-id', onSuccess);
+            it('on execute perform rest call', function () {
+                fixture.usecase('item-id', onSuccess);
+                expect(fixture.rest.calls.first().args[0].params.url).toEqual('api/entity/catalog-item?id=item-id&locale=en');
+                expect(fixture.rest.calls.first().args[0].params.withCredentials).toEqual(true);
+                expect(fixture.rest.calls.first().args[0].params.method).toEqual('GET');
+                expect(fixture.rest.calls.first().args[0].params.params).toEqual({treatInputAsId: true});
+            });
 
-            expect(fixture.rest.calls.first().args[0].params.url).toEqual('api/entity/catalog-item?id=item-id&locale=en');
-        });
+            it('set carousel header when requesting item', function () {
+                fixture.usecase('item-id', onSuccess);
+                expect(fixture.rest.calls.first().args[0].params.headers).toEqual({'X-Binarta-Carousel': true});
+            });
 
-        it('on execute perform rest call', function () {
-            fixture.usecase('item-id', onSuccess);
-            expect(fixture.rest.calls.first().args[0].params.withCredentials).toEqual(true);
-            expect(fixture.rest.calls.first().args[0].params.method).toEqual('GET');
-            expect(fixture.rest.calls.first().args[0].params.params).toEqual({treatInputAsId: true});
-        });
+            it('on execute with baseUri', function () {
+                fixture.config.baseUri = 'http://host/context/';
+                fixture.usecase('item/id', onSuccess);
+                expect(fixture.rest.calls.first().args[0].params.url).toEqual(fixture.config.baseUri + 'api/entity/catalog-item?id=' + encodeURIComponent('item/id') + '&locale=en');
+            });
 
-        it('set carousel header when requesting item', function () {
-            fixture.usecase('item-id', onSuccess);
-            expect(fixture.rest.calls.first().args[0].params.headers).toEqual({'X-Binarta-Carousel': true});
-        });
+            it('unexpected responses resolve to an empty set', function () {
+                fixture.usecase('item-id', onSuccess);
+                fixture.rest.calls.first().args[0].error();
+                expect(receivedPayload).toEqual([]);
+            });
 
-        it('on execute with baseUri', function () {
-            fixture.config.baseUri = 'http://host/context/';
-            fixture.usecase('item/id', onSuccess);
-            expect(fixture.rest.calls.first().args[0].params.url).toEqual(fixture.config.baseUri + 'api/entity/catalog-item?id=' + encodeURIComponent('item/id') + '&locale=undefined');
-        });
+            it('response payload is passed to success callback', function () {
+                fixture.usecase('type', onSuccess);
+                fixture.rest.calls.first().args[0].success(payload);
+                expect(receivedPayload).toEqual(payload);
+            });
 
-        it('unexpected responses resolve to an empty set', function () {
-            fixture.usecase('item-id', onSuccess);
-            fixture.rest.calls.first().args[0].error();
-            expect(receivedPayload).toEqual([]);
-        });
-
-        it('response payload is passed to success callback', function () {
-            fixture.usecase('type', onSuccess);
-            fixture.rest.calls.first().args[0].success(payload);
-            expect(receivedPayload).toEqual(payload);
-        });
-
-        it('propagates promise from rest service', function () {
-            var expected = 'promise';
-            fixture.rest.and.returnValue(expected);
-
-            var actual = fixture.usecase('item-id');
-
-            expect(actual).toEqual(expected);
+            it('propagates promise from rest service', function () {
+                var expected;
+                fixture.usecase('item-id').then(function () {
+                    expected = true;
+                });
+                restDeferred.resolve();
+                $rootScope.$digest();
+                expect(expected).toBeTruthy();
+            });
         });
     });
 

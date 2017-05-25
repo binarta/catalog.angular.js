@@ -5,7 +5,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .factory('removeCatalogItem', ['config', 'restServiceHandler', 'topicMessageDispatcher', RemoveCatalogItemFactory])
     .factory('findAllCatalogItemTypes', ['config', '$http', FindAllCatalogItemTypesFactory])
     .factory('findCatalogPartitions', ['config', '$http', FindCatalogPartitionsFactory])
-    .factory('findCatalogItemById', ['config', 'restServiceHandler', 'binarta', FindCatalogItemByIdFactory])
+    .factory('findCatalogItemById', ['$q', 'config', 'restServiceHandler', 'binarta', FindCatalogItemByIdFactory])
     .factory('findCatalogItemsByPartition', ['config', 'restServiceHandler', FindCatalogItemsByPartitionFactory])
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', 'catalogPathLimit', CatalogPathParserFactory])
@@ -86,24 +86,28 @@ function FindCatalogPartitionsFactory(config, $http) {
     }
 }
 
-function FindCatalogItemByIdFactory(config, restServiceHandler, binarta) {
+function FindCatalogItemByIdFactory($q, config, restServiceHandler, binarta) {
     return function (id, onSuccess) {
-        var locale = binarta.application.localeForPresentation() || binarta.application.locale();
-        return restServiceHandler({
-            params: {
-                method: 'GET',
-                url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + encodeURIComponent(id) + '&locale=' + locale,
-                headers: {'X-Binarta-Carousel': true},
+        var deferred = $q.defer();
+        binarta.schedule(function() {
+            var locale = binarta.application.localeForPresentation() || binarta.application.locale();
+            return restServiceHandler({
                 params: {
-                    treatInputAsId: true
+                    method: 'GET',
+                    url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + encodeURIComponent(id) + '&locale=' + locale,
+                    headers: {'X-Binarta-Carousel': true},
+                    params: {
+                        treatInputAsId: true
+                    },
+                    withCredentials: true
                 },
-                withCredentials: true
-            },
-            error: function () {
-                onSuccess([])
-            },
-            success: onSuccess
+                error: function () {
+                    onSuccess([])
+                },
+                success: onSuccess
+            }).then(deferred.resolve, deferred.reject);
         });
+        return deferred.promise;
     }
 }
 
