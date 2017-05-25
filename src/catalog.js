@@ -27,6 +27,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .directive('movableItems', ['ngRegisterTopicHandler', MovableItemsDirectiveFactory])
     .component('binCatalogItemList', new BinCatalogItemListComponent())
     .component('binCatalogList', new BinCatalogListComponent())
+    .component('binCatalogItems', new BinCatalogItemsComponent())
     .component('binCatalogDetails', new BinCatalogDetailsComponent())
     .component('binCatalogListRows', new BinCatalogListRowsComponent())
     .component('binCatalogListItem', new BinCatalogListItemComponent())
@@ -1321,6 +1322,121 @@ function BinCatalogListComponent() {
                 });
                 offset += count;
                 $ctrl.working = false;
+            }
+        }
+    }];
+}
+
+function BinCatalogItemsComponent() {
+    this.templateUrl = 'catalog-items.html';
+
+    this.bindings = {
+        items:'<',
+        movable:'@',
+        pinnable: '@',
+        removable: '@',
+        itemTemplateUrl: '@',
+        cols: '@',
+        center: '@'
+    };
+
+    this.require = {
+        listCtrl: '?^^binCatalogList'
+    };
+
+    this.controller = ['$q', 'updateCatalogItemWriter', function ($q, updateCatalogItem) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            if (!$ctrl.items && $ctrl.listCtrl) $ctrl.items = $ctrl.listCtrl.items;
+            $ctrl.movable = $ctrl.movable !== 'false';
+            $ctrl.pinnable = $ctrl.pinnable === 'true';
+            $ctrl.removable = $ctrl.removable !== 'false';
+            if ($ctrl.movable) installMoveActions();
+        };
+
+        function installMoveActions() {
+            $ctrl.moveUp = moveUp;
+            $ctrl.moveDown = moveDown;
+            $ctrl.moveTop = moveTop;
+            $ctrl.moveBottom = moveBottom;
+
+            function moveUp(item) {
+                var newPriority;
+                for (var i = 0; i < $ctrl.items.length; i++) {
+                    if ($ctrl.items[i] === item) break;
+                    newPriority = $ctrl.items[i].priority;
+                }
+
+                if (newPriority) return update({
+                    priority: newPriority,
+                    item: item
+                });
+            }
+
+            function moveDown(item) {
+                var newPriority;
+                for (var i = 0; i < $ctrl.items.length - 1; i++) {
+                    if ($ctrl.items[i] === item) {
+                        newPriority = $ctrl.items[++i].priority;
+                        break;
+                    }
+                }
+
+                if (newPriority) return update({
+                    priority: newPriority,
+                    item: item
+                });
+            }
+
+            function moveTop(item) {
+                var firstItem = $ctrl.items[0];
+                if (firstItem !== item) return update({
+                    priority: firstItem.priority,
+                    item: item
+                });
+            }
+
+            function moveBottom(item) {
+                var lastItem = $ctrl.items[$ctrl.items.length - 1];
+                if (lastItem !== item) return update({
+                    priority: lastItem.priority,
+                    item: item
+                });
+            }
+
+            function update(args) {
+                var deferred = $q.defer();
+                updateCatalogItem({
+                    data: {
+                        treatInputAsId: false,
+                        context: 'updatePriority',
+                        id: {id: args.item.id},
+                        priority: args.priority
+                    },
+                    success: onSuccess
+                });
+                return deferred.promise;
+
+                function onSuccess() {
+                    rearrangePriorities(args);
+                    sort();
+                    deferred.resolve();
+                }
+            }
+
+            function rearrangePriorities(args) {
+                $ctrl.items.forEach(function (it) {
+                    it.priority += (it.priority >= args.priority && it.priority < args.item.priority ? 1 : 0);
+                    it.priority += (it.priority <= args.priority && it.priority > args.item.priority ? -1 : 0);
+                });
+                args.item.priority = args.priority;
+            }
+
+            function sort() {
+                $ctrl.items.sort(function (x, y) {
+                    return y.priority - x.priority;
+                });
             }
         }
     }];

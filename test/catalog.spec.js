@@ -3668,6 +3668,271 @@ describe('catalog', function () {
         });
     });
 
+    describe('binCatalogItems component', function () {
+        var $componentController, $ctrl, bindings, items, writer;
+
+        beforeEach(inject(function (_$componentController_, updateCatalogItemWriter) {
+            $componentController = _$componentController_;
+            writer = updateCatalogItemWriter;
+            items = [
+                {id: 1, priority: 3},
+                {id: 2, priority: 2},
+                {id: 3, priority: 1}
+            ];
+            bindings = {};
+        }));
+
+        describe('when items are not given and parent controller is available', function () {
+            beforeEach(function () {
+                bindings.listCtrl = {
+                    items: ['item']
+                };
+                $ctrl = $componentController('binCatalogItems', null, bindings);
+                $ctrl.$onInit();
+            });
+
+            it('items are available', function () {
+                expect($ctrl.items).toEqual($ctrl.listCtrl.items);
+            });
+        });
+
+        describe('with items', function () {
+            beforeEach(function () {
+                bindings.items = items;
+            });
+
+            it('verify default actions', function () {
+                $ctrl = $componentController('binCatalogItems', null, bindings);
+                $ctrl.$onInit();
+                expect($ctrl.movable).toEqual(true);
+                expect($ctrl.pinnable).toEqual(false);
+                expect($ctrl.removable).toEqual(true);
+            });
+
+            describe('and items are not movable', function () {
+                beforeEach(function () {
+                    bindings.movable = 'false';
+                    $ctrl = $componentController('binCatalogItems', null, bindings);
+                    $ctrl.$onInit();
+                });
+
+                it('move actions are not available', function () {
+                    expect($ctrl.moveUp).toBeUndefined();
+                    expect($ctrl.moveDown).toBeUndefined();
+                    expect($ctrl.moveTop).toBeUndefined();
+                    expect($ctrl.moveBottom).toBeUndefined();
+                });
+            });
+
+            describe('and items are movable', function () {
+                beforeEach(function () {
+                    $ctrl = $componentController('binCatalogItems', null, bindings);
+                    $ctrl.$onInit();
+                });
+
+                describe('on move up', function () {
+                    var done;
+
+                    beforeEach(function () {
+                        $ctrl.moveUp(items[2]).finally(function () {
+                            done = true;
+                        });
+                    });
+
+                    it('update item priority', function () {
+                        expect(writer).toHaveBeenCalledWith({
+                            data: {
+                                treatInputAsId: false,
+                                context: 'updatePriority',
+                                id: {id: 3},
+                                priority: 2
+                            },
+                            success: jasmine.any(Function)
+                        });
+                    });
+
+                    describe('on update success', function () {
+                        beforeEach(function () {
+                            writer.calls.mostRecent().args[0].success();
+                        });
+
+                        it('item are reprioritized and sorted', function () {
+                            expect(items).toEqual([
+                                {id: 1, priority: 3},
+                                {id: 3, priority: 2},
+                                {id: 2, priority: 1}
+                            ]);
+                        });
+
+                        it('promise is resolved', function () {
+                            expect(done).toBeTruthy();
+                        });
+                    });
+                });
+
+                describe('on move first item up', function () {
+                    beforeEach(function () {
+                        $ctrl.moveUp(items[0]);
+                    });
+
+                    it('item is not updated', function () {
+                        expect(writer).not.toHaveBeenCalled();
+                    });
+                });
+
+                describe('on move down', function () {
+                    var done;
+
+                    beforeEach(function () {
+                        $ctrl.moveDown(items[0]).finally(function () {
+                            done = true;
+                        });
+                    });
+
+                    it('update item priority', function () {
+                        expect(writer).toHaveBeenCalledWith({
+                            data: {
+                                treatInputAsId: false,
+                                context: 'updatePriority',
+                                id: {id: 1},
+                                priority: 2
+                            },
+                            success: jasmine.any(Function)
+                        });
+                    });
+
+                    describe('on update success', function () {
+                        beforeEach(function () {
+                            writer.calls.mostRecent().args[0].success();
+                        });
+
+                        it('item are reprioritized and sorted', function () {
+                            expect(items).toEqual([
+                                {id: 2, priority: 3},
+                                {id: 1, priority: 2},
+                                {id: 3, priority: 1}
+                            ]);
+                        });
+
+                        it('promise is resolved', function () {
+                            expect(done).toBeTruthy();
+                        });
+                    });
+                });
+
+                describe('on move last item down', function () {
+                    beforeEach(function () {
+                        $ctrl.moveDown(items[2]);
+                    });
+
+                    it('item is not updated', function () {
+                        expect(writer).not.toHaveBeenCalled();
+                    });
+                });
+
+                describe('on move to top', function () {
+                    var done;
+
+                    beforeEach(function () {
+                        $ctrl.moveTop(items[2]).finally(function () {
+                            done = true;
+                        });
+                    });
+
+                    it('update item priority', function () {
+                        expect(writer).toHaveBeenCalledWith({
+                            data: {
+                                treatInputAsId: false,
+                                context: 'updatePriority',
+                                id: {id: 3},
+                                priority: 3
+                            },
+                            success: jasmine.any(Function)
+                        });
+                    });
+
+                    describe('on update success', function () {
+                        beforeEach(function () {
+                            writer.calls.mostRecent().args[0].success();
+                        });
+
+                        it('item are reprioritized and sorted', function () {
+                            expect(items).toEqual([
+                                {id: 3, priority: 3},
+                                {id: 1, priority: 2},
+                                {id: 2, priority: 1}
+                            ]);
+                        });
+
+                        it('promise is resolved', function () {
+                            expect(done).toBeTruthy();
+                        });
+                    });
+                });
+
+                describe('on move first item to top', function () {
+                    beforeEach(function () {
+                        $ctrl.moveTop(items[0]);
+                    });
+
+                    it('item is not updated', function () {
+                        expect(writer).not.toHaveBeenCalled();
+                    });
+                });
+
+                describe('on move to bottom', function () {
+                    var done;
+
+                    beforeEach(function () {
+                        $ctrl.moveBottom(items[0]).finally(function () {
+                            done = true;
+                        });
+                    });
+
+                    it('update item priority', function () {
+                        expect(writer).toHaveBeenCalledWith({
+                            data: {
+                                treatInputAsId: false,
+                                context: 'updatePriority',
+                                id: {id: 1},
+                                priority: 1
+                            },
+                            success: jasmine.any(Function)
+                        });
+                    });
+
+                    describe('on update success', function () {
+                        beforeEach(function () {
+                            writer.calls.mostRecent().args[0].success();
+                        });
+
+                        it('item are reprioritized and sorted', function () {
+                            expect(items).toEqual([
+                                {id: 2, priority: 3},
+                                {id: 3, priority: 2},
+                                {id: 1, priority: 1}
+                            ]);
+                        });
+
+                        it('promise is resolved', function () {
+                            expect(done).toBeTruthy();
+                        });
+                    });
+                });
+
+                describe('on move last item to bottom', function () {
+                    beforeEach(function () {
+                        $ctrl.moveBottom(items[2]);
+                    });
+
+                    it('item is not updated', function () {
+                        expect(writer).not.toHaveBeenCalled();
+                    });
+                });
+            });
+        });
+    });
+
     describe('binCatalogDetails component', function () {
         var $ctrl, $componentController, $routeParams, $location;
 
