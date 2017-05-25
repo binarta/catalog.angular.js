@@ -3701,12 +3701,36 @@ describe('catalog', function () {
                 bindings.items = items;
             });
 
-            it('verify default actions', function () {
+            it('verify default settings', function () {
                 $ctrl = $componentController('binCatalogItems', null, bindings);
                 $ctrl.$onInit();
                 expect($ctrl.movable).toEqual(true);
                 expect($ctrl.pinnable).toEqual(false);
                 expect($ctrl.removable).toEqual(true);
+            });
+
+            describe('with itemGroups controller', function () {
+                beforeEach(function () {
+                    bindings.groupsCtrl = {
+                        movable: 'false',
+                        pinnable: 'true',
+                        removable: 'false',
+                        itemTemplateUrl: 'template',
+                        cols: 'cols',
+                        center: 'center'
+                    };
+                    $ctrl = $componentController('binCatalogItems', null, bindings);
+                    $ctrl.$onInit();
+                });
+
+                it('settings from groupsCtrl are used', function () {
+                    expect($ctrl.movable).toEqual(false);
+                    expect($ctrl.pinnable).toEqual(true);
+                    expect($ctrl.removable).toEqual(false);
+                    expect($ctrl.itemTemplateUrl).toEqual('template');
+                    expect($ctrl.cols).toEqual('cols');
+                    expect($ctrl.center).toEqual('center');
+                });
             });
 
             describe('and items are not movable', function () {

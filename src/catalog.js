@@ -27,6 +27,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .directive('movableItems', ['ngRegisterTopicHandler', MovableItemsDirectiveFactory])
     .component('binCatalogItemList', new BinCatalogItemListComponent())
     .component('binCatalogList', new BinCatalogListComponent())
+    .component('binCatalogItemGroups', new BinCatalogItemGroups())
     .component('binCatalogItems', new BinCatalogItemsComponent())
     .component('binCatalogDetails', new BinCatalogDetailsComponent())
     .component('binCatalogListRows', new BinCatalogListRowsComponent())
@@ -1327,8 +1328,8 @@ function BinCatalogListComponent() {
     }];
 }
 
-function BinCatalogItemsComponent() {
-    this.templateUrl = 'catalog-items.html';
+function BinCatalogItemGroups() {
+    this.templateUrl = 'catalog-item-groups.html';
 
     this.bindings = {
         items:'<',
@@ -1343,17 +1344,62 @@ function BinCatalogItemsComponent() {
     this.require = {
         listCtrl: '?^^binCatalogList'
     };
+    this.controller = function () {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            if (!$ctrl.items && $ctrl.listCtrl) $ctrl.items = $ctrl.listCtrl.items;
+            $ctrl.isSubpartition = function (partition) {
+                return $ctrl.listCtrl ? $ctrl.listCtrl.partition !== partition : false;
+            };
+        };
+    };
+}
+
+function BinCatalogItemsComponent() {
+    this.templateUrl = 'catalog-items.html';
+
+    this.bindings = {
+        items:'<',
+        movable:'@',
+        pinnable: '@',
+        removable: '@',
+        itemTemplateUrl: '@',
+        cols: '@',
+        center: '@'
+    };
+
+    this.require = {
+        listCtrl: '?^^binCatalogList',
+        groupsCtrl: '?^^binCatalogItemGroups'
+    };
 
     this.controller = ['$q', 'updateCatalogItemWriter', function ($q, updateCatalogItem) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
             if (!$ctrl.items && $ctrl.listCtrl) $ctrl.items = $ctrl.listCtrl.items;
-            $ctrl.movable = $ctrl.movable !== 'false';
-            $ctrl.pinnable = $ctrl.pinnable === 'true';
-            $ctrl.removable = $ctrl.removable !== 'false';
+            if ($ctrl.groupsCtrl) {
+                if (!$ctrl.movable) $ctrl.movable = $ctrl.groupsCtrl.movable;
+                if (!$ctrl.pinnable) $ctrl.pinnable = $ctrl.groupsCtrl.pinnable;
+                if (!$ctrl.removable) $ctrl.removable = $ctrl.groupsCtrl.removable;
+                if (!$ctrl.itemTemplateUrl) $ctrl.itemTemplateUrl = $ctrl.groupsCtrl.itemTemplateUrl;
+                if (!$ctrl.cols) $ctrl.cols = $ctrl.groupsCtrl.cols;
+                if (!$ctrl.center) $ctrl.center = $ctrl.groupsCtrl.center;
+            }
+            $ctrl.movable = isEnabledByDefault($ctrl.movable);
+            $ctrl.pinnable = isDisabledByDefault($ctrl.pinnable);
+            $ctrl.removable = isEnabledByDefault($ctrl.removable);
             if ($ctrl.movable) installMoveActions();
         };
+
+        function isEnabledByDefault(prop) {
+            return prop !== 'false';
+        }
+
+        function isDisabledByDefault(prop) {
+            return prop === 'true';
+        }
 
         function installMoveActions() {
             $ctrl.moveUp = moveUp;

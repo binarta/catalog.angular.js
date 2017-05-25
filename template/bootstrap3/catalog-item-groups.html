@@ -1,0 +1,10 @@
+<div bin-group-by="partition" on="$ctrl.items">
+    <div ng-repeat="group in groups track by group.id">
+        <div class="row" ng-if="::$ctrl.isSubpartition(group.items[0].partition)">
+            <div class="col-xs-12">
+                <h2 class="partition-title" i18n code="{{::group.items[0].partition}}" read-only ng-bind="::var"></h2>
+            </div>
+        </div>
+        <bin-catalog-items items="group.items"></bin-catalog-items>
+    </div>
+</div>
