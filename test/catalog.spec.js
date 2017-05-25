@@ -3476,6 +3476,198 @@ describe('catalog', function () {
             });
         });
     });
+
+    describe('binCatalogList component', function () {
+        var $ctrl, $componentController, $routeParams, search;
+        var type = 'type';
+        var partition = 'partition';
+
+        beforeEach(inject(function (_$componentController_, _$routeParams_, binartaSearch) {
+            $componentController = _$componentController_;
+            $routeParams = _$routeParams_;
+            search = binartaSearch;
+        }));
+
+        describe('when type is not given', function () {
+            beforeEach(function () {
+                $routeParams.d0 = 'type';
+                $routeParams.d1 = 'p1';
+                $routeParams.d2 = 'p2';
+                $ctrl = $componentController('binCatalogList', null, {});
+                $ctrl.$onInit();
+            });
+
+            it('parse type and partition from route', function () {
+                expect($ctrl.type).toEqual('type');
+                expect($ctrl.partition).toEqual('/type/p1/p2/');
+            });
+        });
+
+        describe('when type is given', function () {
+            beforeEach(function () {
+                $ctrl = $componentController('binCatalogList', null, {type: type});
+                $ctrl.$onInit();
+            });
+
+            it('type is available on controller', function () {
+                expect($ctrl.type).toEqual(type);
+            });
+
+            it('no items yet', function () {
+                expect($ctrl.items.length).toEqual(0);
+            });
+
+            it('items are requested', function () {
+                expect(search).toHaveBeenCalledWith({
+                    action: 'search',
+                    entity: 'catalog-item',
+                    filters: {
+                        type: type
+                    },
+                    sortings: [{
+                        on: 'partition',
+                        orientation: 'asc'
+                    }, {
+                        on: 'priority',
+                        orientation: 'desc'
+                    }],
+                    subset: {
+                        count: 12,
+                        offset: 0
+                    },
+                    includeCarouselItems: true,
+                    complexResult: true,
+                    success: jasmine.any(Function)
+                });
+            });
+
+            it('is working', function () {
+                expect($ctrl.working).toBeTruthy();
+            });
+
+            it('triggering search again while working does nothing', function () {
+                $ctrl.search();
+                expect(search.calls.count()).toEqual(1);
+            });
+
+            describe('on success', function () {
+                var items = [
+                    {id: 1, priority: 3},
+                    {id: 2, priority: 2},
+                    {id: 3, priority: 1}
+                ];
+
+                beforeEach(function () {
+                    search.calls.mostRecent().args[0].success({
+                        hasMore: true,
+                        results: items
+                    });
+                });
+
+                it('new items are added', function () {
+                    expect($ctrl.items).toEqual(items);
+                });
+
+                it('more items are available', function () {
+                    expect($ctrl.hasMore).toBeTruthy();
+                });
+
+                it('not working', function () {
+                    expect($ctrl.working).toBeFalsy();
+                });
+
+                describe('on search again', function () {
+                    beforeEach(function () {
+                        $ctrl.search();
+                    });
+
+                    it('new items are requested with an offset', function () {
+                        expect(search.calls.mostRecent().args[0].subset).toEqual({
+                            count: 12,
+                            offset: 12
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('when type and partition are given', function () {
+            beforeEach(function () {
+                $ctrl = $componentController('binCatalogList', null, {
+                    type: type,
+                    partition: partition
+                });
+                $ctrl.$onInit();
+            });
+
+            it('catalog properties are available on controller', function () {
+                expect($ctrl.type).toEqual(type);
+                expect($ctrl.partition).toEqual(partition);
+            });
+
+            it('items are requested', function () {
+                expect(search).toHaveBeenCalledWith({
+                    action: 'search',
+                    entity: 'catalog-item',
+                    filters: {
+                        type: type,
+                        partition: partition
+                    },
+                    sortings: [{
+                        on: 'partition',
+                        orientation: 'asc'
+                    }, {
+                        on: 'priority',
+                        orientation: 'desc'
+                    }],
+                    subset: {
+                        count: 12,
+                        offset: 0
+                    },
+                    includeCarouselItems: true,
+                    complexResult: true,
+                    success: jasmine.any(Function)
+                });
+            });
+        });
+
+        describe('when requesting partitions recursively', function () {
+            beforeEach(function () {
+                $ctrl = $componentController('binCatalogList', null, {
+                    type: type,
+                    partition: partition,
+                    recursivelyByPartition: 'true'
+                });
+                $ctrl.$onInit();
+            });
+
+            it('items are requested', function () {
+                expect(search.calls.mostRecent().args[0].filters).toEqual({
+                    type: type,
+                    recursivelyByPartition: partition
+                });
+            });
+        });
+
+        describe('when requesting with a custom count', function () {
+            beforeEach(function () {
+                $ctrl = $componentController('binCatalogList', null, {
+                    type: type,
+                    partition: partition,
+                    count: '20'
+                });
+                $ctrl.$onInit();
+            });
+
+            it('items are requested', function () {
+                expect(search.calls.mostRecent().args[0].subset).toEqual({
+                    count: 20,
+                    offset: 0
+                });
+            });
+        });
+    });
+
 });
 
 angular.module('test.app', ['catalog']).config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {

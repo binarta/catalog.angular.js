@@ -26,6 +26,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
     .directive('movableItems', ['ngRegisterTopicHandler', MovableItemsDirectiveFactory])
     .component('binCatalogItemList', new BinCatalogItemListComponent())
+    .component('binCatalogList', new BinCatalogListComponent())
     .component('binCatalogListRows', new BinCatalogListRowsComponent())
     .component('binCatalogListItem', new BinCatalogListItemComponent())
     .component('binPinnedItemsToggle', new BinPinnedItemsToggle())
@@ -1257,6 +1258,69 @@ function BinBreadcrumbComponent() {
 
         function stripSlashes(item) {
             return item.replace(/\//g, '');
+        }
+    }];
+}
+
+function BinCatalogListComponent() {
+    this.bindings = {
+        type: '@',
+        partition: '@',
+        recursivelyByPartition: '@',
+        count: '@'
+    };
+
+    this.controller = ['$routeParams', 'catalogPathParser', 'binartaSearch', function ($routeParams, catalogPathParser, search) {
+        var $ctrl = this;
+        var count = 12;
+        var offset = 0;
+
+        $ctrl.$onInit = function () {
+            $ctrl.items = [];
+            if (!$ctrl.type) parsePropertiesFromRoute();
+            if ($ctrl.count) count = parseInt($ctrl.count);
+            $ctrl.search = searchItems;
+            searchItems();
+        };
+
+        function parsePropertiesFromRoute() {
+            var c = catalogPathParser($routeParams);
+            $ctrl.type = c.head;
+            $ctrl.partition = c.path;
+            $ctrl.parent = c.parent;
+        }
+
+        function searchItems() {
+            if ($ctrl.working) return;
+            $ctrl.working = true;
+            var filters = {type: $ctrl.type};
+            if ($ctrl.partition) {
+                if ($ctrl.recursivelyByPartition === 'true') filters.recursivelyByPartition = $ctrl.partition;
+                else filters.partition = $ctrl.partition;
+            }
+
+            search({
+                action: 'search',
+                entity: 'catalog-item',
+                filters: filters,
+                sortings: [
+                    {on: 'partition', orientation: 'asc'},
+                    {on: 'priority', orientation: 'desc'}
+                ],
+                subset: {count: count, offset: offset},
+                includeCarouselItems: true,
+                complexResult: true,
+                success: onSuccess
+            });
+
+            function onSuccess(data) {
+                $ctrl.hasMore = data.hasMore;
+                data.results.forEach(function (item) {
+                    $ctrl.items.push(item);
+                });
+                offset += count;
+                $ctrl.working = false;
+            }
         }
     }];
 }
