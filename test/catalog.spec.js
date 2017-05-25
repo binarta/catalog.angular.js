@@ -3668,6 +3668,123 @@ describe('catalog', function () {
         });
     });
 
+    describe('binCatalogDetails component', function () {
+        var $ctrl, $componentController, $routeParams, $location;
+
+        beforeEach(inject(function (_$componentController_, _$routeParams_, _$location_) {
+            $componentController = _$componentController_;
+            $routeParams = _$routeParams_;
+            $location = _$location_;
+        }));
+
+        describe('when bindings are not given', function () {
+            beforeEach(function () {
+                $routeParams.d0 = 'type';
+                $routeParams.d1 = 'p1';
+                $routeParams.d2 = 'item-id';
+                $ctrl = $componentController('binCatalogDetails', null, {});
+                $ctrl.$onInit();
+            });
+
+            it('catalog properties are parsed from route', function () {
+                expect($ctrl.type).toEqual('type');
+                expect($ctrl.partition).toEqual('/type/p1/');
+                expect($ctrl.itemId).toEqual('/type/p1/item-id');
+            });
+        });
+
+        describe('with bindings', function () {
+            var type = 'type';
+            var partition = 'partition';
+            var itemId = 'item-id';
+            var findCatalogItemByIdMock;
+
+            beforeEach(function () {
+                findCatalogItemByIdMock = jasmine.createSpy('spy');
+                $ctrl = $componentController('binCatalogDetails', {
+                    findCatalogItemById: findCatalogItemByIdMock
+                }, {
+                    type: type,
+                    partition: partition,
+                    itemId: itemId
+                });
+                $ctrl.$onInit();
+            });
+
+            it('type and partition are available on controller', function () {
+                expect($ctrl.type).toEqual(type);
+                expect($ctrl.partition).toEqual(partition);
+            });
+
+            it('item is requested', function () {
+                expect(findCatalogItemByIdMock).toHaveBeenCalledWith(itemId, jasmine.any(Function));
+            });
+
+            describe('with item update listeners', function () {
+                var actual;
+
+                beforeEach(function () {
+                    $ctrl.onItemUpdate(function (item) {
+                        actual = item;
+                    });
+                });
+
+                describe('when item has a localizedId that is different from id param', function () {
+                    var item;
+
+                    beforeEach(function () {
+                        item = {
+                            localizedId: '/localized-id'
+                        };
+                        findCatalogItemByIdMock.calls.mostRecent().args[1](item);
+                    });
+
+                    it('redirect to localized version', function () {
+                        expect($location.path()).toEqual('/view' + item.localizedId);
+                    });
+
+                    it('item is not updated', function () {
+                        expect(actual).toBeUndefined();
+                    });
+                });
+
+                describe('when localizedId is the same as id param', function () {
+                    var item;
+
+                    beforeEach(function () {
+                        item = {
+                            id: itemId,
+                            localizedId: itemId
+                        };
+                        findCatalogItemByIdMock.calls.mostRecent().args[1](item);
+                    });
+
+                    it('item is updated', function () {
+                        expect(actual).toEqual(item);
+                    });
+
+                    describe('on refresh', function () {
+                        var returned;
+
+                        beforeEach(function () {
+                            findCatalogItemByIdMock.calls.reset();
+                            findCatalogItemByIdMock.and.returnValue('promise');
+                            returned = $ctrl.refresh();
+                        });
+
+                        it('item is requested', function () {
+                            expect(findCatalogItemByIdMock).toHaveBeenCalledWith(itemId, jasmine.any(Function));
+                        });
+
+                        it('refresh returns promise from findCatalogItemById', function () {
+                            expect(returned).toEqual('promise');
+                        });
+                    });
+                });
+            });
+        });
+    });
+
 });
 
 angular.module('test.app', ['catalog']).config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {

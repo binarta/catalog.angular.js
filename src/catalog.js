@@ -27,6 +27,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .directive('movableItems', ['ngRegisterTopicHandler', MovableItemsDirectiveFactory])
     .component('binCatalogItemList', new BinCatalogItemListComponent())
     .component('binCatalogList', new BinCatalogListComponent())
+    .component('binCatalogDetails', new BinCatalogDetailsComponent())
     .component('binCatalogListRows', new BinCatalogListRowsComponent())
     .component('binCatalogListItem', new BinCatalogListItemComponent())
     .component('binPinnedItemsToggle', new BinPinnedItemsToggle())
@@ -1323,6 +1324,53 @@ function BinCatalogListComponent() {
             }
         }
     }];
+}
+
+function BinCatalogDetailsComponent() {
+    this.bindings = {
+        type: '@',
+        partition: '@',
+        itemId: '@'
+    };
+
+    this.controller = ['$location', '$routeParams', 'catalogPathParser', 'findCatalogItemById',
+        function ($location, $routeParams, catalogPathParser, findCatalogItemById) {
+            var $ctrl = this;
+            var onItemUpdateListeners = [];
+
+            this.$onInit = function () {
+                if (!$ctrl.type) parsePropertiesFromRoute();
+                $ctrl.refresh = findItem;
+                $ctrl.onItemUpdate = addUpdateItemListener;
+                findItem();
+            };
+
+            function parsePropertiesFromRoute() {
+                var c = catalogPathParser($routeParams, 'file');
+                $ctrl.type = c.head;
+                $ctrl.partition = c.parent;
+                $ctrl.itemId = c.path;
+            }
+
+            function addUpdateItemListener(cb) {
+                onItemUpdateListeners.push(cb);
+            }
+
+            function findItem() {
+                return findCatalogItemById($ctrl.itemId, applyItem);
+            }
+
+            function applyItem(item) {
+                if (item.localizedId && $ctrl.itemId !== item.localizedId) $location.path('/view' + item.localizedId);
+                else updateItemOnListeners(item);
+            }
+
+            function updateItemOnListeners(item) {
+                onItemUpdateListeners.forEach(function (cb) {
+                    cb(item);
+                });
+            }
+        }];
 }
 
 // @deprecated
