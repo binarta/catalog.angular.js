@@ -1512,13 +1512,12 @@ describe('catalog', function () {
     });
 
     describe('RemoveCatalogItem factory', function () {
-        var sut, restClient, config, topics;
+        var sut, restClient, config;
 
-        beforeEach(inject(function (removeCatalogItem, restServiceHandler, _config_, topicMessageDispatcherMock) {
+        beforeEach(inject(function (removeCatalogItem, restServiceHandler, _config_) {
             sut = removeCatalogItem;
             restClient = restServiceHandler;
             config = _config_;
-            topics = topicMessageDispatcherMock;
             config.baseUri = 'baseUri/';
             restClient.and.returnValue('promise');
         }));
@@ -1537,14 +1536,8 @@ describe('catalog', function () {
                         method: 'DELETE',
                         url: 'baseUri/api/entity/catalog-item?id=some%20id',
                         withCredentials: true
-                    },
-                    success: jasmine.any(Function)
+                    }
                 });
-            });
-
-            it('on success, fire notification', function () {
-                restClient.calls.mostRecent().args[0].success();
-                expect(topics['catalog.item.removed']).toEqual(id);
             });
 
             it('returns result of rest service', function () {
@@ -4074,7 +4067,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('binCatalogItem component', function () {
+    describe('binCatalogItem component', function () {
         var $ctrl, $componentController, topicsMock, pinner;
         var item;
 
