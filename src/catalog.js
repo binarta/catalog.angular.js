@@ -26,16 +26,16 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
     .directive('movableItems', ['ngRegisterTopicHandler', MovableItemsDirectiveFactory])
     .component('binCatalogItemList', new BinCatalogItemListComponent())
-    .component('binCatalogList', new BinCatalogListComponent())
-    .component('binCatalogItemGroups', new BinCatalogItemGroups())
-    .component('binCatalogItems', new BinCatalogItemsComponent())
-    .component('binCatalogDetails', new BinCatalogDetailsComponent())
     .component('binCatalogListRows', new BinCatalogListRowsComponent())
     .component('binCatalogListItem', new BinCatalogListItemComponent())
     .component('binPinnedItemsToggle', new BinPinnedItemsToggle())
     .component('binSpotlight', new BinSpotlightComponent())
     .component('binSpotlightItems', new BinSpotlightItemsComponent())
     .component('binBreadcrumb', new BinBreadcrumbComponent())
+    .component('binCatalogList', new BinCatalogListComponent())
+    .component('binCatalogItemGroups', new BinCatalogItemGroups())
+    .component('binCatalogItems', new BinCatalogItemsComponent())
+    .component('binCatalogDetails', new BinCatalogDetailsComponent())
     .constant('catalogPathLimit', 10)
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
@@ -1265,6 +1265,32 @@ function BinBreadcrumbComponent() {
     }];
 }
 
+// @deprecated
+function splitInRowsDirectiveFactory($log) {
+    return function ($scope, el, attrs) {
+        $log.warn('Deprecation warning: splitInRows is no longer maintained, use binSplitInRows instead.');
+
+        function splitInRows(items, columns) {
+            var rows = [];
+            var columnCount = parseInt(columns);
+            if (columnCount > 0) {
+                for (var i = 0; i <= (items.length - 1); i = i + columnCount) {
+                    rows.push(items.slice(i, i + columnCount));
+                }
+            }
+            return rows;
+        }
+
+        $scope.$watchCollection(attrs.splitInRows, function (newItems) {
+            if (newItems) $scope.rows = splitInRows(newItems, attrs.columns);
+        });
+    }
+}
+
+
+
+// Start of new components
+
 function BinCatalogListComponent() {
     this.bindings = {
         type: '@',
@@ -1533,26 +1559,4 @@ function BinCatalogDetailsComponent() {
                 });
             }
         }];
-}
-
-// @deprecated
-function splitInRowsDirectiveFactory($log) {
-    return function ($scope, el, attrs) {
-        $log.warn('Deprecation warning: splitInRows is no longer maintained, use binSplitInRows instead.');
-
-        function splitInRows(items, columns) {
-            var rows = [];
-            var columnCount = parseInt(columns);
-            if (columnCount > 0) {
-                for (var i = 0; i <= (items.length - 1); i = i + columnCount) {
-                    rows.push(items.slice(i, i + columnCount));
-                }
-            }
-            return rows;
-        }
-
-        $scope.$watchCollection(attrs.splitInRows, function (newItems) {
-            if (newItems) $scope.rows = splitInRows(newItems, attrs.columns);
-        });
-    }
 }
