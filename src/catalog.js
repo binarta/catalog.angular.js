@@ -890,17 +890,16 @@ function ItemPinnerFactory(topics, rest, config) {
 
     return {
         pin: function(ctx) {
-            rest({
+            return rest({
                 params:params('catalog.item.pin', ctx),
                 success: sucessAndFireTopic('catalog.item.pinned', ctx)
-            })
+            });
         },
         unpin: function(ctx) {
-            rest({
+            return rest({
                 params:params('catalog.item.unpin', ctx),
                 success: sucessAndFireTopic('catalog.item.unpinned', ctx)
-
-            })
+            });
         }
     }
 }
@@ -1654,8 +1653,8 @@ function BinCatalogItem() {
         }
 
         function installPinActions() {
-            $ctrl.pin = function() {pinner.pin({item:$ctrl.item, success:pin});};
-            $ctrl.unpin = function() {pinner.unpin({item:$ctrl.item, success: unpin});};
+            $ctrl.pin = function() {return pinner.pin({item:$ctrl.item, success:pin});};
+            $ctrl.unpin = function() {return pinner.unpin({item:$ctrl.item, success: unpin});};
         }
 
         function pin() {

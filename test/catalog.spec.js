@@ -2542,6 +2542,7 @@ describe('catalog', function () {
             config = _config_;
             config.baseUri = 'base-uri/';
             rest.calls.reset();
+            rest.and.returnValue('promise');
             ctx = {
                 item: {
                     id:1
@@ -2557,8 +2558,10 @@ describe('catalog', function () {
         }
 
         describe('when pinning an item', function() {
+            var returnValue;
+
             beforeEach(function() {
-                pinner.pin(ctx);
+                returnValue = pinner.pin(ctx);
             });
 
             it('usecase request is sent', function() {
@@ -2567,6 +2570,10 @@ describe('catalog', function () {
                 expect(request().params.url).toEqual(config.baseUri + 'api/usecase');
                 expect(request().params.data.headers.usecase).toEqual('catalog.item.pin');
                 expect(request().params.data.payload.id).toEqual(ctx.item.id);
+            });
+
+            it('returns rest promise', function () {
+                expect(returnValue).toEqual('promise');
             });
 
             describe('on success', function() {
@@ -2586,8 +2593,10 @@ describe('catalog', function () {
         });
 
         describe('when unpinning an item', function() {
+            var returnValue;
+
             beforeEach(function() {
-                pinner.unpin(ctx);
+                returnValue = pinner.unpin(ctx);
             });
 
             it('usecase request is sent', function() {
@@ -2596,6 +2605,10 @@ describe('catalog', function () {
                 expect(request().params.url).toEqual(config.baseUri + 'api/usecase');
                 expect(request().params.data.headers.usecase).toEqual('catalog.item.unpin');
                 expect(request().params.data.payload.id).toEqual(ctx.item.id);
+            });
+
+            it('returns rest promise', function () {
+                expect(returnValue).toEqual('promise');
             });
 
             describe('on success', function() {
@@ -4077,8 +4090,8 @@ describe('catalog', function () {
             $componentController = _$componentController_;
             topicsMock = topicRegistryMock;
             pinner = itemPinner;
-            pinner.pin = jasmine.createSpy('pin');
-            pinner.unpin = jasmine.createSpy('unpin');
+            pinner.pin = jasmine.createSpy('pin').and.returnValue(true);
+            pinner.unpin = jasmine.createSpy('unpin').and.returnValue(true);
             item = {
                 id: 'item-id'
             };
@@ -4318,12 +4331,18 @@ describe('catalog', function () {
             });
 
             describe('on pin', function() {
+                var returnValue;
+
                 beforeEach(function() {
-                    $ctrl.pin();
+                    returnValue = $ctrl.pin();
                 });
 
                 it('call the item pinner', function() {
                     expect(pinner.pin.calls.mostRecent().args[0].item.id).toEqual($ctrl.item.id);
+                });
+
+                it('pass the return value', function () {
+                    expect(returnValue).toBe(true);
                 });
 
                 describe('on success', function() {
@@ -4338,12 +4357,18 @@ describe('catalog', function () {
             });
 
             describe('on unpin', function() {
+                var returnValue;
+
                 beforeEach(function() {
-                    $ctrl.unpin();
+                    returnValue = $ctrl.unpin();
                 });
 
                 it('call the item pinner', function() {
                     expect(pinner.unpin.calls.argsFor(0)[0].item.id).toEqual($ctrl.item.id);
+                });
+
+                it('pass the return value', function () {
+                    expect(returnValue).toBe(true);
                 });
 
                 describe('on success', function() {
