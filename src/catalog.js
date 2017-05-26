@@ -1,4 +1,4 @@
-angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price'])
+angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta-checkpointjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price'])
     .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])
@@ -36,6 +36,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'catalog
     .component('binCatalogItemGroups', new BinCatalogItemGroups())
     .component('binCatalogItems', new BinCatalogItemsComponent())
     .component('binCatalogDetails', new BinCatalogDetailsComponent())
+    .component('binCatalogItem', new BinCatalogItem())
     .constant('catalogPathLimit', 10)
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
@@ -1559,4 +1560,113 @@ function BinCatalogDetailsComponent() {
                 });
             }
         }];
+}
+
+function BinCatalogItem() {
+    this.templateUrl = 'catalog-item.html';
+
+    this.bindings = {
+        item: '<',
+        templateUrl: '@',
+        pinnable: '@',
+        removable: '@'
+    };
+
+    this.require = {
+        itemsCtrl: '?^^binCatalogItems',
+        detailsCtrl: '?^^binCatalogDetails'
+    };
+
+    this.controller = ['binarta', 'itemPinner', 'topicRegistry', function (binarta, pinner, topics) {
+        var $ctrl = this;
+        var destroyHandlers = [];
+
+        $ctrl.$onInit = function () {
+            if ($ctrl.detailsCtrl) withDetailsController();
+            else if ($ctrl.itemsCtrl) withItemsController();
+
+            $ctrl.isMoveAllowed = function () {
+                return $ctrl.item && $ctrl.movable && hasCatalogItemUpdatePermission();
+            };
+            $ctrl.isPinAllowed = function () {
+                return $ctrl.item && !$ctrl.item.pinned && $ctrl.pinnable && hasCatalogItemPinPermission();
+            };
+            $ctrl.isUnpinAllowed = function () {
+                return $ctrl.item && $ctrl.item.pinned && $ctrl.pinnable && hasCatalogItemUnpinPermission();
+            };
+
+            if ($ctrl.pinnable) installPinActions();
+        };
+
+        $ctrl.$onDestroy = function () {
+            destroyHandlers.forEach(function (handler) {
+                handler();
+            });
+        };
+
+        function withDetailsController() {
+            if (!$ctrl.item) listenForItemUpdates();
+            if (!$ctrl.templateUrl) $ctrl.templateUrl = 'catalog-details-item.html';
+            $ctrl.refresh = $ctrl.detailsCtrl.refresh;
+
+            function listenForItemUpdates() {
+                $ctrl.detailsCtrl.onItemUpdate(function (item) {
+                    $ctrl.item = item;
+                });
+            }
+        }
+
+        function withItemsController() {
+            if (!$ctrl.templateUrl) $ctrl.templateUrl = $ctrl.itemsCtrl.itemTemplateUrl || 'catalog-list-item-2.html';
+            $ctrl.movable = $ctrl.itemsCtrl.movable;
+            $ctrl.pinnable = $ctrl.itemsCtrl.pinnable;
+            $ctrl.removable = $ctrl.itemsCtrl.removable;
+            if ($ctrl.movable) installMoveActions();
+
+            var pinnedTopic = 'catalog.item.pinned.' + $ctrl.item.id;
+            var unpinnedTopic = 'catalog.item.unpinned.' + $ctrl.item.id;
+            topics.subscribe(pinnedTopic, pin);
+            topics.subscribe(unpinnedTopic, unpin);
+            destroyHandlers.push(function () {
+                topics.unsubscribe(pinnedTopic, pin);
+            });
+            destroyHandlers.push(function () {
+                topics.unsubscribe(unpinnedTopic, unpin);
+            });
+        }
+
+        function hasCatalogItemUpdatePermission() {
+            return binarta.checkpoint.profile.hasPermission('catalog.item.update');
+        }
+
+        function hasCatalogItemPinPermission() {
+            return binarta.checkpoint.profile.hasPermission('catalog.item.pin');
+        }
+
+        function hasCatalogItemUnpinPermission() {
+            return binarta.checkpoint.profile.hasPermission('catalog.item.unpin');
+        }
+
+        function installMoveActions() {
+            $ctrl.moveUp = function () {return $ctrl.itemsCtrl.moveUp($ctrl.item);};
+            $ctrl.moveDown = function () {return $ctrl.itemsCtrl.moveDown($ctrl.item);};
+            $ctrl.moveTop = function () {return $ctrl.itemsCtrl.moveTop($ctrl.item);};
+            $ctrl.moveBottom = function () {return $ctrl.itemsCtrl.moveBottom($ctrl.item);};
+            $ctrl.isFirst = function () {return $ctrl.itemsCtrl.items[0] === $ctrl.item;};
+            $ctrl.isLast = function () {return $ctrl.itemsCtrl.items[$ctrl.itemsCtrl.items.length - 1] === $ctrl.item;};
+        }
+
+        function installPinActions() {
+            $ctrl.pin = function() {pinner.pin({item:$ctrl.item, success:pin});};
+            $ctrl.unpin = function() {pinner.unpin({item:$ctrl.item, success: unpin});};
+        }
+
+        function pin() {
+            $ctrl.item.pinned = true;
+        }
+
+        function unpin() {
+            $ctrl.item.pinned = false;
+        }
+    }];
 }

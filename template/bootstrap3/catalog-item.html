@@ -1,0 +1,37 @@
+<bin-edit>
+    <bin-edit-actions>
+        <bin-edit-actions-selector for="move" ng-show="$ctrl.isMoveAllowed()">
+            <span><i class="fa fa-arrows fa-fw"></i></span>
+            <span i18n code="catalog.item.move" read-only ng-bind="::var"></span>
+        </bin-edit-actions-selector>
+        <bin-edit-action action="$ctrl.pin()" ng-show="$ctrl.isPinAllowed()">
+            <span><i class="fa fa-thumb-tack fa-fw"></i></span>
+            <span i18n code="catalog.item.pin.button" read-only ng-bind="::var"></span>
+        </bin-edit-action>
+        <bin-edit-action action="$ctrl.unpin()" ng-show="$ctrl.isUnpinAllowed()">
+            <span><i class="fa fa-thumb-tack fa-rotate-90 fa-fw"></i></span>
+            <span i18n code="catalog.item.unpin.button" read-only ng-bind="::var"></span>
+        </bin-edit-action>
+    </bin-edit-actions>
+    <bin-edit-actions for="move" button-i18n-code="catalog.item.move">
+        <bin-edit-action action="$ctrl.moveUp()" disabled="$ctrl.isFirst()">
+            <span><i class="fa fa-angle-up fa-fw"></i></span>
+            <span i18n code="catalog.item.move.up" read-only ng-bind="::var"></span>
+        </bin-edit-action>
+        <bin-edit-action action="$ctrl.moveDown()" disabled="$ctrl.isLast()">
+            <span><i class="fa fa-angle-down fa-fw"></i></span>
+            <span i18n code="catalog.item.move.down" read-only ng-bind="::var"></span>
+        </bin-edit-action>
+        <bin-edit-action action="$ctrl.moveTop()" disabled="$ctrl.isFirst()">
+            <span><i class="fa fa-angle-double-up fa-fw"></i></span>
+            <span i18n code="catalog.item.move.top" read-only ng-bind="::var"></span>
+        </bin-edit-action>
+        <bin-edit-action action="$ctrl.moveBottom()" disabled="$ctrl.isLast()">
+            <span><i class="fa fa-angle-double-down fa-fw"></i></span>
+            <span i18n code="catalog.item.move.bottom" read-only ng-bind="::var"></span>
+        </bin-edit-action>
+    </bin-edit-actions>
+    <bin-edit-body>
+        <ng-include src="$ctrl.templateUrl"></ng-include>
+    </bin-edit-body>
+</bin-edit>

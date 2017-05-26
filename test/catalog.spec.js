@@ -4074,6 +4074,297 @@ describe('catalog', function () {
         });
     });
 
+    fdescribe('binCatalogItem component', function () {
+        var $ctrl, $componentController, topicsMock, pinner;
+        var item;
+
+        beforeEach(inject(function (_$componentController_, topicRegistryMock, itemPinner) {
+            binarta.checkpoint.gateway.permissions = [];
+            binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p', email: 'e'});
+            $componentController = _$componentController_;
+            topicsMock = topicRegistryMock;
+            pinner = itemPinner;
+            pinner.pin = jasmine.createSpy('pin');
+            pinner.unpin = jasmine.createSpy('unpin');
+            item = {
+                id: 'item-id'
+            };
+            $ctrl = $componentController('binCatalogItem', {itemPinner: pinner}, {});
+        }));
+
+        describe('with detailsCtrl', function () {
+            beforeEach(function () {
+                $ctrl.detailsCtrl = jasmine.createSpyObj('spy', ['onItemUpdate', 'refresh']);
+            });
+
+            it('assert default template', function () {
+                $ctrl.$onInit();
+                expect($ctrl.templateUrl).toEqual('catalog-details-item.html');
+            });
+
+            it('override template', function () {
+                $ctrl.templateUrl = 'override.html';
+                $ctrl.$onInit();
+                expect($ctrl.templateUrl).toEqual('override.html');
+            });
+
+            it('subscribes for item updates', function () {
+                $ctrl.$onInit();
+                expect($ctrl.detailsCtrl.onItemUpdate).toHaveBeenCalled();
+            });
+
+            describe('on item update', function () {
+                beforeEach(function () {
+                    $ctrl.$onInit();
+                    $ctrl.detailsCtrl.onItemUpdate.calls.mostRecent().args[0](item);
+                });
+
+                it('item is available on ctrl', function () {
+                    expect($ctrl.item).toEqual(item);
+                });
+            });
+
+            it('on refresh', function () {
+                $ctrl.$onInit();
+                $ctrl.refresh();
+                expect($ctrl.detailsCtrl.refresh).toHaveBeenCalled();
+            });
+
+            it('when item is already given, do not listen for changes on detailsCtrl', function () {
+                $ctrl.item = item;
+                $ctrl.$onInit();
+                expect($ctrl.detailsCtrl.onItemUpdate).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('with itemsCtrl', function () {
+            beforeEach(function () {
+                $ctrl.itemsCtrl = {
+                    moveUp: jasmine.createSpy().and.returnValue(true),
+                    moveDown: jasmine.createSpy().and.returnValue(true),
+                    moveTop: jasmine.createSpy().and.returnValue(true),
+                    moveBottom: jasmine.createSpy().and.returnValue(true)
+                };
+                $ctrl.item = item;
+            });
+
+            it('assert default template', function () {
+                $ctrl.$onInit();
+                expect($ctrl.templateUrl).toEqual('catalog-list-item-2.html');
+            });
+
+            it('assert override template defined with itemsCtrl', function () {
+                $ctrl.itemsCtrl.itemTemplateUrl = 'override.html';
+                $ctrl.$onInit();
+                expect($ctrl.templateUrl).toEqual('override.html');
+            });
+
+            it('override template', function () {
+                $ctrl.templateUrl = 'override.html';
+                $ctrl.$onInit();
+                expect($ctrl.templateUrl).toEqual('override.html');
+            });
+
+            describe('and items are movable', function () {
+                beforeEach(function () {
+                    $ctrl.itemsCtrl.movable = true;
+                    $ctrl.$onInit();
+                });
+
+                it('on move up', function () {
+                    var actual = $ctrl.moveUp();
+                    expect($ctrl.itemsCtrl.moveUp).toHaveBeenCalledWith(item);
+                    expect(actual).toBeTruthy();
+                });
+
+                it('on move down', function () {
+                    var actual = $ctrl.moveDown();
+                    expect($ctrl.itemsCtrl.moveDown).toHaveBeenCalledWith(item);
+                    expect(actual).toBeTruthy();
+                });
+
+                it('on move to top', function () {
+                    var actual = $ctrl.moveTop();
+                    expect($ctrl.itemsCtrl.moveTop).toHaveBeenCalledWith(item);
+                    expect(actual).toBeTruthy();
+                });
+
+                it('on move to bottom', function () {
+                    var actual = $ctrl.moveBottom();
+                    expect($ctrl.itemsCtrl.moveBottom).toHaveBeenCalledWith(item);
+                    expect(actual).toBeTruthy();
+                });
+            });
+
+            it('on catalog.item.pinned event', function () {
+                $ctrl.$onInit();
+                topicsMock['catalog.item.pinned.' + item.id]();
+                expect($ctrl.item.pinned).toBeTruthy();
+            });
+
+            it('on catalog.item.unpinned event', function () {
+                $ctrl.$onInit();
+                topicsMock['catalog.item.unpinned.' + item.id]();
+                expect($ctrl.item.pinned).toBeFalsy();
+            });
+
+            it('on destroy, unsubscribe events', function () {
+                $ctrl.$onInit();
+                $ctrl.$onDestroy();
+                expect(topicsMock['catalog.item.pinned.' + item.id]).toBeUndefined();
+                expect(topicsMock['catalog.item.unpinned.' + item.id]).toBeUndefined();
+            });
+        });
+
+        describe('check if move action is allowed', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.$onInit();
+            });
+
+            it('when movable but no permission', function () {
+                $ctrl.movable = true;
+                expect($ctrl.isMoveAllowed()).toBeFalsy();
+            });
+
+            describe('when user has permission', function () {
+                beforeEach(function () {
+                    binarta.checkpoint.gateway.addPermission('catalog.item.update');
+                    binarta.checkpoint.profile.refresh();
+                });
+
+                it('and is movable', function () {
+                    $ctrl.movable = true;
+                    expect($ctrl.isMoveAllowed()).toBeTruthy();
+                });
+
+                it('and is not movable', function () {
+                    $ctrl.movable = false;
+                    expect($ctrl.isMoveAllowed()).toBeFalsy();
+                });
+            });
+        });
+
+        describe('check if pin action is allowed', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.$onInit();
+            });
+
+            it('when pinnable but no permission', function () {
+                $ctrl.pinnable = true;
+                expect($ctrl.isPinAllowed()).toBeFalsy();
+            });
+
+            describe('when user has permission', function () {
+                beforeEach(function () {
+                    binarta.checkpoint.gateway.addPermission('catalog.item.pin');
+                    binarta.checkpoint.profile.refresh();
+                });
+
+                it('and is pinnable', function () {
+                    $ctrl.pinnable = true;
+                    expect($ctrl.isPinAllowed()).toBeTruthy();
+                });
+
+                it('and is not pinnable', function () {
+                    $ctrl.pinnable = false;
+                    expect($ctrl.isPinAllowed()).toBeFalsy();
+                });
+
+                it('and item is already pinned', function () {
+                    $ctrl.pinnable = true;
+                    $ctrl.item.pinned = true;
+                    expect($ctrl.isPinAllowed()).toBeFalsy();
+                });
+            });
+        });
+
+        describe('check if unpin action is allowed', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.$onInit();
+            });
+
+            it('when pinnable but no permission', function () {
+                $ctrl.pinnable = true;
+                expect($ctrl.isUnpinAllowed()).toBeFalsy();
+            });
+
+            describe('when user has permission', function () {
+                beforeEach(function () {
+                    binarta.checkpoint.gateway.addPermission('catalog.item.unpin');
+                    binarta.checkpoint.profile.refresh();
+                });
+
+                it('and is pinnable', function () {
+                    $ctrl.pinnable = true;
+                    $ctrl.item.pinned = true;
+                    expect($ctrl.isUnpinAllowed()).toBeTruthy();
+                });
+
+                it('and is not pinnable', function () {
+                    $ctrl.pinnable = false;
+                    $ctrl.item.pinned = true;
+                    expect($ctrl.isUnpinAllowed()).toBeFalsy();
+                });
+
+                it('and item is not pinned', function () {
+                    $ctrl.pinnable = true;
+                    $ctrl.item.pinned = false;
+                    expect($ctrl.isUnpinAllowed()).toBeFalsy();
+                });
+            });
+        });
+
+        describe('when items are pinnable', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.pinnable = true;
+                $ctrl.$onInit();
+            });
+
+            describe('on pin', function() {
+                beforeEach(function() {
+                    $ctrl.pin();
+                });
+
+                it('call the item pinner', function() {
+                    expect(pinner.pin.calls.mostRecent().args[0].item.id).toEqual($ctrl.item.id);
+                });
+
+                describe('on success', function() {
+                    beforeEach(function() {
+                        pinner.pin.calls.mostRecent().args[0].success();
+                    });
+
+                    it('the item is flagged as pinned', function() {
+                        expect($ctrl.item.pinned).toBeTruthy();
+                    })
+                });
+            });
+
+            describe('on unpin', function() {
+                beforeEach(function() {
+                    $ctrl.unpin();
+                });
+
+                it('call the item pinner', function() {
+                    expect(pinner.unpin.calls.argsFor(0)[0].item.id).toEqual($ctrl.item.id);
+                });
+
+                describe('on success', function() {
+                    beforeEach(function() {
+                        pinner.unpin.calls.argsFor(0)[0].success();
+                    });
+
+                    it('the item is flagged as not pinned', function() {
+                        expect($ctrl.item.pinned).toBe(false);
+                    })
+                });
+            });
+        });
+    });
 });
 
 angular.module('test.app', ['catalog']).config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
