@@ -12,6 +12,10 @@
             <span><i class="fa fa-thumb-tack fa-rotate-90 fa-fw"></i></span>
             <span i18n code="catalog.item.unpin.button" read-only ng-bind="::var"></span>
         </bin-edit-action>
+        <bin-edit-actions-selector for="delete" danger ng-if="$ctrl.isRemoveAllowed()">
+            <span><i class="fa fa-trash-o fa-fw"></i></span>
+            <span i18n code="catalog.item.remove" read-only ng-bind="::var"></span>
+        </bin-edit-actions-selector>
     </bin-edit-actions>
     <bin-edit-actions for="move" button-i18n-code="catalog.item.move">
         <bin-edit-action action="$ctrl.moveUp()" disabled="$ctrl.isFirst()">
@@ -29,6 +33,12 @@
         <bin-edit-action action="$ctrl.moveBottom()" disabled="$ctrl.isLast()">
             <span><i class="fa fa-angle-double-down fa-fw"></i></span>
             <span i18n code="catalog.item.move.bottom" read-only ng-bind="::var"></span>
+        </bin-edit-action>
+    </bin-edit-actions>
+    <bin-edit-actions for="delete">
+        <bin-edit-action action="$ctrl.remove()" disabled="working" danger>
+            <span><i class="fa fa-trash-o fa-fw"></i></span>
+            <span i18n code="catalog.item.remove.confirm" read-only ng-bind="::var"></span>
         </bin-edit-action>
     </bin-edit-actions>
     <bin-edit-body>

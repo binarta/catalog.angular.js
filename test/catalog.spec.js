@@ -4080,23 +4080,53 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogItem component', function () {
-        var $ctrl, $componentController, topicsMock, pinner;
+    fdescribe('binCatalogItem component', function () {
+        var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
         var item;
 
-        beforeEach(inject(function (_$componentController_, topicRegistryMock, itemPinner) {
+        beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, topicRegistryMock) {
             binarta.checkpoint.gateway.permissions = [];
             binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p', email: 'e'});
+            $rootScope = _$rootScope_;
             $componentController = _$componentController_;
+            $location = _$location_;
             topicsMock = topicRegistryMock;
-            pinner = itemPinner;
-            pinner.pin = jasmine.createSpy('pin').and.returnValue(true);
-            pinner.unpin = jasmine.createSpy('unpin').and.returnValue(true);
+            pinnerMock = {};
+            pinnerMock.pin = jasmine.createSpy('pin').and.returnValue(true);
+            pinnerMock.unpin = jasmine.createSpy('unpin').and.returnValue(true);
+            removeMock = jasmine.createSpy('remove');
+            removeDeferred = $q.defer();
+            removeMock.and.returnValue(removeDeferred.promise);
             item = {
                 id: 'item-id'
             };
-            $ctrl = $componentController('binCatalogItem', {itemPinner: pinner}, {});
+            $ctrl = $componentController('binCatalogItem', {
+                itemPinner: pinnerMock,
+                removeCatalogItem: removeMock
+            }, {});
         }));
+
+        it('item is not pinnable by default', function () {
+            $ctrl.$onInit();
+            expect($ctrl.pinnable).toBe(false);
+        });
+
+        it('item is pinnable', function () {
+            $ctrl.pinnable = 'true';
+            $ctrl.$onInit();
+            expect($ctrl.pinnable).toBe(true);
+        });
+
+        it('item is removable by default', function () {
+            $ctrl.$onInit();
+            expect($ctrl.removable).toBe(true);
+        });
+
+        it('item is not removable', function () {
+            $ctrl.removable = 'false';
+            $ctrl.$onInit();
+            expect($ctrl.removable).toBe(false);
+        });
 
         describe('with detailsCtrl', function () {
             beforeEach(function () {
@@ -4323,6 +4353,35 @@ describe('catalog', function () {
             });
         });
 
+        describe('check if remove action is allowed', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.$onInit();
+            });
+
+            it('when removable but no permission', function () {
+                $ctrl.removable = true;
+                expect($ctrl.isRemoveAllowed()).toBeFalsy();
+            });
+
+            describe('when user has permission', function () {
+                beforeEach(function () {
+                    binarta.checkpoint.gateway.addPermission('catalog.item.remove');
+                    binarta.checkpoint.profile.refresh();
+                });
+
+                it('and is removable', function () {
+                    $ctrl.removable = true;
+                    expect($ctrl.isRemoveAllowed()).toBeTruthy();
+                });
+
+                it('and is not removable', function () {
+                    $ctrl.removable = false;
+                    expect($ctrl.isRemoveAllowed()).toBeFalsy();
+                });
+            });
+        });
+
         describe('when items are pinnable', function () {
             beforeEach(function () {
                 $ctrl.item = item;
@@ -4338,7 +4397,7 @@ describe('catalog', function () {
                 });
 
                 it('call the item pinner', function() {
-                    expect(pinner.pin.calls.mostRecent().args[0].item.id).toEqual($ctrl.item.id);
+                    expect(pinnerMock.pin.calls.mostRecent().args[0].item.id).toEqual($ctrl.item.id);
                 });
 
                 it('pass the return value', function () {
@@ -4347,7 +4406,7 @@ describe('catalog', function () {
 
                 describe('on success', function() {
                     beforeEach(function() {
-                        pinner.pin.calls.mostRecent().args[0].success();
+                        pinnerMock.pin.calls.mostRecent().args[0].success();
                     });
 
                     it('the item is flagged as pinned', function() {
@@ -4364,7 +4423,7 @@ describe('catalog', function () {
                 });
 
                 it('call the item pinner', function() {
-                    expect(pinner.unpin.calls.argsFor(0)[0].item.id).toEqual($ctrl.item.id);
+                    expect(pinnerMock.unpin.calls.argsFor(0)[0].item.id).toEqual($ctrl.item.id);
                 });
 
                 it('pass the return value', function () {
@@ -4373,12 +4432,62 @@ describe('catalog', function () {
 
                 describe('on success', function() {
                     beforeEach(function() {
-                        pinner.unpin.calls.argsFor(0)[0].success();
+                        pinnerMock.unpin.calls.argsFor(0)[0].success();
                     });
 
                     it('the item is flagged as not pinned', function() {
                         expect($ctrl.item.pinned).toBe(false);
                     })
+                });
+            });
+        });
+
+        describe('and item is removable', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.removable = true;
+                $ctrl.$onInit();
+            });
+
+            describe('on remove', function () {
+                var actual;
+
+                beforeEach(function () {
+                    $ctrl.remove().then(function () {
+                        actual = true;
+                    });
+                });
+
+                it('catalog item remove requested', function () {
+                    expect(removeMock).toHaveBeenCalledWith({id: item.id});
+                });
+
+                describe('when used with detailsCtrl', function () {
+                    beforeEach(function () {
+                        $ctrl.detailsCtrl = {
+                            partition: '/partition'
+                        };
+                        removeDeferred.resolve();
+                        $rootScope.$digest();
+                    });
+
+                    it('redirect to browse page', function () {
+                        expect($location.path()).toEqual('/lang/browse/partition');
+                    });
+                });
+
+                describe('when used with itemsCtrl', function () {
+                    beforeEach(function () {
+                        $ctrl.itemsCtrl = {
+                            items: [{id:1}, item]
+                        };
+                        removeDeferred.resolve();
+                        $rootScope.$digest();
+                    });
+
+                    it('item is removed from list', function () {
+                        expect($ctrl.itemsCtrl.items).toEqual([{id:1}]);
+                    });
                 });
             });
         });

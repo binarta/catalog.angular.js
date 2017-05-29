@@ -1573,13 +1573,15 @@ function BinCatalogItem() {
         detailsCtrl: '?^^binCatalogDetails'
     };
 
-    this.controller = ['binarta', 'itemPinner', 'topicRegistry', function (binarta, pinner, topics) {
+    this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', function (binarta, pinner, topics, removeCatalogItem, i18nLocation) {
         var $ctrl = this;
         var destroyHandlers = [];
 
         $ctrl.$onInit = function () {
             if ($ctrl.detailsCtrl) withDetailsController();
             else if ($ctrl.itemsCtrl) withItemsController();
+            if (typeof $ctrl.pinnable !== 'boolean') $ctrl.pinnable = isDisabledByDefault($ctrl.pinnable);
+            if (typeof $ctrl.removable !== 'boolean') $ctrl.removable = isEnabledByDefault($ctrl.removable);
 
             $ctrl.isMoveAllowed = function () {
                 return $ctrl.item && $ctrl.movable && hasCatalogItemUpdatePermission();
@@ -1590,8 +1592,12 @@ function BinCatalogItem() {
             $ctrl.isUnpinAllowed = function () {
                 return $ctrl.item && $ctrl.item.pinned && $ctrl.pinnable && hasCatalogItemUnpinPermission();
             };
+            $ctrl.isRemoveAllowed = function () {
+                return $ctrl.item && $ctrl.removable && hasCatalogItemRemovePermission();
+            };
 
             if ($ctrl.pinnable) installPinActions();
+            if ($ctrl.removable) installRemoveAction();
         };
 
         $ctrl.$onDestroy = function () {
@@ -1599,6 +1605,14 @@ function BinCatalogItem() {
                 handler();
             });
         };
+
+        function isEnabledByDefault(prop) {
+            return prop !== 'false';
+        }
+
+        function isDisabledByDefault(prop) {
+            return prop === 'true';
+        }
 
         function withDetailsController() {
             if (!$ctrl.item) listenForItemUpdates();
@@ -1615,8 +1629,8 @@ function BinCatalogItem() {
         function withItemsController() {
             if (!$ctrl.templateUrl) $ctrl.templateUrl = $ctrl.itemsCtrl.itemTemplateUrl || 'catalog-list-item-2.html';
             $ctrl.movable = $ctrl.itemsCtrl.movable;
-            $ctrl.pinnable = $ctrl.itemsCtrl.pinnable;
-            $ctrl.removable = $ctrl.itemsCtrl.removable;
+            if (!$ctrl.pinnable) $ctrl.pinnable = $ctrl.itemsCtrl.pinnable;
+            if (!$ctrl.removable) $ctrl.removable = $ctrl.itemsCtrl.removable;
             if ($ctrl.movable) installMoveActions();
 
             var pinnedTopic = 'catalog.item.pinned.' + $ctrl.item.id;
@@ -1643,6 +1657,10 @@ function BinCatalogItem() {
             return binarta.checkpoint.profile.hasPermission('catalog.item.unpin');
         }
 
+        function hasCatalogItemRemovePermission() {
+            return binarta.checkpoint.profile.hasPermission('catalog.item.remove');
+        }
+
         function installMoveActions() {
             $ctrl.moveUp = function () {return $ctrl.itemsCtrl.moveUp($ctrl.item);};
             $ctrl.moveDown = function () {return $ctrl.itemsCtrl.moveDown($ctrl.item);};
@@ -1663,6 +1681,19 @@ function BinCatalogItem() {
 
         function unpin() {
             $ctrl.item.pinned = false;
+        }
+
+        function installRemoveAction() {
+            $ctrl.remove = function () {
+                return removeCatalogItem({id: $ctrl.item.id}).then(function () {
+                    if ($ctrl.detailsCtrl) redirectToPartition($ctrl.detailsCtrl.partition);
+                    if ($ctrl.itemsCtrl) $ctrl.itemsCtrl.items.splice($ctrl.itemsCtrl.items.indexOf($ctrl.item), 1);
+                });
+            };
+        }
+
+        function redirectToPartition(partition) {
+            i18nLocation.path('/browse' + partition);
         }
     }];
 }
