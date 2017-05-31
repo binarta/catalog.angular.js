@@ -1573,9 +1573,10 @@ function BinCatalogItem() {
         detailsCtrl: '?^^binCatalogDetails'
     };
 
-    this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', function (binarta, pinner, topics, removeCatalogItem, i18nLocation) {
-        var $ctrl = this;
-        var destroyHandlers = [];
+    this.controller = ['$timeout', 'binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', function ($timeout, binarta, pinner, topics, removeCatalogItem, i18nLocation) {
+        var $ctrl = this,
+            destroyHandlers = [],
+            delay = 300;
 
         $ctrl.$onInit = function () {
             if ($ctrl.detailsCtrl) withDetailsController();
@@ -1686,8 +1687,11 @@ function BinCatalogItem() {
         function installRemoveAction() {
             $ctrl.remove = function () {
                 return removeCatalogItem({id: $ctrl.item.id}).then(function () {
+                    $ctrl.status = 'removed';
                     if ($ctrl.detailsCtrl) redirectToPartition($ctrl.detailsCtrl.partition);
-                    if ($ctrl.itemsCtrl) $ctrl.itemsCtrl.items.splice($ctrl.itemsCtrl.items.indexOf($ctrl.item), 1);
+                    if ($ctrl.itemsCtrl) $timeout(function () {
+                        $ctrl.itemsCtrl.items.splice($ctrl.itemsCtrl.items.indexOf($ctrl.item), 1);
+                    }, delay);
                 });
             };
         }

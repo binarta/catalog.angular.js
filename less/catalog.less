@@ -37,6 +37,18 @@
   }
 }
 
+bin-catalog-item {
+  > .added {
+    animation: blockAdded 300ms;
+  }
+
+  > .removed {
+    animation: blockRemoved 300ms;
+    transform: scale(0.5,0.5);
+    opacity: 0;
+  }
+}
+
 .bin-catalog-item {
   .item-title {
     margin-top: 0;
@@ -169,5 +181,27 @@
         height: 120px;
       }
     }
+  }
+}
+
+@keyframes catalogItemAdded {
+  0% {
+    transform: scale(0.5,0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1,1);
+    opacity: 1;
+  }
+}
+
+@keyframes catalogItemRemoved {
+  0% {
+    transform: scale(1,1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.5,0.5);
+    opacity: 0;
   }
 }

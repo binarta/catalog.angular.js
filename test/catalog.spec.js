@@ -4080,16 +4080,17 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('binCatalogItem component', function () {
-        var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
+    describe('binCatalogItem component', function () {
+        var $ctrl, $rootScope, $componentController, $location, $timeout, topicsMock, pinnerMock, removeMock, removeDeferred;
         var item;
 
-        beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, topicRegistryMock) {
+        beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, _$timeout_, topicRegistryMock) {
             binarta.checkpoint.gateway.permissions = [];
             binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p', email: 'e'});
             $rootScope = _$rootScope_;
             $componentController = _$componentController_;
             $location = _$location_;
+            $timeout = _$timeout_;
             topicsMock = topicRegistryMock;
             pinnerMock = {};
             pinnerMock.pin = jasmine.createSpy('pin').and.returnValue(true);
@@ -4485,8 +4486,18 @@ describe('catalog', function () {
                         $rootScope.$digest();
                     });
 
-                    it('item is removed from list', function () {
-                        expect($ctrl.itemsCtrl.items).toEqual([{id:1}]);
+                    it('item is removed', function () {
+                        expect($ctrl.status).toEqual('removed');
+                    });
+
+                    describe('after animation timeout', function () {
+                        beforeEach(function () {
+                            $timeout.flush(300);
+                        });
+
+                        it('item is removed from list', function () {
+                            expect($ctrl.itemsCtrl.items).toEqual([{id:1}]);
+                        });
                     });
                 });
             });
