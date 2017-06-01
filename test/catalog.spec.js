@@ -3548,7 +3548,7 @@ describe('catalog', function () {
             });
 
             it('is working', function () {
-                expect($ctrl.working).toBeTruthy();
+                expect($ctrl.isWorking()).toBeTruthy();
             });
 
             it('triggering search again while working does nothing', function () {
@@ -3575,11 +3575,11 @@ describe('catalog', function () {
                 });
 
                 it('more items are available', function () {
-                    expect($ctrl.hasMore).toBeTruthy();
+                    expect($ctrl.hasMore()).toBeTruthy();
                 });
 
                 it('not working', function () {
-                    expect($ctrl.working).toBeFalsy();
+                    expect($ctrl.isWorking()).toBeFalsy();
                 });
 
                 describe('on search again', function () {

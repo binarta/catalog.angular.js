@@ -35,6 +35,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta
     .component('binCatalogList', new BinCatalogListComponent())
     .component('binCatalogItemGroups', new BinCatalogItemGroups())
     .component('binCatalogItems', new BinCatalogItemsComponent())
+    .component('binCatalogSearchMore', new BinCatalogSearchMoreComponent())
     .component('binCatalogDetails', new BinCatalogDetailsComponent())
     .component('binCatalogItem', new BinCatalogItem())
     .constant('catalogPathLimit', 10)
@@ -1298,14 +1299,15 @@ function BinCatalogListComponent() {
 
     this.controller = ['$routeParams', 'catalogPathParser', 'binartaSearch', function ($routeParams, catalogPathParser, search) {
         var $ctrl = this;
-        var count = 12;
-        var offset = 0;
+        var count = 12, offset = 0, moreItemsAvailable = false, working = false;
 
         $ctrl.$onInit = function () {
             $ctrl.items = [];
             if (!$ctrl.type) parsePropertiesFromRoute();
             if ($ctrl.count) count = parseInt($ctrl.count);
             $ctrl.search = searchItems;
+            $ctrl.hasMore = hasMore;
+            $ctrl.isWorking = isWorking;
             searchItems();
         };
 
@@ -1317,8 +1319,8 @@ function BinCatalogListComponent() {
         }
 
         function searchItems() {
-            if ($ctrl.working) return;
-            $ctrl.working = true;
+            if (working) return;
+            working = true;
             var filters = {type: $ctrl.type};
             if ($ctrl.partition) {
                 if ($ctrl.recursivelyByPartition === 'true') filters.recursivelyByPartition = $ctrl.partition;
@@ -1340,13 +1342,21 @@ function BinCatalogListComponent() {
             });
 
             function onSuccess(data) {
-                $ctrl.hasMore = data.hasMore;
+                moreItemsAvailable = data.hasMore;
                 data.results.forEach(function (item) {
                     $ctrl.items.push(item);
                 });
                 offset += count;
-                $ctrl.working = false;
+                working = false;
             }
+        }
+
+        function hasMore() {
+            return moreItemsAvailable;
+        }
+
+        function isWorking() {
+            return working;
         }
     }];
 }
@@ -1509,6 +1519,25 @@ function BinCatalogItemsComponent() {
             }
         }
     }];
+}
+
+function BinCatalogSearchMoreComponent() {
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'catalog-search-more.html';
+    }];
+
+    this.require = {
+        listCtrl: '^^binCatalogList'
+    };
+
+    this.controller = function () {
+        var $ctrl = this;
+        $ctrl.$onInit = function () {
+            $ctrl.search = $ctrl.listCtrl.search;
+            $ctrl.hasMore = $ctrl.listCtrl.hasMore;
+            $ctrl.isWorking = $ctrl.listCtrl.isWorking;
+        };
+    };
 }
 
 function BinCatalogDetailsComponent() {
