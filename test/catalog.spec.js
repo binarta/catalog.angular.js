@@ -3536,7 +3536,7 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogBreadcrumb component', function () {
+    fdescribe('binCatalogBreadcrumb component', function () {
         var $ctrl, $location;
 
         beforeEach(inject(function ($componentController, _$location_) {
@@ -3544,6 +3544,74 @@ describe('catalog', function () {
             $location.path('/browse/p');
             $ctrl = $componentController('binCatalogBreadcrumb');
         }));
+
+        describe('with listCtrl and parent', function () {
+            beforeEach(function () {
+                $ctrl.listCtrl = {
+                    type: 'type',
+                    partition: 'partition',
+                    parent: 'parent'
+                };
+                $ctrl.$onInit();
+            });
+
+            it('values are set on controller', function () {
+                expect($ctrl.partition).toEqual('parent');
+                expect($ctrl.item).toEqual('partition');
+            });
+
+            it('breadcrumb is updated', function () {
+                expect($ctrl.breadcrumb).toEqual([
+                    {id: 'navigation.label.partition'}
+                ]);
+            });
+        });
+
+        describe('with listCtrl and no parent', function () {
+            beforeEach(function () {
+                $ctrl.listCtrl = {
+                    type: 'type',
+                    partition: 'partition',
+                    parent: ''
+                };
+                $ctrl.$onInit();
+            });
+
+            it('values are set on controller', function () {
+                expect($ctrl.partition).toEqual('');
+                expect($ctrl.item).toEqual('type');
+            });
+
+            it('breadcrumb is updated', function () {
+                expect($ctrl.breadcrumb).toEqual([
+                    {id: 'navigation.label.type'}
+                ]);
+            });
+        });
+
+        describe('with detailsCtrl', function () {
+            beforeEach(function () {
+                $ctrl.detailsCtrl = {
+                    onItemUpdate: jasmine.createSpy('spy')
+                };
+                $ctrl.$onInit();
+                $ctrl.detailsCtrl.onItemUpdate.calls.mostRecent().args[0]({
+                    partition: 'partition',
+                    id: 'id'
+                });
+            });
+
+            it('values are set on controller', function () {
+                expect($ctrl.partition).toEqual('partition');
+                expect($ctrl.item).toEqual('id');
+            });
+
+            it('breadcrumb is updated', function () {
+                expect($ctrl.breadcrumb).toEqual([
+                    {id: 'navigation.label.id'}
+                ]);
+            });
+        });
 
         it('when item is undefined', function () {
             $ctrl.$onChanges();

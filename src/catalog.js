@@ -1305,8 +1305,28 @@ function BinCatalogBreadcrumbComponent() {
         item: '<'
     };
 
+    this.require = {
+        listCtrl: '?^^binCatalogList',
+        detailsCtrl: '?^^binCatalogDetails'
+    };
+
     this.controller = ['$location', function ($location) {
         var $ctrl = this, breadcrumb, partition, browse = '/browse';
+
+        $ctrl.$onInit = function () {
+            if ($ctrl.listCtrl) {
+                if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.parent;
+                if (!$ctrl.item) $ctrl.item = $ctrl.listCtrl.parent ? $ctrl.listCtrl.partition : $ctrl.listCtrl.type;
+                $ctrl.$onChanges();
+            }
+            if ($ctrl.detailsCtrl) {
+                $ctrl.detailsCtrl.onItemUpdate(function (item) {
+                    if (!$ctrl.partition) $ctrl.partition = item.partition;
+                    if (!$ctrl.item) $ctrl.item = item.id;
+                    $ctrl.$onChanges();
+                });
+            }
+        };
 
         $ctrl.$onChanges = function () {
             if ($ctrl.item) {
