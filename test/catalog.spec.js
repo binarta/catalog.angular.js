@@ -3483,6 +3483,8 @@ describe('catalog', function () {
         });
     });
 
+
+
     describe('binCatalogList component', function () {
         var $ctrl, $componentController, $routeParams, search;
         var type = 'type';
@@ -3674,12 +3676,16 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogItems component', function () {
-        var $componentController, $ctrl, bindings, items, writer;
+    fdescribe('binCatalogItems component', function () {
+        var $componentController, $ctrl, $timeout, bindings, items, writer, topics;
 
-        beforeEach(inject(function (_$componentController_, updateCatalogItemWriter) {
+        beforeEach(inject(function (_$componentController_, _$timeout_, updateCatalogItemWriter, topicRegistryMock) {
+            binarta.checkpoint.gateway.permissions = [];
+            binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p', email: 'e'});
             $componentController = _$componentController_;
+            $timeout = _$timeout_;
             writer = updateCatalogItemWriter;
+            topics = topicRegistryMock;
             items = [
                 {id: 1, priority: 3},
                 {id: 2, priority: 2},
@@ -3688,55 +3694,68 @@ describe('catalog', function () {
             bindings = {};
         }));
 
-        describe('when items are not given and parent controller is available', function () {
+        it('verify default settings', function () {
+            $ctrl = $componentController('binCatalogItems', null, bindings);
+            $ctrl.$onInit();
+            expect($ctrl.movable).toEqual(true);
+            expect($ctrl.pinnable).toEqual(false);
+            expect($ctrl.removable).toEqual(true);
+            expect($ctrl.addable).toEqual(true);
+        });
+
+        describe('with itemGroups controller', function () {
             beforeEach(function () {
-                bindings.listCtrl = {
-                    items: ['item']
+                bindings.groupsCtrl = {
+                    items: ['item'],
+                    type: 'type',
+                    partition: 'partition',
+                    movable: 'false',
+                    pinnable: 'true',
+                    removable: 'false',
+                    addable: 'false',
+                    itemTemplateUrl: 'template',
+                    cols: 'cols',
+                    center: 'center'
                 };
                 $ctrl = $componentController('binCatalogItems', null, bindings);
                 $ctrl.$onInit();
             });
 
-            it('items are available', function () {
-                expect($ctrl.items).toEqual($ctrl.listCtrl.items);
+            it('settings from groupsCtrl are used', function () {
+                expect($ctrl.items).toEqual(['item']);
+                expect($ctrl.type).toEqual('type');
+                expect($ctrl.partition).toEqual('partition');
+                expect($ctrl.movable).toEqual(false);
+                expect($ctrl.pinnable).toEqual(true);
+                expect($ctrl.removable).toEqual(false);
+                expect($ctrl.addable).toEqual(false);
+                expect($ctrl.itemTemplateUrl).toEqual('template');
+                expect($ctrl.cols).toEqual('cols');
+                expect($ctrl.center).toEqual('center');
+            });
+        });
+
+        describe('with list controller', function () {
+            beforeEach(function () {
+                bindings.listCtrl = {
+                    items: ['item'],
+                    type: 'type',
+                    partition: 'partition'
+                };
+                $ctrl = $componentController('binCatalogItems', null, bindings);
+                $ctrl.$onInit();
+            });
+
+            it('settings from list controller are used', function () {
+                expect($ctrl.items).toEqual(['item']);
+                expect($ctrl.type).toEqual('type');
+                expect($ctrl.partition).toEqual('partition');
             });
         });
 
         describe('with items', function () {
             beforeEach(function () {
                 bindings.items = items;
-            });
-
-            it('verify default settings', function () {
-                $ctrl = $componentController('binCatalogItems', null, bindings);
-                $ctrl.$onInit();
-                expect($ctrl.movable).toEqual(true);
-                expect($ctrl.pinnable).toEqual(false);
-                expect($ctrl.removable).toEqual(true);
-            });
-
-            describe('with itemGroups controller', function () {
-                beforeEach(function () {
-                    bindings.groupsCtrl = {
-                        movable: 'false',
-                        pinnable: 'true',
-                        removable: 'false',
-                        itemTemplateUrl: 'template',
-                        cols: 'cols',
-                        center: 'center'
-                    };
-                    $ctrl = $componentController('binCatalogItems', null, bindings);
-                    $ctrl.$onInit();
-                });
-
-                it('settings from groupsCtrl are used', function () {
-                    expect($ctrl.movable).toEqual(false);
-                    expect($ctrl.pinnable).toEqual(true);
-                    expect($ctrl.removable).toEqual(false);
-                    expect($ctrl.itemTemplateUrl).toEqual('template');
-                    expect($ctrl.cols).toEqual('cols');
-                    expect($ctrl.center).toEqual('center');
-                });
             });
 
             describe('and items are not movable', function () {
@@ -3960,6 +3979,71 @@ describe('catalog', function () {
                     });
                 });
             });
+
+            describe('on init', function () {
+                beforeEach(function () {
+                    $ctrl = $componentController('binCatalogItems', null, bindings);
+                    $ctrl.$onInit();
+                });
+
+                it('add item is not yet possible', function () {
+                    expect($ctrl.isAddAllowed()).toBeFalsy();
+                });
+
+                describe('when in edit mode', function () {
+                    beforeEach(function () {
+                        topics['edit.mode'](true);
+                    });
+
+                    it('add item is not yet possible', function () {
+                        expect($ctrl.isAddAllowed()).toBeFalsy();
+                    });
+
+                    describe('when user has catalog.item.add permission', function () {
+                        beforeEach(function () {
+                            binarta.checkpoint.gateway.addPermission('catalog.item.add');
+                            binarta.checkpoint.profile.refresh();
+                        });
+
+                        it('add item is possible', function () {
+                            expect($ctrl.isAddAllowed()).toBeTruthy();
+                        });
+                    });
+                });
+
+                describe('on add', function () {
+                    var item;
+
+                    beforeEach(function () {
+                        item = {id:'foo'};
+                        $ctrl.add(item);
+                    });
+
+                    it('item is added to items list and uiStatus is applied', function () {
+                        expect($ctrl.items[0]).toEqual({id:'foo', uiStatus:'added'});
+                    });
+
+                    it('after delay, uiStatus is removed', function () {
+                        $timeout.flush(300);
+                        expect($ctrl.items[0]).toEqual(item);
+                    });
+
+                    describe('on remove', function () {
+                        beforeEach(function () {
+                            $ctrl.remove(item);
+                        });
+
+                        it('uiStatus is applied', function () {
+                            expect(item.uiStatus).toEqual('removed');
+                        });
+
+                        it('after delay, remove item from items', function () {
+                            $timeout.flush(300);
+                            expect($ctrl.items).not.toContain(item);
+                        });
+                    });
+                });
+            });
         });
     });
 
@@ -4081,16 +4165,15 @@ describe('catalog', function () {
     });
 
     describe('binCatalogItem component', function () {
-        var $ctrl, $rootScope, $componentController, $location, $timeout, topicsMock, pinnerMock, removeMock, removeDeferred;
+        var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
         var item;
 
-        beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, _$timeout_, topicRegistryMock) {
+        beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, topicRegistryMock) {
             binarta.checkpoint.gateway.permissions = [];
             binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p', email: 'e'});
             $rootScope = _$rootScope_;
             $componentController = _$componentController_;
             $location = _$location_;
-            $timeout = _$timeout_;
             topicsMock = topicRegistryMock;
             pinnerMock = {};
             pinnerMock.pin = jasmine.createSpy('pin').and.returnValue(true);
@@ -4463,6 +4546,14 @@ describe('catalog', function () {
                     expect(removeMock).toHaveBeenCalledWith({id: item.id});
                 });
 
+                it('when called again after item is removed', function () {
+                    removeMock.calls.reset();
+                    removeDeferred.resolve();
+                    $rootScope.$digest();
+                    $ctrl.remove();
+                    expect(removeMock).not.toHaveBeenCalled();
+                });
+
                 describe('when used with detailsCtrl', function () {
                     beforeEach(function () {
                         $ctrl.detailsCtrl = {
@@ -4480,24 +4571,14 @@ describe('catalog', function () {
                 describe('when used with itemsCtrl', function () {
                     beforeEach(function () {
                         $ctrl.itemsCtrl = {
-                            items: [{id:1}, item]
+                            remove: jasmine.createSpy('spy')
                         };
                         removeDeferred.resolve();
                         $rootScope.$digest();
                     });
 
-                    it('item is removed', function () {
-                        expect($ctrl.status).toEqual('removed');
-                    });
-
-                    describe('after animation timeout', function () {
-                        beforeEach(function () {
-                            $timeout.flush(300);
-                        });
-
-                        it('item is removed from list', function () {
-                            expect($ctrl.itemsCtrl.items).toEqual([{id:1}]);
-                        });
+                    it('item is removed from items', function () {
+                        expect($ctrl.itemsCtrl.remove).toHaveBeenCalledWith(item);
                     });
                 });
             });

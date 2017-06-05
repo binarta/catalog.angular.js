@@ -1366,9 +1366,12 @@ function BinCatalogItemGroups() {
 
     this.bindings = {
         items:'<',
+        type: '@',
+        partition: '@',
         movable:'@',
         pinnable: '@',
         removable: '@',
+        addable: '@',
         itemTemplateUrl: '@',
         cols: '@',
         center: '@'
@@ -1381,10 +1384,10 @@ function BinCatalogItemGroups() {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
-            if (!$ctrl.items && $ctrl.listCtrl) $ctrl.items = $ctrl.listCtrl.items;
-            $ctrl.isSubpartition = function (partition) {
-                return $ctrl.listCtrl ? $ctrl.listCtrl.partition !== partition : false;
-            };
+            if ($ctrl.listCtrl) {
+                if (!$ctrl.items) $ctrl.items = $ctrl.listCtrl.items;
+                if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.partition;
+            }
         };
     };
 }
@@ -1394,9 +1397,12 @@ function BinCatalogItemsComponent() {
 
     this.bindings = {
         items:'<',
+        type: '@',
+        partition: '@',
         movable:'@',
         pinnable: '@',
         removable: '@',
+        addable: '@',
         itemTemplateUrl: '@',
         cols: '@',
         center: '@'
@@ -1407,31 +1413,63 @@ function BinCatalogItemsComponent() {
         groupsCtrl: '?^^binCatalogItemGroups'
     };
 
-    this.controller = ['$q', 'updateCatalogItemWriter', function ($q, updateCatalogItem) {
-        var $ctrl = this;
+    this.controller = ['$q', '$timeout', 'binarta', 'topicRegistry', 'updateCatalogItemWriter', function ($q, $timeout, binarta, topicRegistry, updateCatalogItem) {
+        var $ctrl = this,
+            editing = false,
+            delay = 300;
 
         $ctrl.$onInit = function () {
-            if (!$ctrl.items && $ctrl.listCtrl) $ctrl.items = $ctrl.listCtrl.items;
             if ($ctrl.groupsCtrl) {
+                if (!$ctrl.items) $ctrl.items = $ctrl.groupsCtrl.items;
+                if (!$ctrl.type) $ctrl.type = $ctrl.groupsCtrl.type;
+                if (!$ctrl.partition) $ctrl.partition = $ctrl.groupsCtrl.partition;
                 if (!$ctrl.movable) $ctrl.movable = $ctrl.groupsCtrl.movable;
                 if (!$ctrl.pinnable) $ctrl.pinnable = $ctrl.groupsCtrl.pinnable;
                 if (!$ctrl.removable) $ctrl.removable = $ctrl.groupsCtrl.removable;
+                if (!$ctrl.addable) $ctrl.addable = $ctrl.groupsCtrl.addable;
                 if (!$ctrl.itemTemplateUrl) $ctrl.itemTemplateUrl = $ctrl.groupsCtrl.itemTemplateUrl;
                 if (!$ctrl.cols) $ctrl.cols = $ctrl.groupsCtrl.cols;
                 if (!$ctrl.center) $ctrl.center = $ctrl.groupsCtrl.center;
             }
+            if ($ctrl.listCtrl) {
+                if (!$ctrl.items) $ctrl.items = $ctrl.listCtrl.items;
+                if (!$ctrl.type) $ctrl.type = $ctrl.listCtrl.type;
+                if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.partition;
+            }
             $ctrl.movable = isEnabledByDefault($ctrl.movable);
             $ctrl.pinnable = isDisabledByDefault($ctrl.pinnable);
             $ctrl.removable = isEnabledByDefault($ctrl.removable);
+            $ctrl.addable = isEnabledByDefault($ctrl.addable);
             if ($ctrl.movable) installMoveActions();
+
+            $ctrl.isAddAllowed = function () {
+                return $ctrl.addable && editing && hasCatalogItemAddPermission();
+            };
+
+            $ctrl.add = function (item) {
+                item.uiStatus = 'added';
+                $timeout(function () {
+                    delete item.uiStatus;
+                }, delay);
+                $ctrl.items.unshift(item);
+            };
+
+            $ctrl.remove = function (item) {
+                item.uiStatus = 'removed';
+                $timeout(function () {
+                    $ctrl.items.splice($ctrl.items.indexOf(item), 1);
+                }, delay);
+            };
+
+            topicRegistry.subscribe('edit.mode', editModeListener);
+
+            $ctrl.$onDestroy = function () {
+                topicRegistry.unsubscribe('edit.mode', editModeListener);
+            }
         };
 
-        function isEnabledByDefault(prop) {
-            return prop !== 'false';
-        }
-
-        function isDisabledByDefault(prop) {
-            return prop === 'true';
+        function editModeListener(e) {
+            editing = e;
         }
 
         function installMoveActions() {
@@ -1518,6 +1556,10 @@ function BinCatalogItemsComponent() {
                 });
             }
         }
+
+        function hasCatalogItemAddPermission() {
+            return binarta.checkpoint.profile.hasPermission('catalog.item.add');
+        }
     }];
 }
 
@@ -1602,10 +1644,9 @@ function BinCatalogItem() {
         detailsCtrl: '?^^binCatalogDetails'
     };
 
-    this.controller = ['$timeout', 'binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', function ($timeout, binarta, pinner, topics, removeCatalogItem, i18nLocation) {
+    this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', function (binarta, pinner, topics, removeCatalogItem, i18nLocation) {
         var $ctrl = this,
-            destroyHandlers = [],
-            delay = 300;
+            destroyHandlers = [];
 
         $ctrl.$onInit = function () {
             if ($ctrl.detailsCtrl) withDetailsController();
@@ -1635,14 +1676,6 @@ function BinCatalogItem() {
                 handler();
             });
         };
-
-        function isEnabledByDefault(prop) {
-            return prop !== 'false';
-        }
-
-        function isDisabledByDefault(prop) {
-            return prop === 'true';
-        }
 
         function withDetailsController() {
             if (!$ctrl.item) listenForItemUpdates();
@@ -1714,13 +1747,14 @@ function BinCatalogItem() {
         }
 
         function installRemoveAction() {
+            var removed = false;
+
             $ctrl.remove = function () {
+                if (removed) return;
                 return removeCatalogItem({id: $ctrl.item.id}).then(function () {
-                    $ctrl.status = 'removed';
+                    removed = true;
                     if ($ctrl.detailsCtrl) redirectToPartition($ctrl.detailsCtrl.partition);
-                    if ($ctrl.itemsCtrl) $timeout(function () {
-                        $ctrl.itemsCtrl.items.splice($ctrl.itemsCtrl.items.indexOf($ctrl.item), 1);
-                    }, delay);
+                    if ($ctrl.itemsCtrl) $ctrl.itemsCtrl.remove($ctrl.item);
                 });
             };
         }
@@ -1729,4 +1763,12 @@ function BinCatalogItem() {
             i18nLocation.path('/browse' + partition);
         }
     }];
+}
+
+function isEnabledByDefault(prop) {
+    return prop !== 'false';
+}
+
+function isDisabledByDefault(prop) {
+    return prop === 'true';
 }
