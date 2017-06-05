@@ -1,5 +1,16 @@
-<div class="row bin-catalog-items">
-    <bin-cols index="$index" cols="{{::$ctrl.cols || 'sm-4 md-3'}}" length="$ctrl.items.length" center="{{::$ctrl.center}}"
+<div class="row">
+    <div ng-if="$ctrl.isAddAllowed()">
+        <bin-cols index="0"
+                  cols="{{::$ctrl.cols || 'sm-4 md-3'}}"
+                  length="$ctrl.items.length + 1"
+                  center="{{::$ctrl.center}}">
+            <bin-catalog-item-add></bin-catalog-item-add>
+        </bin-cols>
+    </div>
+    <bin-cols index="$index + ($ctrl.isAddAllowed() ? 1 : 0)"
+              cols="{{::$ctrl.cols || 'sm-4 md-3'}}"
+              length="$ctrl.items.length + ($ctrl.isAddAllowed() ? 1 : 0)"
+              center="{{::$ctrl.center}}"
               ng-repeat="item in $ctrl.items track by item.id">
         <bin-catalog-item item="item"></bin-catalog-item>
     </bin-cols>

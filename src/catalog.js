@@ -35,6 +35,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta
     .component('binCatalogList', new BinCatalogListComponent())
     .component('binCatalogItemGroups', new BinCatalogItemGroups())
     .component('binCatalogItems', new BinCatalogItemsComponent())
+    .component('binCatalogItemAdd', new BinCatalogItemAddComponent())
     .component('binCatalogSearchMore', new BinCatalogSearchMoreComponent())
     .component('binCatalogDetails', new BinCatalogDetailsComponent())
     .component('binCatalogItem', new BinCatalogItem())
@@ -1372,6 +1373,7 @@ function BinCatalogItemGroups() {
         pinnable: '@',
         removable: '@',
         addable: '@',
+        redirectOnAdd: '@',
         itemTemplateUrl: '@',
         cols: '@',
         center: '@'
@@ -1403,6 +1405,7 @@ function BinCatalogItemsComponent() {
         pinnable: '@',
         removable: '@',
         addable: '@',
+        redirectOnAdd: '@',
         itemTemplateUrl: '@',
         cols: '@',
         center: '@'
@@ -1427,6 +1430,7 @@ function BinCatalogItemsComponent() {
                 if (!$ctrl.pinnable) $ctrl.pinnable = $ctrl.groupsCtrl.pinnable;
                 if (!$ctrl.removable) $ctrl.removable = $ctrl.groupsCtrl.removable;
                 if (!$ctrl.addable) $ctrl.addable = $ctrl.groupsCtrl.addable;
+                if (!$ctrl.redirectOnAdd) $ctrl.redirectOnAdd = $ctrl.groupsCtrl.redirectOnAdd;
                 if (!$ctrl.itemTemplateUrl) $ctrl.itemTemplateUrl = $ctrl.groupsCtrl.itemTemplateUrl;
                 if (!$ctrl.cols) $ctrl.cols = $ctrl.groupsCtrl.cols;
                 if (!$ctrl.center) $ctrl.center = $ctrl.groupsCtrl.center;
@@ -1559,6 +1563,50 @@ function BinCatalogItemsComponent() {
 
         function hasCatalogItemAddPermission() {
             return binarta.checkpoint.profile.hasPermission('catalog.item.add');
+        }
+    }];
+}
+
+function BinCatalogItemAddComponent() {
+    this.templateUrl = 'catalog-item-add.html';
+
+    this.bindings = {
+        type: '@',
+        partition: '@',
+        redirectToView: '@'
+    };
+
+    this.require = {
+        itemsCtrl: '^^binCatalogItems'
+    };
+
+    this.controller = ['addCatalogItem', function (addCatalogItem) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            if (!$ctrl.type) $ctrl.type = $ctrl.itemsCtrl.type;
+            if (!$ctrl.partition) $ctrl.partition = $ctrl.itemsCtrl.partition;
+            if (!$ctrl.redirectToView) $ctrl.redirectToView = $ctrl.itemsCtrl.redirectOnAdd;
+            var item = {
+                type: $ctrl.type,
+                partition: $ctrl.partition,
+                defaultName: 'Item Name'
+            };
+
+            $ctrl.submit = function () {
+                $ctrl.working = true;
+                addCatalogItem({
+                    item: item,
+                    success: onSuccess,
+                    redirectToView: isDisabledByDefault($ctrl.redirectToView)
+                });
+            };
+        };
+
+        function onSuccess(item) {
+            if (!item.priority) item.priority = $ctrl.itemsCtrl.items.length + 1;
+            $ctrl.itemsCtrl.add(item);
+            $ctrl.working = false;
         }
     }];
 }

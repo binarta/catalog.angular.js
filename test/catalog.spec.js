@@ -3676,7 +3676,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('binCatalogItems component', function () {
+    describe('binCatalogItems component', function () {
         var $componentController, $ctrl, $timeout, bindings, items, writer, topics;
 
         beforeEach(inject(function (_$componentController_, _$timeout_, updateCatalogItemWriter, topicRegistryMock) {
@@ -3713,6 +3713,7 @@ describe('catalog', function () {
                     pinnable: 'true',
                     removable: 'false',
                     addable: 'false',
+                    redirectOnAdd: 'true',
                     itemTemplateUrl: 'template',
                     cols: 'cols',
                     center: 'center'
@@ -3729,6 +3730,7 @@ describe('catalog', function () {
                 expect($ctrl.pinnable).toEqual(true);
                 expect($ctrl.removable).toEqual(false);
                 expect($ctrl.addable).toEqual(false);
+                expect($ctrl.redirectOnAdd).toEqual('true');
                 expect($ctrl.itemTemplateUrl).toEqual('template');
                 expect($ctrl.cols).toEqual('cols');
                 expect($ctrl.center).toEqual('center');
@@ -4041,6 +4043,95 @@ describe('catalog', function () {
                             $timeout.flush(300);
                             expect($ctrl.items).not.toContain(item);
                         });
+                    });
+                });
+            });
+        });
+    });
+
+    describe('binCatalogItemAdd component', function () {
+        var $ctrl, $componentController, bindings, addCatalogItemMock;
+
+        beforeEach(inject(function (_$componentController_) {
+            $componentController = _$componentController_;
+            addCatalogItemMock = jasmine.createSpy('spy');
+            bindings = {
+                itemsCtrl: {
+                    items: [],
+                    add: jasmine.createSpy('spy'),
+                    type: 'T',
+                    partition: 'P'
+                }
+            };
+            $ctrl = $componentController('binCatalogItemAdd', {addCatalogItem: addCatalogItemMock}, bindings);
+        }));
+
+        describe('on submit', function () {
+            beforeEach(function () {
+                $ctrl.$onInit();
+                $ctrl.submit();
+            });
+
+            it('is working', function () {
+                expect($ctrl.working).toBeTruthy();
+            });
+
+            it('catalog item add is requested', function () {
+                expect(addCatalogItemMock).toHaveBeenCalledWith({
+                    item: {
+                        type: 'T',
+                        partition: 'P',
+                        defaultName: 'Item Name'
+                    },
+                    success: jasmine.any(Function),
+                    redirectToView: false
+                });
+            });
+
+            describe('on success', function () {
+                var item;
+
+                beforeEach(function () {
+                    item = {id: 'new'};
+                    addCatalogItemMock.calls.mostRecent().args[0].success(item);
+                });
+
+                it('item priority is added', function () {
+                    expect(item.priority).toEqual(1);
+                });
+
+                it('item is added to the items list', function () {
+                    expect($ctrl.itemsCtrl.add).toHaveBeenCalledWith(item);
+                });
+
+                it('not working', function () {
+                    expect($ctrl.working).toBeFalsy();
+                });
+            });
+        });
+
+        describe('with specific type and partition and redirectToView enabled', function () {
+            beforeEach(function () {
+                $ctrl.type = 'type';
+                $ctrl.partition = 'partition';
+                $ctrl.redirectToView = 'true';
+                $ctrl.$onInit();
+            });
+
+            describe('on submit', function () {
+                beforeEach(function () {
+                    $ctrl.submit();
+                });
+
+                it('catalog item add is requested', function () {
+                    expect(addCatalogItemMock).toHaveBeenCalledWith({
+                        item: {
+                            type: 'type',
+                            partition: 'partition',
+                            defaultName: 'Item Name'
+                        },
+                        success: jasmine.any(Function),
+                        redirectToView: true
                     });
                 });
             });
