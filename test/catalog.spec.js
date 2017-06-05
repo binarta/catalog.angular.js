@@ -3536,7 +3536,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('binCatalogBreadcrumb component', function () {
+    describe('binCatalogBreadcrumb component', function () {
         var $ctrl, $location;
 
         beforeEach(inject(function ($componentController, _$location_) {
@@ -3744,7 +3744,7 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogItems component', function () {
+    fdescribe('binCatalogItems component', function () {
         var $componentController, $ctrl, $timeout, bindings, items, writer, topics;
 
         beforeEach(inject(function (_$componentController_, _$timeout_, updateCatalogItemWriter, topicRegistryMock) {
@@ -3761,15 +3761,6 @@ describe('catalog', function () {
             ];
             bindings = {};
         }));
-
-        it('verify default settings', function () {
-            $ctrl = $componentController('binCatalogItems', null, bindings);
-            $ctrl.$onInit();
-            expect($ctrl.movable).toEqual(true);
-            expect($ctrl.pinnable).toEqual(false);
-            expect($ctrl.removable).toEqual(true);
-            expect($ctrl.addable).toEqual(true);
-        });
 
         describe('with itemGroups controller', function () {
             beforeEach(function () {
@@ -3794,10 +3785,10 @@ describe('catalog', function () {
                 expect($ctrl.items).toEqual(['item']);
                 expect($ctrl.type).toEqual('type');
                 expect($ctrl.partition).toEqual('partition');
-                expect($ctrl.movable).toEqual(false);
-                expect($ctrl.pinnable).toEqual(true);
-                expect($ctrl.removable).toEqual(false);
-                expect($ctrl.addable).toEqual(false);
+                expect($ctrl.movable).toEqual('false');
+                expect($ctrl.pinnable).toEqual('true');
+                expect($ctrl.removable).toEqual('false');
+                expect($ctrl.addable).toEqual('false');
                 expect($ctrl.redirectOnAdd).toEqual('true');
                 expect($ctrl.itemTemplateUrl).toEqual('template');
                 expect($ctrl.cols).toEqual('cols');
@@ -3826,291 +3817,264 @@ describe('catalog', function () {
         describe('with items', function () {
             beforeEach(function () {
                 bindings.items = items;
+                $ctrl = $componentController('binCatalogItems', null, bindings);
+                $ctrl.$onInit();
             });
 
-            describe('and items are not movable', function () {
+            describe('on move up', function () {
+                var done;
+
                 beforeEach(function () {
-                    bindings.movable = 'false';
-                    $ctrl = $componentController('binCatalogItems', null, bindings);
-                    $ctrl.$onInit();
+                    $ctrl.moveUp(items[2]).finally(function () {
+                        done = true;
+                    });
                 });
 
-                it('move actions are not available', function () {
-                    expect($ctrl.moveUp).toBeUndefined();
-                    expect($ctrl.moveDown).toBeUndefined();
-                    expect($ctrl.moveTop).toBeUndefined();
-                    expect($ctrl.moveBottom).toBeUndefined();
-                });
-            });
-
-            describe('and items are movable', function () {
-                beforeEach(function () {
-                    $ctrl = $componentController('binCatalogItems', null, bindings);
-                    $ctrl.$onInit();
+                it('update item priority', function () {
+                    expect(writer).toHaveBeenCalledWith({
+                        data: {
+                            treatInputAsId: false,
+                            context: 'updatePriority',
+                            id: {id: 3},
+                            priority: 2
+                        },
+                        success: jasmine.any(Function)
+                    });
                 });
 
-                describe('on move up', function () {
-                    var done;
-
+                describe('on update success', function () {
                     beforeEach(function () {
-                        $ctrl.moveUp(items[2]).finally(function () {
-                            done = true;
-                        });
+                        writer.calls.mostRecent().args[0].success();
                     });
 
-                    it('update item priority', function () {
-                        expect(writer).toHaveBeenCalledWith({
-                            data: {
-                                treatInputAsId: false,
-                                context: 'updatePriority',
-                                id: {id: 3},
-                                priority: 2
-                            },
-                            success: jasmine.any(Function)
-                        });
+                    it('item are reprioritized and sorted', function () {
+                        expect(items).toEqual([
+                            {id: 1, priority: 3},
+                            {id: 3, priority: 2},
+                            {id: 2, priority: 1}
+                        ]);
                     });
 
-                    describe('on update success', function () {
-                        beforeEach(function () {
-                            writer.calls.mostRecent().args[0].success();
-                        });
-
-                        it('item are reprioritized and sorted', function () {
-                            expect(items).toEqual([
-                                {id: 1, priority: 3},
-                                {id: 3, priority: 2},
-                                {id: 2, priority: 1}
-                            ]);
-                        });
-
-                        it('promise is resolved', function () {
-                            expect(done).toBeTruthy();
-                        });
-                    });
-                });
-
-                describe('on move first item up', function () {
-                    beforeEach(function () {
-                        $ctrl.moveUp(items[0]);
-                    });
-
-                    it('item is not updated', function () {
-                        expect(writer).not.toHaveBeenCalled();
-                    });
-                });
-
-                describe('on move down', function () {
-                    var done;
-
-                    beforeEach(function () {
-                        $ctrl.moveDown(items[0]).finally(function () {
-                            done = true;
-                        });
-                    });
-
-                    it('update item priority', function () {
-                        expect(writer).toHaveBeenCalledWith({
-                            data: {
-                                treatInputAsId: false,
-                                context: 'updatePriority',
-                                id: {id: 1},
-                                priority: 2
-                            },
-                            success: jasmine.any(Function)
-                        });
-                    });
-
-                    describe('on update success', function () {
-                        beforeEach(function () {
-                            writer.calls.mostRecent().args[0].success();
-                        });
-
-                        it('item are reprioritized and sorted', function () {
-                            expect(items).toEqual([
-                                {id: 2, priority: 3},
-                                {id: 1, priority: 2},
-                                {id: 3, priority: 1}
-                            ]);
-                        });
-
-                        it('promise is resolved', function () {
-                            expect(done).toBeTruthy();
-                        });
-                    });
-                });
-
-                describe('on move last item down', function () {
-                    beforeEach(function () {
-                        $ctrl.moveDown(items[2]);
-                    });
-
-                    it('item is not updated', function () {
-                        expect(writer).not.toHaveBeenCalled();
-                    });
-                });
-
-                describe('on move to top', function () {
-                    var done;
-
-                    beforeEach(function () {
-                        $ctrl.moveTop(items[2]).finally(function () {
-                            done = true;
-                        });
-                    });
-
-                    it('update item priority', function () {
-                        expect(writer).toHaveBeenCalledWith({
-                            data: {
-                                treatInputAsId: false,
-                                context: 'updatePriority',
-                                id: {id: 3},
-                                priority: 3
-                            },
-                            success: jasmine.any(Function)
-                        });
-                    });
-
-                    describe('on update success', function () {
-                        beforeEach(function () {
-                            writer.calls.mostRecent().args[0].success();
-                        });
-
-                        it('item are reprioritized and sorted', function () {
-                            expect(items).toEqual([
-                                {id: 3, priority: 3},
-                                {id: 1, priority: 2},
-                                {id: 2, priority: 1}
-                            ]);
-                        });
-
-                        it('promise is resolved', function () {
-                            expect(done).toBeTruthy();
-                        });
-                    });
-                });
-
-                describe('on move first item to top', function () {
-                    beforeEach(function () {
-                        $ctrl.moveTop(items[0]);
-                    });
-
-                    it('item is not updated', function () {
-                        expect(writer).not.toHaveBeenCalled();
-                    });
-                });
-
-                describe('on move to bottom', function () {
-                    var done;
-
-                    beforeEach(function () {
-                        $ctrl.moveBottom(items[0]).finally(function () {
-                            done = true;
-                        });
-                    });
-
-                    it('update item priority', function () {
-                        expect(writer).toHaveBeenCalledWith({
-                            data: {
-                                treatInputAsId: false,
-                                context: 'updatePriority',
-                                id: {id: 1},
-                                priority: 1
-                            },
-                            success: jasmine.any(Function)
-                        });
-                    });
-
-                    describe('on update success', function () {
-                        beforeEach(function () {
-                            writer.calls.mostRecent().args[0].success();
-                        });
-
-                        it('item are reprioritized and sorted', function () {
-                            expect(items).toEqual([
-                                {id: 2, priority: 3},
-                                {id: 3, priority: 2},
-                                {id: 1, priority: 1}
-                            ]);
-                        });
-
-                        it('promise is resolved', function () {
-                            expect(done).toBeTruthy();
-                        });
-                    });
-                });
-
-                describe('on move last item to bottom', function () {
-                    beforeEach(function () {
-                        $ctrl.moveBottom(items[2]);
-                    });
-
-                    it('item is not updated', function () {
-                        expect(writer).not.toHaveBeenCalled();
+                    it('promise is resolved', function () {
+                        expect(done).toBeTruthy();
                     });
                 });
             });
 
-            describe('on init', function () {
+            describe('on move first item up', function () {
                 beforeEach(function () {
-                    $ctrl = $componentController('binCatalogItems', null, bindings);
-                    $ctrl.$onInit();
+                    $ctrl.moveUp(items[0]);
+                });
+
+                it('item is not updated', function () {
+                    expect(writer).not.toHaveBeenCalled();
+                });
+            });
+
+            describe('on move down', function () {
+                var done;
+
+                beforeEach(function () {
+                    $ctrl.moveDown(items[0]).finally(function () {
+                        done = true;
+                    });
+                });
+
+                it('update item priority', function () {
+                    expect(writer).toHaveBeenCalledWith({
+                        data: {
+                            treatInputAsId: false,
+                            context: 'updatePriority',
+                            id: {id: 1},
+                            priority: 2
+                        },
+                        success: jasmine.any(Function)
+                    });
+                });
+
+                describe('on update success', function () {
+                    beforeEach(function () {
+                        writer.calls.mostRecent().args[0].success();
+                    });
+
+                    it('item are reprioritized and sorted', function () {
+                        expect(items).toEqual([
+                            {id: 2, priority: 3},
+                            {id: 1, priority: 2},
+                            {id: 3, priority: 1}
+                        ]);
+                    });
+
+                    it('promise is resolved', function () {
+                        expect(done).toBeTruthy();
+                    });
+                });
+            });
+
+            describe('on move last item down', function () {
+                beforeEach(function () {
+                    $ctrl.moveDown(items[2]);
+                });
+
+                it('item is not updated', function () {
+                    expect(writer).not.toHaveBeenCalled();
+                });
+            });
+
+            describe('on move to top', function () {
+                var done;
+
+                beforeEach(function () {
+                    $ctrl.moveTop(items[2]).finally(function () {
+                        done = true;
+                    });
+                });
+
+                it('update item priority', function () {
+                    expect(writer).toHaveBeenCalledWith({
+                        data: {
+                            treatInputAsId: false,
+                            context: 'updatePriority',
+                            id: {id: 3},
+                            priority: 3
+                        },
+                        success: jasmine.any(Function)
+                    });
+                });
+
+                describe('on update success', function () {
+                    beforeEach(function () {
+                        writer.calls.mostRecent().args[0].success();
+                    });
+
+                    it('item are reprioritized and sorted', function () {
+                        expect(items).toEqual([
+                            {id: 3, priority: 3},
+                            {id: 1, priority: 2},
+                            {id: 2, priority: 1}
+                        ]);
+                    });
+
+                    it('promise is resolved', function () {
+                        expect(done).toBeTruthy();
+                    });
+                });
+            });
+
+            describe('on move first item to top', function () {
+                beforeEach(function () {
+                    $ctrl.moveTop(items[0]);
+                });
+
+                it('item is not updated', function () {
+                    expect(writer).not.toHaveBeenCalled();
+                });
+            });
+
+            describe('on move to bottom', function () {
+                var done;
+
+                beforeEach(function () {
+                    $ctrl.moveBottom(items[0]).finally(function () {
+                        done = true;
+                    });
+                });
+
+                it('update item priority', function () {
+                    expect(writer).toHaveBeenCalledWith({
+                        data: {
+                            treatInputAsId: false,
+                            context: 'updatePriority',
+                            id: {id: 1},
+                            priority: 1
+                        },
+                        success: jasmine.any(Function)
+                    });
+                });
+
+                describe('on update success', function () {
+                    beforeEach(function () {
+                        writer.calls.mostRecent().args[0].success();
+                    });
+
+                    it('item are reprioritized and sorted', function () {
+                        expect(items).toEqual([
+                            {id: 2, priority: 3},
+                            {id: 3, priority: 2},
+                            {id: 1, priority: 1}
+                        ]);
+                    });
+
+                    it('promise is resolved', function () {
+                        expect(done).toBeTruthy();
+                    });
+                });
+            });
+
+            describe('on move last item to bottom', function () {
+                beforeEach(function () {
+                    $ctrl.moveBottom(items[2]);
+                });
+
+                it('item is not updated', function () {
+                    expect(writer).not.toHaveBeenCalled();
+                });
+            });
+
+            it('add item is not yet possible', function () {
+                expect($ctrl.isAddAllowed()).toBeFalsy();
+            });
+
+            describe('when in edit mode', function () {
+                beforeEach(function () {
+                    topics['edit.mode'](true);
                 });
 
                 it('add item is not yet possible', function () {
                     expect($ctrl.isAddAllowed()).toBeFalsy();
                 });
 
-                describe('when in edit mode', function () {
+                describe('when user has catalog.item.add permission', function () {
                     beforeEach(function () {
-                        topics['edit.mode'](true);
+                        binarta.checkpoint.gateway.addPermission('catalog.item.add');
+                        binarta.checkpoint.profile.refresh();
                     });
 
-                    it('add item is not yet possible', function () {
-                        expect($ctrl.isAddAllowed()).toBeFalsy();
-                    });
-
-                    describe('when user has catalog.item.add permission', function () {
-                        beforeEach(function () {
-                            binarta.checkpoint.gateway.addPermission('catalog.item.add');
-                            binarta.checkpoint.profile.refresh();
-                        });
-
-                        it('add item is possible', function () {
-                            expect($ctrl.isAddAllowed()).toBeTruthy();
-                        });
+                    it('add item is possible', function () {
+                        expect($ctrl.isAddAllowed()).toBeTruthy();
                     });
                 });
+            });
 
-                describe('on add', function () {
-                    var item;
+            describe('on add', function () {
+                var item;
 
+                beforeEach(function () {
+                    item = {id:'foo'};
+                    $ctrl.add(item);
+                });
+
+                it('item is added to items list and uiStatus is applied', function () {
+                    expect($ctrl.items[0]).toEqual({id:'foo', uiStatus:'added'});
+                });
+
+                it('after delay, uiStatus is removed', function () {
+                    $timeout.flush(300);
+                    expect($ctrl.items[0]).toEqual(item);
+                });
+
+                describe('on remove', function () {
                     beforeEach(function () {
-                        item = {id:'foo'};
-                        $ctrl.add(item);
+                        $ctrl.remove(item);
                     });
 
-                    it('item is added to items list and uiStatus is applied', function () {
-                        expect($ctrl.items[0]).toEqual({id:'foo', uiStatus:'added'});
+                    it('uiStatus is applied', function () {
+                        expect(item.uiStatus).toEqual('removed');
                     });
 
-                    it('after delay, uiStatus is removed', function () {
+                    it('after delay, remove item from items', function () {
                         $timeout.flush(300);
-                        expect($ctrl.items[0]).toEqual(item);
-                    });
-
-                    describe('on remove', function () {
-                        beforeEach(function () {
-                            $ctrl.remove(item);
-                        });
-
-                        it('uiStatus is applied', function () {
-                            expect(item.uiStatus).toEqual('removed');
-                        });
-
-                        it('after delay, remove item from items', function () {
-                            $timeout.flush(300);
-                            expect($ctrl.items).not.toContain(item);
-                        });
+                        expect($ctrl.items).not.toContain(item);
                     });
                 });
             });
@@ -4349,28 +4313,6 @@ describe('catalog', function () {
             }, {});
         }));
 
-        it('item is not pinnable by default', function () {
-            $ctrl.$onInit();
-            expect($ctrl.pinnable).toBe(false);
-        });
-
-        it('item is pinnable', function () {
-            $ctrl.pinnable = 'true';
-            $ctrl.$onInit();
-            expect($ctrl.pinnable).toBe(true);
-        });
-
-        it('item is removable by default', function () {
-            $ctrl.$onInit();
-            expect($ctrl.removable).toBe(true);
-        });
-
-        it('item is not removable', function () {
-            $ctrl.removable = 'false';
-            $ctrl.$onInit();
-            expect($ctrl.removable).toBe(false);
-        });
-
         describe('with detailsCtrl', function () {
             beforeEach(function () {
                 $ctrl.detailsCtrl = jasmine.createSpyObj('spy', ['onItemUpdate', 'refresh']);
@@ -4502,7 +4444,7 @@ describe('catalog', function () {
             });
 
             it('when movable but no permission', function () {
-                $ctrl.movable = true;
+                $ctrl.movable = 'true';
                 expect($ctrl.isMoveAllowed()).toBeFalsy();
             });
 
@@ -4513,12 +4455,12 @@ describe('catalog', function () {
                 });
 
                 it('and is movable', function () {
-                    $ctrl.movable = true;
+                    $ctrl.movable = 'true';
                     expect($ctrl.isMoveAllowed()).toBeTruthy();
                 });
 
                 it('and is not movable', function () {
-                    $ctrl.movable = false;
+                    $ctrl.movable = 'false';
                     expect($ctrl.isMoveAllowed()).toBeFalsy();
                 });
             });
@@ -4531,7 +4473,7 @@ describe('catalog', function () {
             });
 
             it('when pinnable but no permission', function () {
-                $ctrl.pinnable = true;
+                $ctrl.pinnable = 'true';
                 expect($ctrl.isPinAllowed()).toBeFalsy();
             });
 
@@ -4542,17 +4484,17 @@ describe('catalog', function () {
                 });
 
                 it('and is pinnable', function () {
-                    $ctrl.pinnable = true;
+                    $ctrl.pinnable = 'true';
                     expect($ctrl.isPinAllowed()).toBeTruthy();
                 });
 
                 it('and is not pinnable', function () {
-                    $ctrl.pinnable = false;
+                    $ctrl.pinnable = 'false';
                     expect($ctrl.isPinAllowed()).toBeFalsy();
                 });
 
                 it('and item is already pinned', function () {
-                    $ctrl.pinnable = true;
+                    $ctrl.pinnable = 'true';
                     $ctrl.item.pinned = true;
                     expect($ctrl.isPinAllowed()).toBeFalsy();
                 });
@@ -4566,7 +4508,7 @@ describe('catalog', function () {
             });
 
             it('when pinnable but no permission', function () {
-                $ctrl.pinnable = true;
+                $ctrl.pinnable = 'true';
                 expect($ctrl.isUnpinAllowed()).toBeFalsy();
             });
 
@@ -4577,19 +4519,19 @@ describe('catalog', function () {
                 });
 
                 it('and is pinnable', function () {
-                    $ctrl.pinnable = true;
+                    $ctrl.pinnable = 'true';
                     $ctrl.item.pinned = true;
                     expect($ctrl.isUnpinAllowed()).toBeTruthy();
                 });
 
                 it('and is not pinnable', function () {
-                    $ctrl.pinnable = false;
+                    $ctrl.pinnable = 'false';
                     $ctrl.item.pinned = true;
                     expect($ctrl.isUnpinAllowed()).toBeFalsy();
                 });
 
                 it('and item is not pinned', function () {
-                    $ctrl.pinnable = true;
+                    $ctrl.pinnable = 'true';
                     $ctrl.item.pinned = false;
                     expect($ctrl.isUnpinAllowed()).toBeFalsy();
                 });
@@ -4603,7 +4545,7 @@ describe('catalog', function () {
             });
 
             it('when removable but no permission', function () {
-                $ctrl.removable = true;
+                $ctrl.removable = 'true';
                 expect($ctrl.isRemoveAllowed()).toBeFalsy();
             });
 
@@ -4614,12 +4556,12 @@ describe('catalog', function () {
                 });
 
                 it('and is removable', function () {
-                    $ctrl.removable = true;
+                    $ctrl.removable = 'true';
                     expect($ctrl.isRemoveAllowed()).toBeTruthy();
                 });
 
                 it('and is not removable', function () {
-                    $ctrl.removable = false;
+                    $ctrl.removable = 'false';
                     expect($ctrl.isRemoveAllowed()).toBeFalsy();
                 });
             });
@@ -4628,7 +4570,7 @@ describe('catalog', function () {
         describe('when items are pinnable', function () {
             beforeEach(function () {
                 $ctrl.item = item;
-                $ctrl.pinnable = true;
+                $ctrl.pinnable = 'true';
                 $ctrl.$onInit();
             });
 
@@ -4688,7 +4630,7 @@ describe('catalog', function () {
         describe('and item is removable', function () {
             beforeEach(function () {
                 $ctrl.item = item;
-                $ctrl.removable = true;
+                $ctrl.removable = 'true';
                 $ctrl.$onInit();
             });
 

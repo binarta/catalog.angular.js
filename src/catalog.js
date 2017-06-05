@@ -1461,14 +1461,10 @@ function BinCatalogItemsComponent() {
                 if (!$ctrl.type) $ctrl.type = $ctrl.listCtrl.type;
                 if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.partition;
             }
-            $ctrl.movable = isEnabledByDefault($ctrl.movable);
-            $ctrl.pinnable = isDisabledByDefault($ctrl.pinnable);
-            $ctrl.removable = isEnabledByDefault($ctrl.removable);
-            $ctrl.addable = isEnabledByDefault($ctrl.addable);
-            if ($ctrl.movable) installMoveActions();
+            installMoveActions();
 
             $ctrl.isAddAllowed = function () {
-                return $ctrl.addable && editing && hasCatalogItemAddPermission();
+                return isEnabledByDefault($ctrl.addable) && editing && hasCatalogItemAddPermission();
             };
 
             $ctrl.add = function (item) {
@@ -1720,24 +1716,22 @@ function BinCatalogItem() {
         $ctrl.$onInit = function () {
             if ($ctrl.detailsCtrl) withDetailsController();
             else if ($ctrl.itemsCtrl) withItemsController();
-            if (typeof $ctrl.pinnable !== 'boolean') $ctrl.pinnable = isDisabledByDefault($ctrl.pinnable);
-            if (typeof $ctrl.removable !== 'boolean') $ctrl.removable = isEnabledByDefault($ctrl.removable);
 
             $ctrl.isMoveAllowed = function () {
-                return $ctrl.item && $ctrl.movable && hasCatalogItemUpdatePermission();
+                return $ctrl.item && isEnabledByDefault($ctrl.movable) && hasCatalogItemUpdatePermission();
             };
             $ctrl.isPinAllowed = function () {
-                return $ctrl.item && !$ctrl.item.pinned && $ctrl.pinnable && hasCatalogItemPinPermission();
+                return $ctrl.item && !$ctrl.item.pinned && isDisabledByDefault($ctrl.pinnable) && hasCatalogItemPinPermission();
             };
             $ctrl.isUnpinAllowed = function () {
-                return $ctrl.item && $ctrl.item.pinned && $ctrl.pinnable && hasCatalogItemUnpinPermission();
+                return $ctrl.item && $ctrl.item.pinned && isDisabledByDefault($ctrl.pinnable) && hasCatalogItemUnpinPermission();
             };
             $ctrl.isRemoveAllowed = function () {
-                return $ctrl.item && $ctrl.removable && hasCatalogItemRemovePermission();
+                return $ctrl.item && isEnabledByDefault($ctrl.removable) && hasCatalogItemRemovePermission();
             };
 
-            if ($ctrl.pinnable) installPinActions();
-            if ($ctrl.removable) installRemoveAction();
+            installPinActions();
+            installRemoveAction();
         };
 
         $ctrl.$onDestroy = function () {
@@ -1760,10 +1754,10 @@ function BinCatalogItem() {
 
         function withItemsController() {
             if (!$ctrl.templateUrl) $ctrl.templateUrl = $ctrl.itemsCtrl.itemTemplateUrl || 'catalog-list-item-2.html';
-            $ctrl.movable = $ctrl.itemsCtrl.movable;
+            if (!$ctrl.movable) $ctrl.movable = $ctrl.itemsCtrl.movable;
             if (!$ctrl.pinnable) $ctrl.pinnable = $ctrl.itemsCtrl.pinnable;
             if (!$ctrl.removable) $ctrl.removable = $ctrl.itemsCtrl.removable;
-            if ($ctrl.movable) installMoveActions();
+            installMoveActions();
 
             var pinnedTopic = 'catalog.item.pinned.' + $ctrl.item.id;
             var unpinnedTopic = 'catalog.item.unpinned.' + $ctrl.item.id;
