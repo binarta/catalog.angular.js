@@ -1241,7 +1241,7 @@ function BinCatalogListComponent() {
             $ctrl.items = [];
             if (!$ctrl.type) parsePropertiesFromRoute();
             if ($ctrl.count) count = parseInt($ctrl.count);
-            $ctrl.search = searchItems;
+            $ctrl.searchMore = searchItems;
             $ctrl.hasMore = hasMore;
             $ctrl.isWorking = isWorking;
             searchItems();
@@ -1279,10 +1279,11 @@ function BinCatalogListComponent() {
 
             function onSuccess(data) {
                 moreItemsAvailable = data.hasMore;
+                if (moreItemsAvailable) offset += count;
+                else $ctrl.searchMore = function () {};
                 data.results.forEach(function (item) {
                     $ctrl.items.push(item);
                 });
-                offset += count;
                 working = false;
             }
         }
@@ -1640,7 +1641,7 @@ function BinCatalogSearchMoreComponent() {
     this.controller = function () {
         var $ctrl = this;
         $ctrl.$onInit = function () {
-            $ctrl.search = $ctrl.listCtrl.search;
+            $ctrl.searchMore = $ctrl.listCtrl.searchMore;
             $ctrl.hasMore = $ctrl.listCtrl.hasMore;
             $ctrl.isWorking = $ctrl.listCtrl.isWorking;
         };

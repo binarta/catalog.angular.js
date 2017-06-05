@@ -3414,7 +3414,7 @@ describe('catalog', function () {
             });
 
             it('triggering search again while working does nothing', function () {
-                $ctrl.search();
+                $ctrl.searchMore();
                 expect(search.calls.count()).toEqual(1);
             });
 
@@ -3446,13 +3446,28 @@ describe('catalog', function () {
 
                 describe('on search again', function () {
                     beforeEach(function () {
-                        $ctrl.search();
+                        $ctrl.searchMore();
                     });
 
                     it('new items are requested with an offset', function () {
                         expect(search.calls.mostRecent().args[0].subset).toEqual({
                             count: 12,
                             offset: 12
+                        });
+                    });
+
+                    describe('when no more new items', function () {
+                        beforeEach(function () {
+                            search.calls.mostRecent().args[0].success({
+                                hasMore: false,
+                                results: []
+                            });
+                        });
+
+                        it('search again does nothing', function () {
+                            search.calls.reset();
+                            $ctrl.searchMore();
+                            expect(search).not.toHaveBeenCalled();
                         });
                     });
                 });
@@ -3744,7 +3759,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('binCatalogItems component', function () {
+    describe('binCatalogItems component', function () {
         var $componentController, $ctrl, $timeout, bindings, items, writer, topics;
 
         beforeEach(inject(function (_$componentController_, _$timeout_, updateCatalogItemWriter, topicRegistryMock) {
