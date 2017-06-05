@@ -31,8 +31,8 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta
     .component('binPinnedItemsToggle', new BinPinnedItemsToggle())
     .component('binSpotlight', new BinSpotlightComponent())
     .component('binSpotlightItems', new BinSpotlightItemsComponent())
-    .component('binBreadcrumb', new BinBreadcrumbComponent())
     .component('binCatalogList', new BinCatalogListComponent())
+    .component('binCatalogBreadcrumb', new BinCatalogBreadcrumbComponent())
     .component('binCatalogItemGroups', new BinCatalogItemGroups())
     .component('binCatalogItems', new BinCatalogItemsComponent())
     .component('binCatalogItemAdd', new BinCatalogItemAddComponent())
@@ -1199,71 +1199,6 @@ function BinPinnedItemsToggle() {
     this.templateUrl = 'bin-pinned-items-toggle.html';
 }
 
-function BinBreadcrumbComponent() {
-    this.templateUrl = 'bin-breadcrumb.html';
-    this.bindings = {
-        partition: '<',
-        item: '<'
-    };
-
-    this.controller = ['$location', function ($location) {
-        var $ctrl = this, breadcrumb, partition, browse = '/browse';
-
-        $ctrl.$onChanges = function () {
-            if ($ctrl.item) {
-                setBreadcrumb();
-                setBackItem();
-            }
-        };
-
-        function setBreadcrumb() {
-            breadcrumb = [];
-            partition = $ctrl.partition || '/';
-            partition.split('/').reduce(transform);
-            breadcrumb.push({id: breadcrumb.length == 0 ? toFirstItemId($ctrl.item) : $ctrl.item});
-            if (isSingleItemAndNotOnBrowsePath()) setBrowsePathOnFirstItem();
-            $ctrl.breadcrumb = breadcrumb;
-        }
-
-        function transform(it, curr) {
-            it += '/' + curr;
-            if (curr) breadcrumb.push({
-                id: breadcrumb.length == 0 ? toFirstItemId(curr) : it + '/',
-                path: browse + it + '/'
-            });
-            return it;
-        }
-
-        function toFirstItemId(item) {
-            return 'navigation.label.' + stripSlashes(item);
-        }
-
-        function isSingleItemAndNotOnBrowsePath() {
-            return breadcrumb.length == 1 && isNotOnBrowsePath();
-        }
-
-        function isNotOnBrowsePath() {
-            return $location.path().indexOf(browse + '/') == -1;
-        }
-
-        function setBrowsePathOnFirstItem() {
-            breadcrumb[0].path = toBrowsePath($ctrl.item);
-        }
-
-        function toBrowsePath(item) {
-            return browse + '/' + stripSlashes(item) + '/';
-        }
-
-        function setBackItem() {
-            $ctrl.back = isSingleItemAndNotOnBrowsePath() ? breadcrumb[0] : breadcrumb[breadcrumb.length - 2];
-        }
-
-        function stripSlashes(item) {
-            return item.replace(/\//g, '');
-        }
-    }];
-}
-
 // @deprecated
 function splitInRowsDirectiveFactory($log) {
     return function ($scope, el, attrs) {
@@ -1358,6 +1293,72 @@ function BinCatalogListComponent() {
 
         function isWorking() {
             return working;
+        }
+    }];
+}
+
+function BinCatalogBreadcrumbComponent() {
+    this.templateUrl = 'bin-catalog-breadcrumb.html';
+
+    this.bindings = {
+        partition: '<',
+        item: '<'
+    };
+
+    this.controller = ['$location', function ($location) {
+        var $ctrl = this, breadcrumb, partition, browse = '/browse';
+
+        $ctrl.$onChanges = function () {
+            if ($ctrl.item) {
+                setBreadcrumb();
+                setBackItem();
+            }
+        };
+
+        function setBreadcrumb() {
+            breadcrumb = [];
+            partition = $ctrl.partition || '/';
+            partition.split('/').reduce(transform);
+            breadcrumb.push({id: breadcrumb.length === 0 ? toFirstItemId($ctrl.item) : $ctrl.item});
+            if (isSingleItemAndNotOnBrowsePath()) setBrowsePathOnFirstItem();
+            $ctrl.breadcrumb = breadcrumb;
+        }
+
+        function transform(it, curr) {
+            it += '/' + curr;
+            if (curr) breadcrumb.push({
+                id: breadcrumb.length === 0 ? toFirstItemId(curr) : it + '/',
+                path: browse + it + '/'
+            });
+            return it;
+        }
+
+        function toFirstItemId(item) {
+            return 'navigation.label.' + stripSlashes(item);
+        }
+
+        function isSingleItemAndNotOnBrowsePath() {
+            return breadcrumb.length === 1 && isNotOnBrowsePath();
+        }
+
+        function isNotOnBrowsePath() {
+            return $location.path().indexOf(browse + '/') === -1;
+        }
+
+        function setBrowsePathOnFirstItem() {
+            breadcrumb[0].path = toBrowsePath($ctrl.item);
+        }
+
+        function toBrowsePath(item) {
+            return browse + '/' + stripSlashes(item) + '/';
+        }
+
+        function setBackItem() {
+            $ctrl.back = isSingleItemAndNotOnBrowsePath() ? breadcrumb[0] : breadcrumb[breadcrumb.length - 2];
+        }
+
+        function stripSlashes(item) {
+            return item.replace(/\//g, '');
         }
     }];
 }
