@@ -3345,7 +3345,7 @@ describe('catalog', function () {
 
 
 
-    describe('binCatalogList component', function () {
+    fdescribe('binCatalogList component', function () {
         var $ctrl, $componentController, $routeParams, search;
         var type = 'type';
         var partition = 'partition';
@@ -3357,17 +3357,32 @@ describe('catalog', function () {
         }));
 
         describe('when type is not given', function () {
-            beforeEach(function () {
-                $routeParams.d0 = 'type';
-                $routeParams.d1 = 'p1';
-                $routeParams.d2 = 'p2';
-                $ctrl = $componentController('binCatalogList', null, {});
-                $ctrl.$onInit();
+            describe('with catalog route params', function () {
+                beforeEach(function () {
+                    $routeParams.d0 = 'type';
+                    $routeParams.d1 = 'p1';
+                    $routeParams.d2 = 'p2';
+                    $ctrl = $componentController('binCatalogList', null, {});
+                    $ctrl.$onInit();
+                });
+
+                it('parse type and partition from route', function () {
+                    expect($ctrl.type).toEqual('type');
+                    expect($ctrl.partition).toEqual('/type/p1/p2/');
+                });
             });
 
-            it('parse type and partition from route', function () {
-                expect($ctrl.type).toEqual('type');
-                expect($ctrl.partition).toEqual('/type/p1/p2/');
+            describe('with type route param', function () {
+                beforeEach(function () {
+                    $routeParams.type = 'type';
+                    $ctrl = $componentController('binCatalogList', null, {});
+                    $ctrl.$onInit();
+                });
+
+                it('parse type and partition from route', function () {
+                    expect($ctrl.type).toEqual('type');
+                    expect($ctrl.partition).toEqual('/');
+                });
             });
         });
 

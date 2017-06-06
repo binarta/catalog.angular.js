@@ -1249,7 +1249,7 @@ function BinCatalogListComponent() {
 
         function parsePropertiesFromRoute() {
             var c = catalogPathParser($routeParams);
-            $ctrl.type = c.head;
+            $ctrl.type = c.head || $routeParams.type;
             $ctrl.partition = c.path;
             $ctrl.parent = c.parent;
         }
