@@ -39,6 +39,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta
     .component('binCatalogItemAdd', new BinCatalogItemAddComponent())
     .component('binCatalogSearchMore', new BinCatalogSearchMoreComponent())
     .component('binCatalogWorking', new BinCatalogWorkingComponent())
+    .component('binCatalogEmpty', new BinCatalogEmptyComponent())
     .component('binCatalogDetails', new BinCatalogDetailsComponent())
     .component('binCatalogItem', new BinCatalogItem())
     .constant('catalogPathLimit', 10)
@@ -1734,6 +1735,26 @@ function BinCatalogWorkingComponent() {
             }
         };
     }];
+}
+
+function BinCatalogEmptyComponent() {
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'bin-catalog-empty.html';
+    }];
+
+    this.require = {
+        listCtrl: '^^binCatalogList'
+    };
+
+    this.controller = function () {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            $ctrl.isEmpty = function () {
+                return $ctrl.listCtrl.items.length === 0 && !$ctrl.listCtrl.isWorking();
+            };
+        };
+    };
 }
 
 function BinCatalogDetailsComponent() {
