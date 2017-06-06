@@ -38,6 +38,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta
     .component('binCatalogItems', new BinCatalogItemsComponent())
     .component('binCatalogItemAdd', new BinCatalogItemAddComponent())
     .component('binCatalogSearchMore', new BinCatalogSearchMoreComponent())
+    .component('binCatalogWorking', new BinCatalogWorkingComponent())
     .component('binCatalogDetails', new BinCatalogDetailsComponent())
     .component('binCatalogItem', new BinCatalogItem())
     .constant('catalogPathLimit', 10)
@@ -1696,6 +1697,43 @@ function BinCatalogSearchMoreComponent() {
             $ctrl.isWorking = $ctrl.listCtrl.isWorking;
         };
     };
+}
+
+function BinCatalogWorkingComponent() {
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'bin-catalog-working.html';
+    }];
+
+    this.require = {
+        listCtrl: '^^binCatalogList'
+    };
+
+    this.controller = ['$timeout', function ($timeout) {
+        var $ctrl = this;
+        $ctrl.$onInit = function () {
+            var delay = 500, delayStarted, delayFinished;
+            reset();
+
+            $ctrl.isWorking = function () {
+                var working = ($ctrl.listCtrl.items.length === 0) && $ctrl.listCtrl.isWorking();
+                if (!working) reset();
+                if (working && !delayStarted) startDelay();
+                return working && delayFinished;
+            };
+
+            function reset() {
+                delayStarted = false;
+                delayFinished = false;
+            }
+
+            function startDelay() {
+                delayStarted = true;
+                $timeout(function () {
+                    delayFinished = true;
+                }, delay);
+            }
+        };
+    }];
 }
 
 function BinCatalogDetailsComponent() {

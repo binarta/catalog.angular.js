@@ -4364,6 +4364,67 @@ describe('catalog', function () {
         });
     });
 
+    describe('binCatalogWorking component', function () {
+        var $ctrl, $componentController, $timeout;
+
+        beforeEach(inject(function (_$componentController_, _$timeout_) {
+            $componentController = _$componentController_;
+            $timeout = _$timeout_;
+            $ctrl = $componentController('binCatalogWorking', null, {});
+            $ctrl.listCtrl = {
+                items: [],
+                isWorking: jasmine.createSpy('spy')
+            };
+            $ctrl.$onInit();
+        }));
+
+        it('is not working', function () {
+            $ctrl.listCtrl.isWorking.and.returnValue(false);
+            expect($ctrl.isWorking()).toBeFalsy();
+        });
+
+        describe('when listCtrl is working', function () {
+            beforeEach(function () {
+                $ctrl.listCtrl.isWorking.and.returnValue(true);
+            });
+
+            it('is not working', function () {
+                expect($ctrl.isWorking()).toBeFalsy();
+            });
+
+            describe('after a delay', function () {
+                beforeEach(function () {
+                    $ctrl.isWorking();
+                    $timeout.flush(500);
+                });
+
+                it('is working', function () {
+                    expect($ctrl.isWorking()).toBeTruthy();
+                });
+
+                describe('when listCtrl stops working', function () {
+                    beforeEach(function () {
+                        $ctrl.listCtrl.isWorking.and.returnValue(false);
+                    });
+
+                    it('is not working', function () {
+                        expect($ctrl.isWorking()).toBeFalsy();
+                    });
+                });
+
+                describe('when items are available', function () {
+                    beforeEach(function () {
+                        $ctrl.listCtrl.items.push({id:0});
+                    });
+
+                    it('is not working', function () {
+                        expect($ctrl.isWorking()).toBeFalsy();
+                    });
+                });
+            });
+        });
+    });
+
     describe('binCatalogDetails component', function () {
         var $ctrl, $componentController, $routeParams, $location;
 
