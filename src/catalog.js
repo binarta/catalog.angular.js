@@ -33,6 +33,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta
     .component('binSpotlightItems', new BinSpotlightItemsComponent())
     .component('binCatalogList', new BinCatalogListComponent())
     .component('binCatalogBreadcrumb', new BinCatalogBreadcrumbComponent())
+    .component('binCatalogSearch', new BinCatalogSearchComponent())
     .component('binCatalogItemGroups', new BinCatalogItemGroups())
     .component('binCatalogItems', new BinCatalogItemsComponent())
     .component('binCatalogItemAdd', new BinCatalogItemAddComponent())
@@ -1392,6 +1393,42 @@ function BinCatalogBreadcrumbComponent() {
 
         function stripSlashes(item) {
             return item.replace(/\//g, '');
+        }
+    }];
+}
+
+function BinCatalogSearchComponent() {
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'bin-catalog-search.html';
+    }];
+
+    this.bindings = {
+        type: '@'
+    };
+
+    this.require = {
+        listCtrl: '?^^binCatalogList',
+        detailsCtrl: '?^^binCatalogDetails'
+    };
+
+    this.controller = ['$location', 'i18nLocation', function ($location, i18nLocation) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            $ctrl.q = $location.search().q;
+
+            $ctrl.submit = function () {
+                $location.search('q', $ctrl.q);
+                i18nLocation.path('/search/' + getType());
+                if ($ctrl.listCtrl) $ctrl.listCtrl.search();
+            };
+        };
+
+        function getType() {
+            var type = $ctrl.type;
+            if (!type && $ctrl.listCtrl) type = $ctrl.listCtrl.type;
+            if (!type && $ctrl.detailsCtrl) type = $ctrl.detailsCtrl.type;
+            return type;
         }
     }];
 }

@@ -3846,6 +3846,94 @@ describe('catalog', function () {
         });
     });
 
+    describe('binCatalogSearch component', function () {
+        var $componentController, $ctrl, searchParam;
+
+        beforeEach(inject(function (_$componentController_) {
+            $componentController = _$componentController_;
+            $ctrl = $componentController('binCatalogSearch', null, {});
+            searchParam = 'search';
+        }));
+
+        describe('when search param is defined', function () {
+            beforeEach(function () {
+                location.search().q = searchParam;
+                $ctrl.$onInit();
+            });
+
+            it('search param is available on controller', function () {
+                expect($ctrl.q).toEqual(searchParam);
+            });
+        });
+
+        describe('when not on search path', function () {
+            beforeEach(function () {
+                $ctrl.$onInit();
+                $ctrl.type = 'type';
+            });
+
+            describe('on submit', function () {
+                beforeEach(function () {
+                    $ctrl.q = searchParam;
+                    $ctrl.submit();
+                });
+
+                it('search param is added to location', function () {
+                    expect(location.search().q).toEqual(searchParam);
+                });
+
+                it('redirect to search path', function () {
+                    expect(location.path()).toEqual('/lang/search/type');
+                });
+            });
+        });
+
+        describe('with listCtrl', function () {
+            beforeEach(function () {
+                $ctrl.listCtrl = {
+                    type: 'T',
+                    search: jasmine.createSpy('spy')
+                };
+                $ctrl.$onInit();
+            });
+
+            describe('on submit', function () {
+                beforeEach(function () {
+                    $ctrl.q = searchParam;
+                    $ctrl.submit();
+                });
+
+                it('redirect to search path', function () {
+                    expect(location.path()).toEqual('/lang/search/T');
+                });
+
+                it('search for new items', function () {
+                    expect($ctrl.listCtrl.search).toHaveBeenCalled();
+                });
+            });
+        });
+
+        describe('with listCtrl', function () {
+            beforeEach(function () {
+                $ctrl.detailsCtrl = {
+                    type: 'T'
+                };
+                $ctrl.$onInit();
+            });
+
+            describe('on submit', function () {
+                beforeEach(function () {
+                    $ctrl.q = searchParam;
+                    $ctrl.submit();
+                });
+
+                it('redirect to search path', function () {
+                    expect(location.path()).toEqual('/lang/search/T');
+                });
+            });
+        });
+    });
+
     describe('binCatalogItems component', function () {
         var $componentController, $ctrl, $timeout, bindings, items, writer, topics;
 
