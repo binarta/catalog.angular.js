@@ -1848,6 +1848,7 @@ function BinCatalogItem() {
         function withDetailsController() {
             if (!$ctrl.item) listenForItemUpdates();
             if (!$ctrl.templateUrl) $ctrl.templateUrl = 'catalog-details-item.html';
+            $ctrl.movable = 'false';
             $ctrl.refresh = $ctrl.detailsCtrl.refresh;
 
             function listenForItemUpdates() {

@@ -4581,6 +4581,11 @@ describe('catalog', function () {
                 $ctrl.detailsCtrl = jasmine.createSpyObj('spy', ['onItemUpdate', 'refresh']);
             });
 
+            it('not movable', function () {
+                $ctrl.$onInit();
+                expect($ctrl.movable).toEqual('false');
+            });
+
             it('assert default template', function () {
                 $ctrl.$onInit();
                 expect($ctrl.templateUrl).toEqual('catalog-details-item.html');
