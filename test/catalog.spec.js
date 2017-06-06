@@ -3901,6 +3901,10 @@ describe('catalog', function () {
                 $ctrl.$onInit();
             });
 
+            it('type is set', function () {
+                expect($ctrl.type).toEqual('T');
+            });
+
             describe('on submit', function () {
                 beforeEach(function () {
                     $ctrl.q = searchParam;
@@ -3917,12 +3921,16 @@ describe('catalog', function () {
             });
         });
 
-        describe('with listCtrl', function () {
+        describe('with detailsCtrl', function () {
             beforeEach(function () {
                 $ctrl.detailsCtrl = {
                     type: 'T'
                 };
                 $ctrl.$onInit();
+            });
+
+            it('type is set', function () {
+                expect($ctrl.type).toEqual('T');
             });
 
             describe('on submit', function () {

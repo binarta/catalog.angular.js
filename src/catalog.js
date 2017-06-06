@@ -1419,20 +1419,15 @@ function BinCatalogSearchComponent() {
 
         $ctrl.$onInit = function () {
             $ctrl.q = $location.search().q;
+            if (!$ctrl.type && $ctrl.listCtrl) $ctrl.type = $ctrl.listCtrl.type;
+            if (!$ctrl.type && $ctrl.detailsCtrl) $ctrl.type = $ctrl.detailsCtrl.type;
 
             $ctrl.submit = function () {
                 $location.search('q', $ctrl.q);
-                i18nLocation.path('/search/' + getType());
+                i18nLocation.path('/search/' + $ctrl.type);
                 if ($ctrl.listCtrl) $ctrl.listCtrl.search();
             };
         };
-
-        function getType() {
-            var type = $ctrl.type;
-            if (!type && $ctrl.listCtrl) type = $ctrl.listCtrl.type;
-            if (!type && $ctrl.detailsCtrl) type = $ctrl.detailsCtrl.type;
-            return type;
-        }
     }];
 }
 
