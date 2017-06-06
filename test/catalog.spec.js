@@ -3345,7 +3345,7 @@ describe('catalog', function () {
 
 
 
-    fdescribe('binCatalogList component', function () {
+    describe('binCatalogList component', function () {
         var $ctrl, $componentController, $routeParams, search;
         var type = 'type';
         var partition = 'partition';
@@ -3483,6 +3483,42 @@ describe('catalog', function () {
                             search.calls.reset();
                             $ctrl.searchMore();
                             expect(search).not.toHaveBeenCalled();
+                        });
+                    });
+                });
+
+                describe('on new search', function () {
+                    var previousItems;
+
+                    beforeEach(function () {
+                        previousItems = $ctrl.items;
+                        $ctrl.search();
+                    });
+
+                    it('new items are requested and offset is reset', function () {
+                        expect(search.calls.mostRecent().args[0].subset).toEqual({
+                            count: 12,
+                            offset: 0
+                        });
+                    });
+
+                    describe('on success', function () {
+                        var newItems;
+
+                        beforeEach(function () {
+                            newItems = [{id: 'new'}];
+                            search.calls.mostRecent().args[0].success({
+                                hasMore: false,
+                                results: newItems
+                            });
+                        });
+
+                        it('items are replaced', function () {
+                            expect($ctrl.items).toEqual(newItems);
+                        });
+
+                        it('reference to items is not changed', function () {
+                            expect($ctrl.items).toBe(previousItems);
                         });
                     });
                 });

@@ -1233,7 +1233,7 @@ function BinCatalogListComponent() {
         count: '@'
     };
 
-    this.controller = ['$routeParams', 'catalogPathParser', 'binartaSearch', function ($routeParams, catalogPathParser, search) {
+    this.controller = ['$routeParams', 'catalogPathParser', 'binartaSearch', function ($routeParams, catalogPathParser, binartaSearch) {
         var $ctrl = this;
         var count = 12, offset = 0, moreItemsAvailable = false, working = false;
 
@@ -1241,6 +1241,7 @@ function BinCatalogListComponent() {
             $ctrl.items = [];
             if (!$ctrl.type) parsePropertiesFromRoute();
             if ($ctrl.count) count = parseInt($ctrl.count);
+            $ctrl.search = search;
             $ctrl.searchMore = searchItems;
             $ctrl.hasMore = hasMore;
             $ctrl.isWorking = isWorking;
@@ -1254,6 +1255,16 @@ function BinCatalogListComponent() {
             $ctrl.parent = c.parent;
         }
 
+        function search() {
+            reset();
+            searchItems();
+        }
+
+        function reset() {
+            $ctrl.items.splice(0, $ctrl.items.length);
+            offset = 0;
+        }
+
         function searchItems() {
             if (working) return;
             working = true;
@@ -1263,7 +1274,7 @@ function BinCatalogListComponent() {
                 else filters.partition = $ctrl.partition;
             }
 
-            search({
+            binartaSearch({
                 action: 'search',
                 entity: 'catalog-item',
                 filters: filters,
