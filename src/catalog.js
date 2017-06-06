@@ -1233,7 +1233,7 @@ function BinCatalogListComponent() {
         count: '@'
     };
 
-    this.controller = ['$routeParams', 'catalogPathParser', 'binartaSearch', function ($routeParams, catalogPathParser, binartaSearch) {
+    this.controller = ['$location', '$routeParams', 'catalogPathParser', 'binartaSearch', function ($location, $routeParams, catalogPathParser, binartaSearch) {
         var $ctrl = this;
         var count = 12, offset = 0, moreItemsAvailable = false, working = false;
 
@@ -1273,8 +1273,7 @@ function BinCatalogListComponent() {
                 if ($ctrl.recursivelyByPartition === 'true') filters.recursivelyByPartition = $ctrl.partition;
                 else filters.partition = $ctrl.partition;
             }
-
-            binartaSearch({
+            var ctx = {
                 action: 'search',
                 entity: 'catalog-item',
                 filters: filters,
@@ -1286,17 +1285,19 @@ function BinCatalogListComponent() {
                 includeCarouselItems: true,
                 complexResult: true,
                 success: onSuccess
-            });
+            };
+            if ($location.search().q) ctx.q = $location.search().q;
+            binartaSearch(ctx);
+        }
 
-            function onSuccess(data) {
-                moreItemsAvailable = data.hasMore;
-                if (moreItemsAvailable) offset += count;
-                else $ctrl.searchMore = function () {};
-                data.results.forEach(function (item) {
-                    $ctrl.items.push(item);
-                });
-                working = false;
-            }
+        function onSuccess(data) {
+            moreItemsAvailable = data.hasMore;
+            if (moreItemsAvailable) offset += count;
+            else $ctrl.searchMore = function () {};
+            data.results.forEach(function (item) {
+                $ctrl.items.push(item);
+            });
+            working = false;
         }
 
         function hasMore() {

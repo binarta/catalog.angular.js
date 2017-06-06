@@ -3600,6 +3600,42 @@ describe('catalog', function () {
                 });
             });
         });
+
+        describe('when requesting with a query parameter', function () {
+            var searchParam;
+
+            beforeEach(function () {
+                searchParam = 'search';
+                location.search().q = searchParam;
+                $ctrl = $componentController('binCatalogList', null, {type: type});
+                $ctrl.$onInit();
+            });
+
+            it('items are requested', function () {
+                expect(search).toHaveBeenCalledWith({
+                    action: 'search',
+                    entity: 'catalog-item',
+                    filters: {
+                        type: type
+                    },
+                    q: searchParam,
+                    sortings: [{
+                        on: 'partition',
+                        orientation: 'asc'
+                    }, {
+                        on: 'priority',
+                        orientation: 'desc'
+                    }],
+                    subset: {
+                        count: 12,
+                        offset: 0
+                    },
+                    includeCarouselItems: true,
+                    complexResult: true,
+                    success: jasmine.any(Function)
+                });
+            });
+        });
     });
 
     describe('binCatalogBreadcrumb component', function () {
