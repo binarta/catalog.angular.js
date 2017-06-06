@@ -3502,6 +3502,10 @@ describe('catalog', function () {
                         });
                     });
 
+                    it('more items check is reset', function () {
+                        expect($ctrl.hasMore()).toBeFalsy();
+                    });
+
                     describe('on success', function () {
                         var newItems;
 

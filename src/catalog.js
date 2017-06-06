@@ -1264,6 +1264,7 @@ function BinCatalogListComponent() {
         function reset() {
             $ctrl.items.splice(0, $ctrl.items.length);
             offset = 0;
+            moreItemsAvailable = false;
         }
 
         function searchItems() {
