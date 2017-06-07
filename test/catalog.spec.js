@@ -1546,6 +1546,41 @@ describe('catalog', function () {
         });
     });
 
+    describe('RemoveCatalogPartition factory', function () {
+        var sut, restClient, config;
+
+        beforeEach(inject(function (removeCatalogPartition, restServiceHandler, _config_) {
+            sut = removeCatalogPartition;
+            restClient = restServiceHandler;
+            config = _config_;
+            config.baseUri = 'baseUri/';
+            restClient.and.returnValue('promise');
+        }));
+
+        describe('on delete', function () {
+            var id, result;
+
+            beforeEach(function () {
+                id = 'some id';
+                result = sut({id: id});
+            });
+
+            it('rest client is called', function () {
+                expect(restClient).toHaveBeenCalledWith({
+                    params: {
+                        method: 'DELETE',
+                        url: 'baseUri/api/entity/catalog-partition?id=some%20id',
+                        withCredentials: true
+                    }
+                });
+            });
+
+            it('returns result of rest service', function () {
+                expect(result).toEqual('promise');
+            });
+        });
+    });
+
     describe('RemoveItemFromCatalogController', function () {
         beforeEach(inject(function ($controller) {
             ctrl = $controller(RemoveItemFromCatalogController, {

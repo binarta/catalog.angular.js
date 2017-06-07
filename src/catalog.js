@@ -3,6 +3,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])
     .factory('removeCatalogItem', ['config', 'restServiceHandler', RemoveCatalogItemFactory])
+    .factory('removeCatalogPartition', ['config', 'restServiceHandler', RemoveCatalogPartitionFactory])
     .factory('findAllCatalogItemTypes', ['config', '$http', FindAllCatalogItemTypesFactory])
     .factory('findCatalogPartitions', ['config', '$http', FindCatalogPartitionsFactory])
     .factory('findCatalogItemById', ['$q', 'config', 'restServiceHandler', 'binarta', FindCatalogItemByIdFactory])
@@ -427,6 +428,18 @@ function RemoveCatalogItemFactory(config, restServiceHandler) {
             params: {
                 method: 'DELETE',
                 url: (config.baseUri || '') + 'api/entity/catalog-item?id=' + encodeURIComponent(args.id),
+                withCredentials: true
+            }
+        });
+    };
+}
+
+function RemoveCatalogPartitionFactory(config, restServiceHandler) {
+    return function (args) {
+        return restServiceHandler({
+            params: {
+                method: 'DELETE',
+                url: (config.baseUri || '') + 'api/entity/catalog-partition?id=' + encodeURIComponent(args.id),
                 withCredentials: true
             }
         });
