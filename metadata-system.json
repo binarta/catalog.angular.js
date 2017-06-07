@@ -41,7 +41,9 @@
       "catalog.item.move.top": "Eerste",
       "catalog.item.move.bottom": "Laatste",
       "catalog.item.remove": "verwijderen",
-      "catalog.item.remove.confirm": "item verwijderen?"
+      "catalog.item.remove.confirm": "item verwijderen?",
+      "catalog.partition.remove": "verwijderen",
+      "catalog.partition.remove.confirm": "categorie verwijderen?"
     },
     "en": {
       "catalog.item.removed": "Item removed",
@@ -84,7 +86,9 @@
       "catalog.item.move.top": "Top",
       "catalog.item.move.bottom": "Bottom",
       "catalog.item.remove": "delete",
-      "catalog.item.remove.confirm": "delete item?"
+      "catalog.item.remove.confirm": "delete item?",
+      "catalog.partition.remove": "delete",
+      "catalog.partition.remove.confirm": "delete category?"
     },
     "fr": {
       "catalog.item.removed": "Article supprimé",
@@ -127,7 +131,9 @@
       "catalog.item.move.top": "Haut",
       "catalog.item.move.bottom": "Bas",
       "catalog.item.remove": "effacer",
-      "catalog.item.remove.confirm": "effacer l'article?"
+      "catalog.item.remove.confirm": "effacer l'article?",
+      "catalog.partition.remove": "effacer",
+      "catalog.partition.remove.confirm": "effacer la catégorie?"
     },
     "de": {
       "catalog.item.removed": "Artikel gelöscht",
@@ -170,7 +176,9 @@
       "catalog.item.move.top": "Top",
       "catalog.item.move.bottom": "Bottom",
       "catalog.item.remove": "delete",
-      "catalog.item.remove.confirm": "delete item?"
+      "catalog.item.remove.confirm": "delete item?",
+      "catalog.partition.remove": "delete",
+      "catalog.partition.remove.confirm": "delete category?"
     }
   }
 }

@@ -33,6 +33,10 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta
     .component('binSpotlight', new BinSpotlightComponent())
     .component('binSpotlightItems', new BinSpotlightItemsComponent())
     .component('binCatalogList', new BinCatalogListComponent())
+    .component('binCatalogPartitions', new BinCatalogPartitionsComponent())
+    .component('binCatalogPartition', new BinCatalogPartitionComponent())
+    .component('binCatalogPartitionTitle', new BinCatalogPartitionTitleComponent())
+    .component('binCatalogPartitionDescription', new BinCatalogPartitionDescriptionComponent())
     .component('binCatalogBreadcrumb', new BinCatalogBreadcrumbComponent())
     .component('binCatalogSearch', new BinCatalogSearchComponent())
     .component('binCatalogItemGroups', new BinCatalogItemGroupsComponent())
@@ -1327,6 +1331,190 @@ function BinCatalogListComponent() {
     }];
 }
 
+function BinCatalogPartitionsComponent() {
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'bin-catalog-partitions.html';
+    }];
+
+    this.transclude = true;
+
+    this.bindings = {
+        partition: '@',
+        parent: '@',
+        removable: '@',
+        addable: '@'
+    };
+
+    this.require = {
+        listCtrl: '?^^binCatalogList'
+    };
+
+    this.controller = ['$timeout', 'findCatalogPartitions', 'topicRegistry', 'binarta', function ($timeout, findCatalogPartitions, topicRegistry, binarta) {
+        var $ctrl = this,
+            editing = false,
+            delay = 300;
+
+        $ctrl.$onInit = function () {
+            $ctrl.partitions = [];
+            if ($ctrl.listCtrl) {
+                if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.partition;
+                if (!$ctrl.parent) $ctrl.parent = $ctrl.listCtrl.parent;
+            }
+            search();
+
+            $ctrl.isPartitionListVisible = function () {
+                return $ctrl.partitions.length > 1 || $ctrl.parent !== '/' || editing;
+            };
+
+            $ctrl.isOnRoot = function () {
+                return $ctrl.parent === '/';
+            };
+
+            $ctrl.isAddAllowed = function () {
+                return isEnabledByDefault($ctrl.addable) && editing && hasCatalogPartitionAddPermission();
+            };
+
+            $ctrl.add = function (partition) {
+                partition.uiStatus = 'added';
+                $timeout(function () {
+                    delete partition.uiStatus;
+                }, delay);
+                $ctrl.partitions.push(partition);
+            };
+
+            $ctrl.remove = function (partition) {
+                partition.uiStatus = 'removed';
+                $timeout(function () {
+                    $ctrl.partitions.splice($ctrl.partitions.indexOf(partition), 1);
+                }, delay);
+            };
+
+            topicRegistry.subscribe('edit.mode', editModeListener);
+
+            $ctrl.$onDestroy = function () {
+                topicRegistry.unsubscribe('edit.mode', editModeListener);
+            };
+        };
+
+        function editModeListener(e) {
+            editing = e;
+        }
+
+        function search() {
+            findCatalogPartitions({
+                query: 'ownedBy',
+                filters: {owner: $ctrl.partition},
+                success: onSuccess
+            });
+        }
+
+        function onSuccess(partitions) {
+            partitions.forEach(function (it) {
+                $ctrl.partitions.push(it);
+            });
+        }
+
+        function hasCatalogPartitionAddPermission() {
+            return binarta.checkpoint.profile.hasPermission('catalog.partition.add');
+        }
+    }];
+}
+
+function BinCatalogPartitionComponent() {
+    this.templateUrl = 'bin-catalog-partition.html';
+
+    this.bindings = {
+        partition: '<',
+        templateUrl: '@',
+        removable: '@'
+    };
+
+    this.require = {
+        partitionsCtrl: '^^binCatalogPartitions'
+    };
+
+    this.controller = ['binarta', 'removeCatalogPartition', function (binarta, removeCatalogPartition) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            if (!$ctrl.removable) $ctrl.removable = $ctrl.partitionsCtrl.removable;
+            if (!$ctrl.templateUrl) $ctrl.templateUrl = 'bin-catalog-partition-list-default.html';
+
+            $ctrl.isRemoveAllowed = function () {
+                return $ctrl.partition && isEnabledByDefault($ctrl.removable) && hasCatalogPartitionRemovePermission();
+            };
+
+            installRemoveAction();
+        };
+
+        function hasCatalogPartitionRemovePermission() {
+            return binarta.checkpoint.profile.hasPermission('catalog.partition.remove');
+        }
+
+        function installRemoveAction() {
+            var removed = false;
+
+            $ctrl.remove = function () {
+                if (removed) return;
+                return removeCatalogPartition({id: $ctrl.partition.id}).then(function () {
+                    removed = true;
+                    $ctrl.partitionsCtrl.remove($ctrl.partition);
+                });
+            };
+        }
+    }];
+}
+
+function BinCatalogPartitionTitleComponent() {
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'bin-catalog-partition-title.html';
+    }];
+
+    this.bindings = {
+        type: '@',
+        partition: '@',
+        parent: '@'
+    };
+
+    this.require = {
+        listCtrl: '?^^binCatalogList'
+    };
+
+    this.controller = function () {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            if ($ctrl.listCtrl) {
+                if (!$ctrl.type) $ctrl.type = $ctrl.listCtrl.type;
+                if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.partition;
+                if (!$ctrl.parent) $ctrl.parent = $ctrl.listCtrl.parent;
+            }
+            $ctrl.titleCode = $ctrl.parent === '/' ? 'navigation.label.' + $ctrl.type : $ctrl.partition;
+            $ctrl.defaultTitle = $ctrl.type;
+        };
+    };
+}
+
+function BinCatalogPartitionDescriptionComponent() {
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'bin-catalog-partition-description.html';
+    }];
+
+    this.bindings = {
+        partition: '@'
+    };
+
+    this.require = {
+        listCtrl: '?^^binCatalogList'
+    };
+
+    this.controller = function () {
+        this.$onInit = function () {
+            if (!this.partition && this.listCtrl) this.partition = this.listCtrl.partition;
+        };
+    };
+}
+
 function BinCatalogBreadcrumbComponent() {
     this.templateUrl = ['$attrs', function ($attrs) {
         return $attrs.templateUrl || 'bin-catalog-breadcrumb.html';
@@ -1815,7 +2003,7 @@ function BinCatalogDetailsComponent() {
 }
 
 function BinCatalogItemComponent() {
-    this.templateUrl = 'catalog-item.html';
+    this.templateUrl = 'bin-catalog-item.html';
 
     this.bindings = {
         item: '<',
@@ -1862,7 +2050,7 @@ function BinCatalogItemComponent() {
 
         function withDetailsController() {
             if (!$ctrl.item) listenForItemUpdates();
-            if (!$ctrl.templateUrl) $ctrl.templateUrl = 'catalog-details-item.html';
+            if (!$ctrl.templateUrl) $ctrl.templateUrl = 'bin-catalog-item-details-default.html';
             $ctrl.movable = 'false';
             $ctrl.refresh = $ctrl.detailsCtrl.refresh;
 
@@ -1874,7 +2062,7 @@ function BinCatalogItemComponent() {
         }
 
         function withItemsController() {
-            if (!$ctrl.templateUrl) $ctrl.templateUrl = $ctrl.itemsCtrl.itemTemplateUrl || 'catalog-list-item-2.html';
+            if (!$ctrl.templateUrl) $ctrl.templateUrl = $ctrl.itemsCtrl.itemTemplateUrl || 'bin-catalog-item-list-default.html';
             if (!$ctrl.movable) $ctrl.movable = $ctrl.itemsCtrl.movable;
             if (!$ctrl.pinnable) $ctrl.pinnable = $ctrl.itemsCtrl.pinnable;
             if (!$ctrl.removable) $ctrl.removable = $ctrl.itemsCtrl.removable;

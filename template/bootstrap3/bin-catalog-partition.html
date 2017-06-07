@@ -1,0 +1,18 @@
+<bin-edit>
+    <bin-edit-actions>
+        <bin-edit-actions-selector for="delete" danger
+                                   icon-class="fa-trash"
+                                   i18n-code="catalog.partition.remove"
+                                   ng-if="$ctrl.isRemoveAllowed()">
+        </bin-edit-actions-selector>
+    </bin-edit-actions>
+    <bin-edit-actions for="delete">
+        <bin-edit-action action="$ctrl.remove()" danger
+                         icon-class="fa-trash"
+                         i18n-code="catalog.partition.remove.confirm">
+        </bin-edit-action>
+    </bin-edit-actions>
+    <bin-edit-body>
+        <ng-include src="$ctrl.templateUrl"></ng-include>
+    </bin-edit-body>
+</bin-edit>

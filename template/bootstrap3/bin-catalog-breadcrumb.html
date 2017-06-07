@@ -2,17 +2,12 @@
     <div class="container">
         <div class="row">
             <ol class="breadcrumb visible-xs" ng-if="$ctrl.back">
-                <li>
-                    <a bin-href="{{$ctrl.back.path}}">
-                        <span><i class="fa fa-angle-left fa-fw"></i></span>
-                        <span i18n code="{{$ctrl.back.id}}" read-only ng-bind="::var"></span>
-                    </a>
-                </li>
+                <li ng-include="'bin-catalog-breadcrumb-back-link.html'"></li>
             </ol>
             <ol class="breadcrumb hidden-xs">
                 <li ng-class="::{active: !it.path}" ng-repeat="it in $ctrl.breadcrumb track by it.id">
-                    <a ng-if="::it.path" bin-href="{{::it.path}}" i18n code="{{::it.id}}" read-only ng-bind="::var"></a>
-                    <span ng-if="::!it.path" i18n code="{{::it.id}}" read-only ng-bind="::var"></span>
+                    <a ng-if="::it.path" bin-href="{{::it.path}}" i18n code="{{::it.id}}" read-only ng-bind="var"></a>
+                    <span ng-if="::!it.path" i18n code="{{::it.id}}" read-only ng-bind="var"></span>
                 </li>
             </ol>
         </div>

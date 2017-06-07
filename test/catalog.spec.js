@@ -3677,6 +3677,300 @@ describe('catalog', function () {
         });
     });
 
+    describe('binCatalogPartitions component', function () {
+        var $ctrl, $timeout, findCatalogPartitionsMock, partitions, topicsMock;
+
+        beforeEach(inject(function ($componentController, _$timeout_, topicRegistryMock) {
+            $timeout = _$timeout_;
+            binarta.checkpoint.gateway.permissions = [];
+            binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p', email: 'e'});
+            findCatalogPartitionsMock = jasmine.createSpy('spy');
+            topicsMock = topicRegistryMock;
+            $ctrl = $componentController('binCatalogPartitions', {
+                findCatalogPartitions: findCatalogPartitionsMock
+            });
+            partitions = ['1', '2', '3'];
+        }));
+
+        describe('with listCtrl', function () {
+            beforeEach(function () {
+                $ctrl.listCtrl = {
+                    partition: 'partition',
+                    parent: 'parent'
+                };
+                $ctrl.$onInit();
+            });
+
+            it('set values from listCtrl', function () {
+                expect($ctrl.partition).toEqual('partition');
+                expect($ctrl.parent).toEqual('parent');
+            });
+        });
+
+        describe('with partition', function () {
+            beforeEach(function () {
+                $ctrl.partition = 'partition';
+                $ctrl.$onInit();
+            });
+
+            it('sub-partitions are requested', function () {
+                expect(findCatalogPartitionsMock).toHaveBeenCalledWith({
+                    query: 'ownedBy',
+                    filters: {owner: 'partition'},
+                    success: jasmine.any(Function)
+                });
+            });
+
+            describe('on success', function () {
+                beforeEach(function () {
+                    findCatalogPartitionsMock.calls.mostRecent().args[0].success(partitions);
+                });
+
+                it('partitions are added', function () {
+                    expect($ctrl.partitions).toEqual(partitions);
+                });
+            });
+        });
+
+        describe('when no partitions', function () {
+            beforeEach(function () {
+                $ctrl.$onInit();
+            });
+
+            describe('and is on root', function () {
+                beforeEach(function () {
+                    $ctrl.parent = '/';
+                });
+
+                it('is on root', function () {
+                    expect($ctrl.isOnRoot()).toBeTruthy();
+                });
+
+                it('partition list should not be visible', function () {
+                    expect($ctrl.isPartitionListVisible()).toBeFalsy();
+                });
+
+                describe('and is in edit mode', function () {
+                    beforeEach(function () {
+                        topicsMock['edit.mode'](true);
+                    });
+
+                    it('partition list should be visible', function () {
+                        expect($ctrl.isPartitionListVisible()).toBeTruthy();
+                    });
+                });
+            });
+
+            describe('and is not on root', function () {
+                beforeEach(function () {
+                    $ctrl.parent = '/p/';
+                });
+
+                it('is on root', function () {
+                    expect($ctrl.isOnRoot()).toBeFalsy();
+                });
+
+                it('partition list should be visible', function () {
+                    expect($ctrl.isPartitionListVisible()).toBeTruthy();
+                });
+            });
+        });
+
+        describe('with partitions', function () {
+            beforeEach(function () {
+                $ctrl.$onInit();
+                $ctrl.partitions = partitions;
+            });
+
+            describe('and is on root', function () {
+                beforeEach(function () {
+                    $ctrl.parent = '/';
+                });
+
+                it('is on root', function () {
+                    expect($ctrl.isOnRoot()).toBeTruthy();
+                });
+
+                it('partition list should be visible', function () {
+                    expect($ctrl.isPartitionListVisible()).toBeTruthy();
+                });
+            });
+
+            describe('and is not on root', function () {
+                beforeEach(function () {
+                    $ctrl.parent = '/p/';
+                });
+
+                it('is on root', function () {
+                    expect($ctrl.isOnRoot()).toBeFalsy();
+                });
+
+                it('partition list should be visible', function () {
+                    expect($ctrl.isPartitionListVisible()).toBeTruthy();
+                });
+            });
+
+            it('add partition is not yet possible', function () {
+                expect($ctrl.isAddAllowed()).toBeFalsy();
+            });
+
+            describe('when in edit mode', function () {
+                beforeEach(function () {
+                    topicsMock['edit.mode'](true);
+                });
+
+                it('add partition is not yet possible', function () {
+                    expect($ctrl.isAddAllowed()).toBeFalsy();
+                });
+
+                describe('when user has catalog.partition.add permission', function () {
+                    beforeEach(function () {
+                        binarta.checkpoint.gateway.addPermission('catalog.partition.add');
+                        binarta.checkpoint.profile.refresh();
+                    });
+
+                    it('add partition is possible', function () {
+                        expect($ctrl.isAddAllowed()).toBeTruthy();
+                    });
+                });
+            });
+
+            describe('on add', function () {
+                var partition;
+
+                beforeEach(function () {
+                    partition = {id:'foo'};
+                    $ctrl.add(partition);
+                });
+
+                it('partition is added to partition list and uiStatus is applied', function () {
+                    expect($ctrl.partitions[$ctrl.partitions.length - 1]).toEqual({id:'foo', uiStatus:'added'});
+                });
+
+                it('after delay, uiStatus is removed', function () {
+                    $timeout.flush(300);
+                    expect($ctrl.partitions[$ctrl.partitions.length - 1]).toEqual(partition);
+                });
+
+                describe('on remove', function () {
+                    beforeEach(function () {
+                        $ctrl.remove(partition);
+                    });
+
+                    it('uiStatus is applied', function () {
+                        expect(partition.uiStatus).toEqual('removed');
+                    });
+
+                    it('after delay, remove partition from list', function () {
+                        $timeout.flush(300);
+                        expect($ctrl.partitions).not.toContain(partition);
+                    });
+                });
+            });
+        });
+    });
+
+    fdescribe('binCatalogPartition component', function () {
+        var $ctrl, $rootScope, removeMock, removeDeferred, partition;
+
+        beforeEach(inject(function ($q, _$rootScope_, $componentController) {
+            binarta.checkpoint.gateway.permissions = [];
+            binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p', email: 'e'});
+            $rootScope = _$rootScope_;
+            removeMock = jasmine.createSpy('remove');
+            removeDeferred = $q.defer();
+            removeMock.and.returnValue(removeDeferred.promise);
+            partition = {
+                id: 'partition-id'
+            };
+            $ctrl = $componentController('binCatalogPartition', {removeCatalogPartition: removeMock}, {});
+            $ctrl.partitionsCtrl = {
+                remove: jasmine.createSpy('spy')
+            };
+        }));
+
+        it('assert default template', function () {
+            $ctrl.$onInit();
+            expect($ctrl.templateUrl).toEqual('bin-catalog-partition-list-default.html');
+        });
+
+        it('assert override template', function () {
+            $ctrl.templateUrl = 'override.html';
+            $ctrl.$onInit();
+            expect($ctrl.templateUrl).toEqual('override.html');
+        });
+
+        describe('check if remove action is allowed', function () {
+            beforeEach(function () {
+                $ctrl.partition = partition;
+                $ctrl.$onInit();
+            });
+
+            it('when removable but no permission', function () {
+                $ctrl.removable = 'true';
+                expect($ctrl.isRemoveAllowed()).toBeFalsy();
+            });
+
+            describe('when user has permission', function () {
+                beforeEach(function () {
+                    binarta.checkpoint.gateway.addPermission('catalog.partition.remove');
+                    binarta.checkpoint.profile.refresh();
+                });
+
+                it('and is removable', function () {
+                    $ctrl.removable = 'true';
+                    expect($ctrl.isRemoveAllowed()).toBeTruthy();
+                });
+
+                it('and is not removable', function () {
+                    $ctrl.removable = 'false';
+                    expect($ctrl.isRemoveAllowed()).toBeFalsy();
+                });
+            });
+        });
+
+        describe('and partition is removable', function () {
+            beforeEach(function () {
+                $ctrl.partition = partition;
+                $ctrl.removable = 'true';
+                $ctrl.$onInit();
+            });
+
+            describe('on remove', function () {
+                var actual;
+
+                beforeEach(function () {
+                    $ctrl.remove().then(function () {
+                        actual = true;
+                    });
+                });
+
+                it('catalog partition remove requested', function () {
+                    expect(removeMock).toHaveBeenCalledWith({id: partition.id});
+                });
+
+                describe('on success', function () {
+                    beforeEach(function () {
+                        removeDeferred.resolve();
+                        $rootScope.$digest();
+                    });
+
+                    it('partition is removed', function () {
+                        expect($ctrl.partitionsCtrl.remove).toHaveBeenCalledWith(partition);
+                    });
+
+                    it('when called again', function () {
+                        removeMock.calls.reset();
+                        $ctrl.remove();
+                        removeDeferred.resolve();
+                        $rootScope.$digest();
+                        expect(removeMock).not.toHaveBeenCalled();
+                    });
+                });
+            });
+        });
+    });
+
     describe('binCatalogBreadcrumb component', function () {
         var $ctrl, $location;
 
