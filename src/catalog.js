@@ -1315,7 +1315,9 @@ function BinCatalogListComponent() {
 }
 
 function BinCatalogBreadcrumbComponent() {
-    this.templateUrl = 'bin-catalog-breadcrumb.html';
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'bin-catalog-breadcrumb.html';
+    }];
 
     this.bindings = {
         partition: '<',
