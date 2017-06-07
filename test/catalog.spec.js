@@ -3870,7 +3870,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('binCatalogPartition component', function () {
+    describe('binCatalogPartition component', function () {
         var $ctrl, $rootScope, removeMock, removeDeferred, partition;
 
         beforeEach(inject(function ($q, _$rootScope_, $componentController) {
@@ -4917,7 +4917,7 @@ describe('catalog', function () {
 
             it('assert default template', function () {
                 $ctrl.$onInit();
-                expect($ctrl.templateUrl).toEqual('catalog-details-item.html');
+                expect($ctrl.templateUrl).toEqual('bin-catalog-item-details-default.html');
             });
 
             it('override template', function () {
@@ -4968,7 +4968,7 @@ describe('catalog', function () {
 
             it('assert default template', function () {
                 $ctrl.$onInit();
-                expect($ctrl.templateUrl).toEqual('catalog-list-item-2.html');
+                expect($ctrl.templateUrl).toEqual('bin-catalog-item-list-default.html');
             });
 
             it('assert override template defined with itemsCtrl', function () {

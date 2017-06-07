@@ -1635,7 +1635,7 @@ function BinCatalogSearchComponent() {
 }
 
 function BinCatalogItemGroupsComponent() {
-    this.templateUrl = 'catalog-item-groups.html';
+    this.templateUrl = 'bin-catalog-item-groups.html';
 
     this.bindings = {
         items:'<',
@@ -1667,7 +1667,7 @@ function BinCatalogItemGroupsComponent() {
 }
 
 function BinCatalogItemsComponent() {
-    this.templateUrl = 'catalog-items.html';
+    this.templateUrl = 'bin-catalog-items.html';
 
     this.bindings = {
         items:'<',
@@ -1836,7 +1836,7 @@ function BinCatalogItemsComponent() {
 }
 
 function BinCatalogItemAddComponent() {
-    this.templateUrl = 'catalog-item-add.html';
+    this.templateUrl = 'bin-catalog-item-add.html';
 
     this.bindings = {
         type: '@',
@@ -1881,7 +1881,7 @@ function BinCatalogItemAddComponent() {
 
 function BinCatalogSearchMoreComponent() {
     this.templateUrl = ['$attrs', function ($attrs) {
-        return $attrs.templateUrl || 'catalog-search-more.html';
+        return $attrs.templateUrl || 'bin-catalog-search-more.html';
     }];
 
     this.require = {
