@@ -34,14 +34,14 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta
     .component('binCatalogList', new BinCatalogListComponent())
     .component('binCatalogBreadcrumb', new BinCatalogBreadcrumbComponent())
     .component('binCatalogSearch', new BinCatalogSearchComponent())
-    .component('binCatalogItemGroups', new BinCatalogItemGroups())
+    .component('binCatalogItemGroups', new BinCatalogItemGroupsComponent())
     .component('binCatalogItems', new BinCatalogItemsComponent())
     .component('binCatalogItemAdd', new BinCatalogItemAddComponent())
     .component('binCatalogSearchMore', new BinCatalogSearchMoreComponent())
     .component('binCatalogWorking', new BinCatalogWorkingComponent())
     .component('binCatalogEmpty', new BinCatalogEmptyComponent())
     .component('binCatalogDetails', new BinCatalogDetailsComponent())
-    .component('binCatalogItem', new BinCatalogItem())
+    .component('binCatalogItem', new BinCatalogItemComponent())
     .constant('catalogPathLimit', 10)
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
@@ -1431,7 +1431,7 @@ function BinCatalogSearchComponent() {
     }];
 }
 
-function BinCatalogItemGroups() {
+function BinCatalogItemGroupsComponent() {
     this.templateUrl = 'catalog-item-groups.html';
 
     this.bindings = {
@@ -1799,7 +1799,7 @@ function BinCatalogDetailsComponent() {
         }];
 }
 
-function BinCatalogItem() {
+function BinCatalogItemComponent() {
     this.templateUrl = 'catalog-item.html';
 
     this.bindings = {
