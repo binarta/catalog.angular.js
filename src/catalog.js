@@ -1924,34 +1924,50 @@ function BinCatalogItemAddComponent() {
         itemsCtrl: '^^binCatalogItems'
     };
 
-    this.controller = ['addCatalogItem', function (addCatalogItem) {
+    this.controller = ['$rootScope', 'addCatalogItem', 'editModeRenderer', function ($rootScope, addCatalogItem, editModeRenderer) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
             if (!$ctrl.type) $ctrl.type = $ctrl.itemsCtrl.type;
             if (!$ctrl.partition) $ctrl.partition = $ctrl.itemsCtrl.partition;
             if (!$ctrl.redirectToView) $ctrl.redirectToView = $ctrl.itemsCtrl.redirectOnAdd;
-            var item = {
-                type: $ctrl.type,
-                partition: $ctrl.partition,
-                defaultName: 'Item Name'
-            };
 
             $ctrl.submit = function () {
-                $ctrl.working = true;
-                addCatalogItem({
-                    item: item,
-                    success: onSuccess,
-                    redirectToView: isDisabledByDefault($ctrl.redirectToView)
+                var scope = $rootScope.$new();
+                scope.cancel = editModeRenderer.close;
+                scope.i18nPrefix = 'catalog.item.name';
+                scope.submit = function () {
+                    scope.working = true;
+                    addCatalogItem({
+                        item: {
+                            type: $ctrl.type,
+                            partition: $ctrl.partition,
+                            defaultName: scope.name || 'Item Name'
+                        },
+                        success: onSuccess,
+                        rejected: onRejected,
+                        redirectToView: isDisabledByDefault($ctrl.redirectToView)
+                    }).finally(function () {
+                        scope.working = false;
+                    });
+                };
+
+                function onSuccess(item) {
+                    if (!item.priority) item.priority = $ctrl.itemsCtrl.items.length + 1;
+                    $ctrl.itemsCtrl.add(item);
+                    editModeRenderer.close();
+                }
+
+                function onRejected(error) {
+                    scope.violations = error;
+                }
+
+                editModeRenderer.open({
+                    templateUrl: 'bin-catalog-edit-name.html',
+                    scope: scope
                 });
             };
         };
-
-        function onSuccess(item) {
-            if (!item.priority) item.priority = $ctrl.itemsCtrl.items.length + 1;
-            $ctrl.itemsCtrl.add(item);
-            $ctrl.working = false;
-        }
     }];
 }
 

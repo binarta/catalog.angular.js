@@ -3931,7 +3931,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('binCatalogPartitionAdd component', function () {
+    describe('binCatalogPartitionAdd component', function () {
         var $ctrl, $rootScope, addMock, addDeferred, editModeRenderer;
 
         beforeEach(inject(function ($q, _$rootScope_, $componentController, _editModeRenderer_) {
@@ -4791,89 +4791,144 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogItemAdd component', function () {
-        var $ctrl, $componentController, bindings, addCatalogItemMock;
+    fdescribe('binCatalogItemAdd component', function () {
+        var $ctrl, $rootScope, bindings, addMock, addDeferred, editModeRenderer;
 
-        beforeEach(inject(function (_$componentController_) {
-            $componentController = _$componentController_;
-            addCatalogItemMock = jasmine.createSpy('spy');
-            bindings = {
-                itemsCtrl: {
-                    items: [],
-                    add: jasmine.createSpy('spy'),
-                    type: 'T',
-                    partition: 'P'
-                }
+        beforeEach(inject(function ($q, _$rootScope_, $componentController, _editModeRenderer_) {
+            $rootScope = _$rootScope_;
+            editModeRenderer = _editModeRenderer_;
+            addMock = jasmine.createSpy('add');
+            addDeferred = $q.defer();
+            addMock.and.returnValue(addDeferred.promise);
+            $ctrl = $componentController('binCatalogItemAdd', {addCatalogItem: addMock}, {});
+            $ctrl.itemsCtrl = {
+                items: [],
+                add: jasmine.createSpy('spy')
             };
-            $ctrl = $componentController('binCatalogItemAdd', {addCatalogItem: addCatalogItemMock}, bindings);
         }));
 
+        it('fallbacks from itemsCtrl', function () {
+            $ctrl.itemsCtrl.type = 'T';
+            $ctrl.itemsCtrl.partition = 'P';
+            $ctrl.itemsCtrl.redirectOnAdd = 'true';
+            $ctrl.$onInit();
+            expect($ctrl.type).toEqual('T');
+            expect($ctrl.partition).toEqual('P');
+            expect($ctrl.redirectToView).toEqual('true');
+        });
+
         describe('on submit', function () {
+            var type, partition;
+
             beforeEach(function () {
+                type = 'type';
+                partition = 'partition';
+                $ctrl.type = type;
+                $ctrl.partition = partition;
                 $ctrl.$onInit();
                 $ctrl.submit();
             });
 
-            it('is working', function () {
-                expect($ctrl.working).toBeTruthy();
-            });
-
-            it('catalog item add is requested', function () {
-                expect(addCatalogItemMock).toHaveBeenCalledWith({
-                    item: {
-                        type: 'T',
-                        partition: 'P',
-                        defaultName: 'Item Name'
-                    },
-                    success: jasmine.any(Function),
-                    redirectToView: false
+            it('edit-mode renderer is opened', function () {
+                expect(editModeRenderer.open).toHaveBeenCalledWith({
+                    templateUrl: 'bin-catalog-edit-name.html',
+                    scope: jasmine.any(Object)
                 });
             });
 
-            describe('on success', function () {
-                var item;
+            describe('with edit-mode renderer scope', function () {
+                var scope;
 
                 beforeEach(function () {
-                    item = {id: 'new'};
-                    addCatalogItemMock.calls.mostRecent().args[0].success(item);
+                    scope = editModeRenderer.open.calls.mostRecent().args[0].scope;
                 });
 
-                it('item priority is added', function () {
-                    expect(item.priority).toEqual(1);
+                it('i18n prefix code is available', function () {
+                    expect(scope.i18nPrefix).toEqual('catalog.item.name');
                 });
 
-                it('item is added to the items list', function () {
-                    expect($ctrl.itemsCtrl.add).toHaveBeenCalledWith(item);
+                it('on cancel', function () {
+                    scope.cancel();
+                    expect(editModeRenderer.close).toHaveBeenCalled();
                 });
 
-                it('not working', function () {
-                    expect($ctrl.working).toBeFalsy();
+                describe('on submit', function () {
+                    var name;
+
+                    beforeEach(function () {
+                        name = 'name';
+                        scope.name = name;
+                        scope.submit();
+                    });
+
+                    it('is working', function () {
+                        expect(scope.working).toBeTruthy();
+                    });
+
+                    it('add item request', function () {
+                        expect(addMock).toHaveBeenCalledWith({
+                            item: {
+                                type: type,
+                                partition: partition,
+                                defaultName: name
+                            },
+                            redirectToView: false,
+                            success: jasmine.any(Function),
+                            rejected: jasmine.any(Function)
+                        });
+                    });
+
+                    describe('on success', function () {
+                        var item;
+
+                        beforeEach(function () {
+                            item = {id: 'item-id'};
+                            addMock.calls.mostRecent().args[0].success(item);
+                            addDeferred.resolve();
+                            $rootScope.$digest();
+                        });
+
+                        it('is not working', function () {
+                            expect(scope.working).toBeFalsy();
+                        });
+
+                        it('item priority is added', function () {
+                            expect(item.priority).toEqual(1);
+                        });
+
+                        it('new partition is added to list', function () {
+                            expect($ctrl.itemsCtrl.add).toHaveBeenCalledWith(item);
+                        });
+
+                        it('edit-mode renderer is closed', function () {
+                            expect(editModeRenderer.close).toHaveBeenCalled();
+                        });
+                    });
+
+                    describe('on rejected', function () {
+                        beforeEach(function () {
+                            addMock.calls.mostRecent().args[0].rejected('v');
+                            addDeferred.reject();
+                            $rootScope.$digest();
+                        });
+
+                        it('is not working', function () {
+                            expect(scope.working).toBeFalsy();
+                        });
+
+                        it('violations are available', function () {
+                            expect(scope.violations).toEqual('v');
+                        });
+                    });
                 });
-            });
-        });
 
-        describe('with specific type and partition and redirectToView enabled', function () {
-            beforeEach(function () {
-                $ctrl.type = 'type';
-                $ctrl.partition = 'partition';
-                $ctrl.redirectToView = 'true';
-                $ctrl.$onInit();
-            });
+                describe('on submit with no name given', function () {
+                    beforeEach(function () {
+                        scope.submit();
+                    });
 
-            describe('on submit', function () {
-                beforeEach(function () {
-                    $ctrl.submit();
-                });
-
-                it('catalog item add is requested', function () {
-                    expect(addCatalogItemMock).toHaveBeenCalledWith({
-                        item: {
-                            type: 'type',
-                            partition: 'partition',
-                            defaultName: 'Item Name'
-                        },
-                        success: jasmine.any(Function),
-                        redirectToView: true
+                    it('fallback to a default name', function () {
+                        expect(addMock.calls.mostRecent().args[0].item.defaultName).toEqual('Item Name');
                     });
                 });
             });
