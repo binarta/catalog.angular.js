@@ -1546,6 +1546,67 @@ describe('catalog', function () {
         });
     });
 
+    describe('AddCatalogPartition factory', function () {
+        var sut, restClient, config;
+
+        beforeEach(inject(function (addCatalogPartition, restServiceHandler, _config_) {
+            sut = addCatalogPartition;
+            restClient = restServiceHandler;
+            config = _config_;
+            config.baseUri = 'baseUri/';
+            config.namespace = 'namespace';
+            restClient.and.returnValue('promise');
+        }));
+
+        describe('on add', function () {
+            var partition, name, result, successSpy, rejectedSpy;
+
+            beforeEach(function () {
+                partition = 'partition';
+                name = 'name';
+                successSpy = jasmine.createSpy('success');
+                rejectedSpy = jasmine.createSpy('rejected');
+                result = sut({
+                    partition: partition,
+                    name: name,
+                    success: successSpy,
+                    rejected: rejectedSpy
+                });
+            });
+
+            it('rest client is called', function () {
+                expect(restClient).toHaveBeenCalledWith({
+                    params: {
+                        method: 'PUT',
+                        url: 'baseUri/api/entity/catalog-partition',
+                        data: {
+                            namespace: 'namespace',
+                            owner: partition,
+                            name: name
+                        },
+                        withCredentials: true
+                    },
+                    success: jasmine.any(Function),
+                    rejected: jasmine.any(Function)
+                });
+            });
+
+            it('on success', function () {
+                restClient.calls.mostRecent().args[0].success('p');
+                expect(successSpy).toHaveBeenCalledWith('p');
+            });
+
+            it('on rejected', function () {
+                restClient.calls.mostRecent().args[0].rejected('r');
+                expect(rejectedSpy).toHaveBeenCalledWith('r');
+            });
+
+            it('returns result of rest service', function () {
+                expect(result).toEqual('promise');
+            });
+        });
+    });
+
     describe('RemoveCatalogPartition factory', function () {
         var sut, restClient, config;
 

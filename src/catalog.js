@@ -3,6 +3,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])
     .factory('removeCatalogItem', ['config', 'restServiceHandler', RemoveCatalogItemFactory])
+    .factory('addCatalogPartition', ['config', 'restServiceHandler', AddCatalogPartitionFactory])
     .factory('removeCatalogPartition', ['config', 'restServiceHandler', RemoveCatalogPartitionFactory])
     .factory('findAllCatalogItemTypes', ['config', '$http', FindAllCatalogItemTypesFactory])
     .factory('findCatalogPartitions', ['config', '$http', FindCatalogPartitionsFactory])
@@ -436,6 +437,29 @@ function RemoveCatalogItemFactory(config, restServiceHandler) {
             }
         });
     };
+}
+
+function AddCatalogPartitionFactory(config, restServiceHandler) {
+    return function (args) {
+        return restServiceHandler({
+            params: {
+                method: 'PUT',
+                url: (config.baseUri || '') + 'api/entity/catalog-partition',
+                data: {
+                    namespace: config.namespace,
+                    owner: args.partition,
+                    name: args.name
+                },
+                withCredentials: true
+            },
+            success: function (partition) {
+                if (args.success) args.success(partition);
+            },
+            rejected: function (violations) {
+                if (args.rejected) args.rejected(violations);
+            }
+        });
+    }
 }
 
 function RemoveCatalogPartitionFactory(config, restServiceHandler) {
