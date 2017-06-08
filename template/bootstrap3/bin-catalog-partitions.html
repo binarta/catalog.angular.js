@@ -1,11 +1,14 @@
 <div class="row">
     <div class="col-xs-12 col-sm-4 col-md-3" ng-if="$ctrl.isPartitionListVisible()">
         <div class="list-group">
-            <div class="list-group-item" ng-if="::!$ctrl.isOnRoot()">
+            <div class="list-group-item list-group-item-back" ng-if="::!$ctrl.isOnRoot()">
                 <bin-catalog-breadcrumb template-url="bin-catalog-breadcrumb-back-link.html"></bin-catalog-breadcrumb>
             </div>
             <div class="list-group-item" ng-repeat="partition in $ctrl.partitions track by partition.id">
                 <bin-catalog-partition partition="partition"></bin-catalog-partition>
+            </div>
+            <div class="list-group-item list-group-item-add" ng-if="$ctrl.isAddAllowed()">
+                <bin-catalog-partition-add></bin-catalog-partition-add>
             </div>
         </div>
     </div>

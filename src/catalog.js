@@ -35,6 +35,7 @@ angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta
     .component('binSpotlightItems', new BinSpotlightItemsComponent())
     .component('binCatalogList', new BinCatalogListComponent())
     .component('binCatalogPartitions', new BinCatalogPartitionsComponent())
+    .component('binCatalogPartitionAdd', new BinCatalogPartitionAddComponent())
     .component('binCatalogPartition', new BinCatalogPartitionComponent())
     .component('binCatalogPartitionTitle', new BinCatalogPartitionTitleComponent())
     .component('binCatalogPartitionDescription', new BinCatalogPartitionDescriptionComponent())
@@ -1441,6 +1442,57 @@ function BinCatalogPartitionsComponent() {
         function hasCatalogPartitionAddPermission() {
             return binarta.checkpoint.profile.hasPermission('catalog.partition.add');
         }
+    }];
+}
+
+function BinCatalogPartitionAddComponent() {
+    this.templateUrl = 'bin-catalog-partition-add.html';
+
+    this.bindings = {
+        partition: '@'
+    };
+
+    this.require = {
+        partitionsCtrl: '^^binCatalogPartitions'
+    };
+
+    this.controller = ['$rootScope', 'addCatalogPartition', 'editModeRenderer', function ($rootScope, addCatalogPartition, editModeRenderer) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            if (!$ctrl.partition) $ctrl.partition = $ctrl.partitionsCtrl.partition;
+
+            $ctrl.submit = function () {
+                var scope = $rootScope.$new();
+                scope.cancel = editModeRenderer.close;
+                scope.i18nPrefix = 'catalog.partition.name';
+                scope.submit = function () {
+                    scope.working = true;
+                    addCatalogPartition({
+                        partition: $ctrl.partition,
+                        name: scope.name,
+                        success: onSuccess,
+                        rejected: onError
+                    }).finally(function () {
+                        scope.working = false;
+                    });
+                };
+
+                function onSuccess(partition) {
+                    $ctrl.partitionsCtrl.add(partition);
+                    editModeRenderer.close();
+                }
+
+                function onError(error) {
+                    scope.violations = error;
+                }
+
+                editModeRenderer.open({
+                    templateUrl: 'bin-catalog-edit-name.html',
+                    scope: scope
+                });
+            };
+        };
     }];
 }
 

@@ -3931,6 +3931,124 @@ describe('catalog', function () {
         });
     });
 
+    fdescribe('binCatalogPartitionAdd component', function () {
+        var $ctrl, $rootScope, addMock, addDeferred, editModeRenderer;
+
+        beforeEach(inject(function ($q, _$rootScope_, $componentController, _editModeRenderer_) {
+            $rootScope = _$rootScope_;
+            editModeRenderer = _editModeRenderer_;
+            addMock = jasmine.createSpy('add');
+            addDeferred = $q.defer();
+            addMock.and.returnValue(addDeferred.promise);
+            $ctrl = $componentController('binCatalogPartitionAdd', {addCatalogPartition: addMock}, {});
+            $ctrl.partitionsCtrl = {
+                partition: 'p',
+                add: jasmine.createSpy('spy')
+            };
+        }));
+
+        it('fallback to partition from partitionsCtrl', function () {
+            $ctrl.$onInit();
+            expect($ctrl.partition).toEqual('p');
+        });
+
+        describe('with partition', function () {
+            beforeEach(function () {
+                $ctrl.partition = 'partition';
+                $ctrl.$onInit();
+            });
+
+            describe('on submit', function () {
+                beforeEach(function () {
+                    $ctrl.submit();
+                });
+
+                it('edit-mode renderer is opened', function () {
+                    expect(editModeRenderer.open).toHaveBeenCalledWith({
+                        templateUrl: 'bin-catalog-edit-name.html',
+                        scope: jasmine.any(Object)
+                    });
+                });
+
+                describe('with edit-mode renderer scope', function () {
+                    var scope;
+
+                    beforeEach(function () {
+                        scope = editModeRenderer.open.calls.mostRecent().args[0].scope;
+                    });
+
+                    it('i18n prefix code is available', function () {
+                        expect(scope.i18nPrefix).toEqual('catalog.partition.name');
+                    });
+
+                    it('on cancel', function () {
+                        scope.cancel();
+                        expect(editModeRenderer.close).toHaveBeenCalled();
+                    });
+
+                    describe('on submit', function () {
+                        var name;
+
+                        beforeEach(function () {
+                            name = 'name';
+                            scope.name = name;
+                            scope.submit();
+                        });
+
+                        it('is working', function () {
+                            expect(scope.working).toBeTruthy();
+                        });
+
+                        it('add partition request', function () {
+                            expect(addMock).toHaveBeenCalledWith({
+                                partition: $ctrl.partition,
+                                name: name,
+                                success: jasmine.any(Function),
+                                rejected: jasmine.any(Function)
+                            });
+                        });
+
+                        describe('on success', function () {
+                            beforeEach(function () {
+                                addMock.calls.mostRecent().args[0].success('p');
+                                addDeferred.resolve();
+                                $rootScope.$digest();
+                            });
+
+                            it('is not working', function () {
+                                expect(scope.working).toBeFalsy();
+                            });
+
+                            it('new partition is added to list', function () {
+                                expect($ctrl.partitionsCtrl.add).toHaveBeenCalledWith('p');
+                            });
+
+                            it('edit-mode renderer is closed', function () {
+                                expect(editModeRenderer.close).toHaveBeenCalled();
+                            });
+                        });
+
+                        describe('on rejected', function () {
+                            beforeEach(function () {
+                                addMock.calls.mostRecent().args[0].rejected('v');
+                                addDeferred.reject();
+                                $rootScope.$digest();
+                            });
+
+                            it('is not working', function () {
+                                expect(scope.working).toBeFalsy();
+                            });
+
+                            it('violations are available', function () {
+                                expect(scope.violations).toEqual('v');
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
     describe('binCatalogPartition component', function () {
         var $ctrl, $rootScope, removeMock, removeDeferred, partition;
 
