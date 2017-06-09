@@ -1072,7 +1072,7 @@ function BinCatalogListItemComponent() {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
-            $ctrl.templateUrl = $ctrl.listCtrl.itemTemplateUrl || 'catalog-list-item-default.html';
+            $ctrl.templateUrl = $ctrl.listCtrl.itemTemplateUrl || 'bin-catalog-item-list-default.html';
             $ctrl.movable = $ctrl.listCtrl.movable;
 
             if ($ctrl.movable == 'true') {
@@ -1165,7 +1165,7 @@ function BinSpotlightItemsController(topics, search, viewport) {
     this.$onInit = function () {
         $ctrl.cols = $ctrl.spotlightCtrl.cols;
         $ctrl.center = $ctrl.spotlightCtrl.center;
-        $ctrl.templateUrl = $ctrl.spotlightCtrl.itemTemplateUrl || 'catalog-list-item-default.html';
+        $ctrl.templateUrl = $ctrl.spotlightCtrl.itemTemplateUrl || 'bin-catalog-item-list-default.html';
         isPinned = $ctrl.pinned == 'true';
         $ctrl.results = [];
         if (isPinned) initPinnedConfiguration();

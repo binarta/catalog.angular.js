@@ -2931,7 +2931,7 @@ describe('catalog', function () {
             });
 
             it('default template is set', function () {
-                expect($ctrl.templateUrl).toEqual('catalog-list-item-default.html');
+                expect($ctrl.templateUrl).toEqual('bin-catalog-item-list-default.html');
             });
 
             it('results are initialized to empty list', function() {
@@ -3385,7 +3385,7 @@ describe('catalog', function () {
 
         it('with default template', function () {
             $ctrl.$onInit();
-            expect($ctrl.templateUrl).toEqual('catalog-list-item-default.html');
+            expect($ctrl.templateUrl).toEqual('bin-catalog-item-list-default.html');
         });
 
         it('with specific template', function () {
