@@ -1,4 +1,1 @@
-<div i18n code="{{::$ctrl.partition}}.body" editor="full-media">
-    <div ng-bind-html="var|trust"></div>
-    <hr ng-if="var">
-</div>
+<p i18n code="{{::$ctrl.partition}}.body" editor="full-media" ng-bind-html="var|trust" ng-show="var || $ctrl.editing"></p>

@@ -1585,9 +1585,19 @@ function BinCatalogPartitionDescriptionComponent() {
     };
 
     this.controller = function () {
-        this.$onInit = function () {
-            if (!this.partition && this.listCtrl) this.partition = this.listCtrl.partition;
-        };
+        var $ctrl = this;
+
+        $ctrl.$onInit = ['topicRegistry', function (topicRegistry) {
+            if (!$ctrl.partition && $ctrl.listCtrl) $ctrl.partition = $ctrl.listCtrl.partition;
+            topicRegistry.subscribe('edit.mode', editModeListener);
+            $ctrl.$onDestroy = function () {
+                topicRegistry.unsubscribe('edit.mode', editModeListener);
+            }
+        }];
+
+        function editModeListener(e) {
+            $ctrl.editing = e;
+        }
     };
 }
 

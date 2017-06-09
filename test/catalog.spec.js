@@ -4791,7 +4791,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('binCatalogItemAdd component', function () {
+    describe('binCatalogItemAdd component', function () {
         var $ctrl, $rootScope, bindings, addMock, addDeferred, dispatcherMock;
 
         beforeEach(inject(function ($q, _$rootScope_, $componentController) {
