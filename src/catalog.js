@@ -1924,7 +1924,7 @@ function BinCatalogItemAddComponent() {
         itemsCtrl: '^^binCatalogItems'
     };
 
-    this.controller = ['$rootScope', 'addCatalogItem', 'editModeRenderer', function ($rootScope, addCatalogItem, editModeRenderer) {
+    this.controller = ['$rootScope', 'addCatalogItem', 'topicMessageDispatcher', function ($rootScope, addCatalogItem, topicMessageDispatcher) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
@@ -1933,39 +1933,33 @@ function BinCatalogItemAddComponent() {
             if (!$ctrl.redirectToView) $ctrl.redirectToView = $ctrl.itemsCtrl.redirectOnAdd;
 
             $ctrl.submit = function () {
-                var scope = $rootScope.$new();
-                scope.cancel = editModeRenderer.close;
-                scope.i18nPrefix = 'catalog.item.name';
-                scope.submit = function () {
-                    scope.working = true;
-                    addCatalogItem({
-                        item: {
-                            type: $ctrl.type,
-                            partition: $ctrl.partition,
-                            defaultName: scope.name || 'Item Name'
-                        },
-                        success: onSuccess,
-                        rejected: onRejected,
-                        redirectToView: isDisabledByDefault($ctrl.redirectToView)
-                    }).finally(function () {
-                        scope.working = false;
-                    });
-                };
+                $ctrl.working = true;
+                addCatalogItem({
+                    item: {
+                        type: $ctrl.type,
+                        partition: $ctrl.partition,
+                        defaultName: 'Item Name'
+                    },
+                    success: onSuccess,
+                    rejected: onRejected,
+                    redirectToView: isDisabledByDefault($ctrl.redirectToView)
+                }).finally(function () {
+                    $ctrl.working = false;
+                });
 
                 function onSuccess(item) {
                     if (!item.priority) item.priority = $ctrl.itemsCtrl.items.length + 1;
                     $ctrl.itemsCtrl.add(item);
-                    editModeRenderer.close();
                 }
 
-                function onRejected(error) {
-                    scope.violations = error;
+                function onRejected(violations) {
+                    for (var key in violations) {
+                        angular.forEach(violations[key], function (v) {
+                            var code = 'catalog.violation.' + key + '.' + v;
+                            topicMessageDispatcher.fire('system.warning', {code: code, default: v});
+                        });
+                    }
                 }
-
-                editModeRenderer.open({
-                    templateUrl: 'bin-catalog-edit-name.html',
-                    scope: scope
-                });
             };
         };
     }];

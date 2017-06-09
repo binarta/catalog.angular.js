@@ -4792,15 +4792,18 @@ describe('catalog', function () {
     });
 
     fdescribe('binCatalogItemAdd component', function () {
-        var $ctrl, $rootScope, bindings, addMock, addDeferred, editModeRenderer;
+        var $ctrl, $rootScope, bindings, addMock, addDeferred, dispatcherMock;
 
-        beforeEach(inject(function ($q, _$rootScope_, $componentController, _editModeRenderer_) {
+        beforeEach(inject(function ($q, _$rootScope_, $componentController) {
             $rootScope = _$rootScope_;
-            editModeRenderer = _editModeRenderer_;
+            dispatcherMock = jasmine.createSpyObj('spy', ['fire']);
             addMock = jasmine.createSpy('add');
             addDeferred = $q.defer();
             addMock.and.returnValue(addDeferred.promise);
-            $ctrl = $componentController('binCatalogItemAdd', {addCatalogItem: addMock}, {});
+            $ctrl = $componentController('binCatalogItemAdd', {
+                addCatalogItem: addMock,
+                topicMessageDispatcher: dispatcherMock
+            }, {});
             $ctrl.itemsCtrl = {
                 items: [],
                 add: jasmine.createSpy('spy')
@@ -4829,106 +4832,77 @@ describe('catalog', function () {
                 $ctrl.submit();
             });
 
-            it('edit-mode renderer is opened', function () {
-                expect(editModeRenderer.open).toHaveBeenCalledWith({
-                    templateUrl: 'bin-catalog-edit-name.html',
-                    scope: jasmine.any(Object)
+            it('is working', function () {
+                expect($ctrl.working).toBeTruthy();
+            });
+
+            it('add item request', function () {
+                expect(addMock).toHaveBeenCalledWith({
+                    item: {
+                        type: type,
+                        partition: partition,
+                        defaultName: 'Item Name'
+                    },
+                    redirectToView: false,
+                    success: jasmine.any(Function),
+                    rejected: jasmine.any(Function)
                 });
             });
 
-            describe('with edit-mode renderer scope', function () {
-                var scope;
+            describe('on success', function () {
+                var item;
 
                 beforeEach(function () {
-                    scope = editModeRenderer.open.calls.mostRecent().args[0].scope;
+                    item = {id: 'item-id'};
+                    addMock.calls.mostRecent().args[0].success(item);
+                    addDeferred.resolve();
+                    $rootScope.$digest();
                 });
 
-                it('i18n prefix code is available', function () {
-                    expect(scope.i18nPrefix).toEqual('catalog.item.name');
+                it('is not working', function () {
+                    expect($ctrl.working).toBeFalsy();
                 });
 
-                it('on cancel', function () {
-                    scope.cancel();
-                    expect(editModeRenderer.close).toHaveBeenCalled();
+                it('item priority is added', function () {
+                    expect(item.priority).toEqual(1);
                 });
 
-                describe('on submit', function () {
-                    var name;
+                it('new partition is added to list', function () {
+                    expect($ctrl.itemsCtrl.add).toHaveBeenCalledWith(item);
+                });
+            });
 
-                    beforeEach(function () {
-                        name = 'name';
-                        scope.name = name;
-                        scope.submit();
-                    });
-
-                    it('is working', function () {
-                        expect(scope.working).toBeTruthy();
-                    });
-
-                    it('add item request', function () {
-                        expect(addMock).toHaveBeenCalledWith({
-                            item: {
-                                type: type,
-                                partition: partition,
-                                defaultName: name
-                            },
-                            redirectToView: false,
-                            success: jasmine.any(Function),
-                            rejected: jasmine.any(Function)
-                        });
-                    });
-
-                    describe('on success', function () {
-                        var item;
-
-                        beforeEach(function () {
-                            item = {id: 'item-id'};
-                            addMock.calls.mostRecent().args[0].success(item);
-                            addDeferred.resolve();
-                            $rootScope.$digest();
-                        });
-
-                        it('is not working', function () {
-                            expect(scope.working).toBeFalsy();
-                        });
-
-                        it('item priority is added', function () {
-                            expect(item.priority).toEqual(1);
-                        });
-
-                        it('new partition is added to list', function () {
-                            expect($ctrl.itemsCtrl.add).toHaveBeenCalledWith(item);
-                        });
-
-                        it('edit-mode renderer is closed', function () {
-                            expect(editModeRenderer.close).toHaveBeenCalled();
-                        });
-                    });
-
-                    describe('on rejected', function () {
-                        beforeEach(function () {
-                            addMock.calls.mostRecent().args[0].rejected('v');
-                            addDeferred.reject();
-                            $rootScope.$digest();
-                        });
-
-                        it('is not working', function () {
-                            expect(scope.working).toBeFalsy();
-                        });
-
-                        it('violations are available', function () {
-                            expect(scope.violations).toEqual('v');
-                        });
-                    });
+            describe('on rejected', function () {
+                beforeEach(function () {
+                    var violations = {
+                        p: ['a', 'b'],
+                        i: ['x', 'y']
+                    };
+                    addMock.calls.mostRecent().args[0].rejected(violations);
+                    addDeferred.reject();
+                    $rootScope.$digest();
                 });
 
-                describe('on submit with no name given', function () {
-                    beforeEach(function () {
-                        scope.submit();
-                    });
+                it('is not working', function () {
+                    expect($ctrl.working).toBeFalsy();
+                });
 
-                    it('fallback to a default name', function () {
-                        expect(addMock.calls.mostRecent().args[0].item.defaultName).toEqual('Item Name');
+                it('notifications are fired', function () {
+                    expect(dispatcherMock.fire).toHaveBeenCalledWith('system.warning', {
+                        code: 'catalog.violation.p.a',
+                        default: 'a'
+                    });
+                    expect(dispatcherMock.fire).toHaveBeenCalledWith('system.warning', {
+                        code: 'catalog.violation.p.b',
+                        default: 'b'
+                    });
+                    expect(dispatcherMock.fire).toHaveBeenCalledWith('system.warning', {
+                        code: 'catalog.violation.i.x',
+                        default: 'x'
+                    });
+                    expect(dispatcherMock.fire).toHaveBeenCalledWith('system.warning', {
+                        code: 'catalog.violation.i.y',
+                        default: 'y'
                     });
                 });
             });
