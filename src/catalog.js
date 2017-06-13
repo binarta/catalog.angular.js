@@ -1584,21 +1584,21 @@ function BinCatalogPartitionDescriptionComponent() {
         listCtrl: '?^^binCatalogList'
     };
 
-    this.controller = function () {
+    this.controller = ['topicRegistry', function (topicRegistry) {
         var $ctrl = this;
 
-        $ctrl.$onInit = ['topicRegistry', function (topicRegistry) {
+        $ctrl.$onInit = function () {
             if (!$ctrl.partition && $ctrl.listCtrl) $ctrl.partition = $ctrl.listCtrl.partition;
             topicRegistry.subscribe('edit.mode', editModeListener);
             $ctrl.$onDestroy = function () {
                 topicRegistry.unsubscribe('edit.mode', editModeListener);
             }
-        }];
+        };
 
         function editModeListener(e) {
             $ctrl.editing = e;
         }
-    };
+    }];
 }
 
 function BinCatalogBreadcrumbComponent() {
