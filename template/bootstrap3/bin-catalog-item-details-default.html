@@ -13,7 +13,7 @@
         </div>
         <div class="col-xs-12 col-sm-8">
             <div class="item-body" i18n code="{{::$ctrl.item.id}}.body" editor="full"
-                 ng-bind-html="var|trust" seo-description ng-show="var">
+                 ng-bind-html="var|trust" seo-description ng-show="var || $ctrl.editing">
             </div>
 
             <div class="item-price">

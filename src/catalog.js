@@ -2136,6 +2136,11 @@ function BinCatalogItemComponent() {
 
             installPinActions();
             installRemoveAction();
+
+            topics.subscribe('edit.mode', editModeListener);
+            destroyHandlers.push(function () {
+                topics.unsubscribe('edit.mode', editModeListener);
+            });
         };
 
         $ctrl.$onDestroy = function () {
@@ -2143,6 +2148,10 @@ function BinCatalogItemComponent() {
                 handler();
             });
         };
+
+        function editModeListener(e) {
+            $ctrl.editing = e;
+        }
 
         function withDetailsController() {
             if (!$ctrl.item) listenForItemUpdates();

@@ -5489,6 +5489,27 @@ describe('catalog', function () {
                 });
             });
         });
+
+        describe('and subscribes to edit.mode notification', function () {
+            beforeEach(function () {
+                $ctrl.$onInit();
+            });
+
+            it('when in edit-mode', function () {
+                topicsMock['edit.mode'](true);
+                expect($ctrl.editing).toBeTruthy();
+            });
+
+            it('when not in edit-mode', function () {
+                topicsMock['edit.mode'](false);
+                expect($ctrl.editing).toBeFalsy();
+            });
+
+            it('unsubscribe on destroy', function () {
+                $ctrl.$onDestroy();
+                expect(topicsMock['edit.mode']).toBeUndefined();
+            });
+        });
     });
 });
 
