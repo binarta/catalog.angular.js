@@ -5087,9 +5087,9 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogItem component', function () {
+    fdescribe('binCatalogItem component', function () {
         var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
-        var item;
+        var item, findCatalogItemByIdMock;
 
         beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, topicRegistryMock) {
             binarta.checkpoint.gateway.permissions = [];
@@ -5104,18 +5104,20 @@ describe('catalog', function () {
             removeMock = jasmine.createSpy('remove');
             removeDeferred = $q.defer();
             removeMock.and.returnValue(removeDeferred.promise);
+            findCatalogItemByIdMock = jasmine.createSpy('spy');
             item = {
                 id: 'item-id'
             };
             $ctrl = $componentController('binCatalogItem', {
                 itemPinner: pinnerMock,
-                removeCatalogItem: removeMock
+                removeCatalogItem: removeMock,
+                findCatalogItemById: findCatalogItemByIdMock
             }, {});
         }));
 
         describe('with detailsCtrl', function () {
             beforeEach(function () {
-                $ctrl.detailsCtrl = jasmine.createSpyObj('spy', ['onItemUpdate', 'refresh']);
+                $ctrl.detailsCtrl = jasmine.createSpyObj('spy', ['onItemUpdate']);
             });
 
             it('not movable', function () {
@@ -5148,12 +5150,6 @@ describe('catalog', function () {
                 it('item is available on ctrl', function () {
                     expect($ctrl.item).toEqual(item);
                 });
-            });
-
-            it('on refresh', function () {
-                $ctrl.$onInit();
-                $ctrl.refresh();
-                expect($ctrl.detailsCtrl.refresh).toHaveBeenCalled();
             });
 
             it('when item is already given, do not listen for changes on detailsCtrl', function () {
@@ -5239,6 +5235,40 @@ describe('catalog', function () {
                 $ctrl.$onDestroy();
                 expect(topicsMock['catalog.item.pinned.' + item.id]).toBeUndefined();
                 expect(topicsMock['catalog.item.unpinned.' + item.id]).toBeUndefined();
+            });
+        });
+
+        describe('on refresh', function () {
+            var returned;
+
+            beforeEach(function () {
+                findCatalogItemByIdMock.and.returnValue('promise');
+                $ctrl.item = item;
+                $ctrl.$onInit();
+                returned = $ctrl.refresh();
+            });
+
+            it('item is requested', function () {
+                expect(findCatalogItemByIdMock).toHaveBeenCalledWith(item.id, jasmine.any(Function));
+            });
+
+            it('request returns promise', function () {
+                expect(returned).toEqual('promise');
+            });
+
+            describe('on success', function () {
+                var newItem;
+
+                beforeEach(function () {
+                    newItem = {
+                        id: 'new-item-id'
+                    };
+                    findCatalogItemByIdMock.calls.mostRecent().args[1](newItem);
+                });
+
+                it('item is updated', function () {
+                    expect($ctrl.item).toEqual(newItem);
+                });
             });
         });
 

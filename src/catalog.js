@@ -2113,132 +2113,140 @@ function BinCatalogItemComponent() {
         detailsCtrl: '?^^binCatalogDetails'
     };
 
-    this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', function (binarta, pinner, topics, removeCatalogItem, i18nLocation) {
-        var $ctrl = this,
-            destroyHandlers = [];
+    this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', 'findCatalogItemById',
+        function (binarta, pinner, topics, removeCatalogItem, i18nLocation, findCatalogItemById) {
+            var $ctrl = this,
+                destroyHandlers = [];
 
-        $ctrl.$onInit = function () {
-            if ($ctrl.detailsCtrl) withDetailsController();
-            else if ($ctrl.itemsCtrl) withItemsController();
+            $ctrl.$onInit = function () {
+                if ($ctrl.detailsCtrl) withDetailsController();
+                else if ($ctrl.itemsCtrl) withItemsController();
 
-            $ctrl.isMoveAllowed = function () {
-                return $ctrl.item && isEnabledByDefault($ctrl.movable) && hasCatalogItemUpdatePermission();
+                $ctrl.refresh = function () {
+                    if ($ctrl.item) return findCatalogItemById($ctrl.item.id, applyItem);
+                };
+
+                $ctrl.isMoveAllowed = function () {
+                    return $ctrl.item && isEnabledByDefault($ctrl.movable) && hasCatalogItemUpdatePermission();
+                };
+                $ctrl.isPinAllowed = function () {
+                    return $ctrl.item && !$ctrl.item.pinned && isDisabledByDefault($ctrl.pinnable) && hasCatalogItemPinPermission();
+                };
+                $ctrl.isUnpinAllowed = function () {
+                    return $ctrl.item && $ctrl.item.pinned && isDisabledByDefault($ctrl.pinnable) && hasCatalogItemUnpinPermission();
+                };
+                $ctrl.isRemoveAllowed = function () {
+                    return $ctrl.item && isEnabledByDefault($ctrl.removable) && hasCatalogItemRemovePermission();
+                };
+
+                installPinActions();
+                installRemoveAction();
+
+                topics.subscribe('edit.mode', editModeListener);
+                destroyHandlers.push(function () {
+                    topics.unsubscribe('edit.mode', editModeListener);
+                });
             };
-            $ctrl.isPinAllowed = function () {
-                return $ctrl.item && !$ctrl.item.pinned && isDisabledByDefault($ctrl.pinnable) && hasCatalogItemPinPermission();
-            };
-            $ctrl.isUnpinAllowed = function () {
-                return $ctrl.item && $ctrl.item.pinned && isDisabledByDefault($ctrl.pinnable) && hasCatalogItemUnpinPermission();
-            };
-            $ctrl.isRemoveAllowed = function () {
-                return $ctrl.item && isEnabledByDefault($ctrl.removable) && hasCatalogItemRemovePermission();
+
+            $ctrl.$onDestroy = function () {
+                destroyHandlers.forEach(function (handler) {
+                    handler();
+                });
             };
 
-            installPinActions();
-            installRemoveAction();
+            function editModeListener(e) {
+                $ctrl.editing = e;
+            }
 
-            topics.subscribe('edit.mode', editModeListener);
-            destroyHandlers.push(function () {
-                topics.unsubscribe('edit.mode', editModeListener);
-            });
-        };
+            function applyItem(item) {
+                $ctrl.item = item;
+            }
 
-        $ctrl.$onDestroy = function () {
-            destroyHandlers.forEach(function (handler) {
-                handler();
-            });
-        };
+            function withDetailsController() {
+                if (!$ctrl.item) listenForItemUpdates();
+                if (!$ctrl.templateUrl) $ctrl.templateUrl = 'bin-catalog-item-details-default.html';
+                $ctrl.movable = 'false';
 
-        function editModeListener(e) {
-            $ctrl.editing = e;
-        }
+                function listenForItemUpdates() {
+                    $ctrl.detailsCtrl.onItemUpdate(function (item) {
+                        $ctrl.item = item;
+                    });
+                }
+            }
 
-        function withDetailsController() {
-            if (!$ctrl.item) listenForItemUpdates();
-            if (!$ctrl.templateUrl) $ctrl.templateUrl = 'bin-catalog-item-details-default.html';
-            $ctrl.movable = 'false';
-            $ctrl.refresh = $ctrl.detailsCtrl.refresh;
+            function withItemsController() {
+                if (!$ctrl.templateUrl) $ctrl.templateUrl = $ctrl.itemsCtrl.itemTemplateUrl || 'bin-catalog-item-list-default.html';
+                if (!$ctrl.movable) $ctrl.movable = $ctrl.itemsCtrl.movable;
+                if (!$ctrl.pinnable) $ctrl.pinnable = $ctrl.itemsCtrl.pinnable;
+                if (!$ctrl.removable) $ctrl.removable = $ctrl.itemsCtrl.removable;
+                installMoveActions();
 
-            function listenForItemUpdates() {
-                $ctrl.detailsCtrl.onItemUpdate(function (item) {
-                    $ctrl.item = item;
+                var pinnedTopic = 'catalog.item.pinned.' + $ctrl.item.id;
+                var unpinnedTopic = 'catalog.item.unpinned.' + $ctrl.item.id;
+                topics.subscribe(pinnedTopic, pin);
+                topics.subscribe(unpinnedTopic, unpin);
+                destroyHandlers.push(function () {
+                    topics.unsubscribe(pinnedTopic, pin);
+                });
+                destroyHandlers.push(function () {
+                    topics.unsubscribe(unpinnedTopic, unpin);
                 });
             }
-        }
 
-        function withItemsController() {
-            if (!$ctrl.templateUrl) $ctrl.templateUrl = $ctrl.itemsCtrl.itemTemplateUrl || 'bin-catalog-item-list-default.html';
-            if (!$ctrl.movable) $ctrl.movable = $ctrl.itemsCtrl.movable;
-            if (!$ctrl.pinnable) $ctrl.pinnable = $ctrl.itemsCtrl.pinnable;
-            if (!$ctrl.removable) $ctrl.removable = $ctrl.itemsCtrl.removable;
-            installMoveActions();
+            function hasCatalogItemUpdatePermission() {
+                return binarta.checkpoint.profile.hasPermission('catalog.item.update');
+            }
 
-            var pinnedTopic = 'catalog.item.pinned.' + $ctrl.item.id;
-            var unpinnedTopic = 'catalog.item.unpinned.' + $ctrl.item.id;
-            topics.subscribe(pinnedTopic, pin);
-            topics.subscribe(unpinnedTopic, unpin);
-            destroyHandlers.push(function () {
-                topics.unsubscribe(pinnedTopic, pin);
-            });
-            destroyHandlers.push(function () {
-                topics.unsubscribe(unpinnedTopic, unpin);
-            });
-        }
+            function hasCatalogItemPinPermission() {
+                return binarta.checkpoint.profile.hasPermission('catalog.item.pin');
+            }
 
-        function hasCatalogItemUpdatePermission() {
-            return binarta.checkpoint.profile.hasPermission('catalog.item.update');
-        }
+            function hasCatalogItemUnpinPermission() {
+                return binarta.checkpoint.profile.hasPermission('catalog.item.unpin');
+            }
 
-        function hasCatalogItemPinPermission() {
-            return binarta.checkpoint.profile.hasPermission('catalog.item.pin');
-        }
+            function hasCatalogItemRemovePermission() {
+                return binarta.checkpoint.profile.hasPermission('catalog.item.remove');
+            }
 
-        function hasCatalogItemUnpinPermission() {
-            return binarta.checkpoint.profile.hasPermission('catalog.item.unpin');
-        }
+            function installMoveActions() {
+                $ctrl.moveUp = function () {return $ctrl.itemsCtrl.moveUp($ctrl.item);};
+                $ctrl.moveDown = function () {return $ctrl.itemsCtrl.moveDown($ctrl.item);};
+                $ctrl.moveTop = function () {return $ctrl.itemsCtrl.moveTop($ctrl.item);};
+                $ctrl.moveBottom = function () {return $ctrl.itemsCtrl.moveBottom($ctrl.item);};
+                $ctrl.isFirst = function () {return $ctrl.itemsCtrl.items[0] === $ctrl.item;};
+                $ctrl.isLast = function () {return $ctrl.itemsCtrl.items[$ctrl.itemsCtrl.items.length - 1] === $ctrl.item;};
+            }
 
-        function hasCatalogItemRemovePermission() {
-            return binarta.checkpoint.profile.hasPermission('catalog.item.remove');
-        }
+            function installPinActions() {
+                $ctrl.pin = function() {return pinner.pin({item:$ctrl.item, success:pin});};
+                $ctrl.unpin = function() {return pinner.unpin({item:$ctrl.item, success: unpin});};
+            }
 
-        function installMoveActions() {
-            $ctrl.moveUp = function () {return $ctrl.itemsCtrl.moveUp($ctrl.item);};
-            $ctrl.moveDown = function () {return $ctrl.itemsCtrl.moveDown($ctrl.item);};
-            $ctrl.moveTop = function () {return $ctrl.itemsCtrl.moveTop($ctrl.item);};
-            $ctrl.moveBottom = function () {return $ctrl.itemsCtrl.moveBottom($ctrl.item);};
-            $ctrl.isFirst = function () {return $ctrl.itemsCtrl.items[0] === $ctrl.item;};
-            $ctrl.isLast = function () {return $ctrl.itemsCtrl.items[$ctrl.itemsCtrl.items.length - 1] === $ctrl.item;};
-        }
+            function pin() {
+                $ctrl.item.pinned = true;
+            }
 
-        function installPinActions() {
-            $ctrl.pin = function() {return pinner.pin({item:$ctrl.item, success:pin});};
-            $ctrl.unpin = function() {return pinner.unpin({item:$ctrl.item, success: unpin});};
-        }
+            function unpin() {
+                $ctrl.item.pinned = false;
+            }
 
-        function pin() {
-            $ctrl.item.pinned = true;
-        }
+            function installRemoveAction() {
+                var removed = false;
 
-        function unpin() {
-            $ctrl.item.pinned = false;
-        }
+                $ctrl.remove = function () {
+                    if (removed) return;
+                    return removeCatalogItem({id: $ctrl.item.id}).then(function () {
+                        removed = true;
+                        if ($ctrl.detailsCtrl) redirectToPartition($ctrl.detailsCtrl.partition);
+                        if ($ctrl.itemsCtrl) $ctrl.itemsCtrl.remove($ctrl.item);
+                    });
+                };
+            }
 
-        function installRemoveAction() {
-            var removed = false;
-
-            $ctrl.remove = function () {
-                if (removed) return;
-                return removeCatalogItem({id: $ctrl.item.id}).then(function () {
-                    removed = true;
-                    if ($ctrl.detailsCtrl) redirectToPartition($ctrl.detailsCtrl.partition);
-                    if ($ctrl.itemsCtrl) $ctrl.itemsCtrl.remove($ctrl.item);
-                });
-            };
-        }
-
-        function redirectToPartition(partition) {
-            i18nLocation.path('/browse' + partition);
-        }
+            function redirectToPartition(partition) {
+                i18nLocation.path('/browse' + partition);
+            }
     }];
 }
 
