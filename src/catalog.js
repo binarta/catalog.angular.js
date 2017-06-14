@@ -1271,6 +1271,11 @@ function splitInRowsDirectiveFactory($log) {
 // Start of new components
 
 function BinCatalogListComponent() {
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'bin-catalog-transclude.html';
+    }];
+    this.transclude = true;
+
     this.bindings = {
         type: '@',
         partition: '@',
@@ -2052,6 +2057,11 @@ function BinCatalogEmptyComponent() {
 }
 
 function BinCatalogDetailsComponent() {
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'bin-catalog-transclude.html';
+    }];
+    this.transclude = true;
+
     this.bindings = {
         type: '@',
         partition: '@',
