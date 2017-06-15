@@ -4482,6 +4482,7 @@ describe('catalog', function () {
                     pinnable: 'true',
                     removable: 'false',
                     addable: 'false',
+                    linkable: 'true',
                     redirectOnAdd: 'true',
                     itemTemplateUrl: 'template',
                     cols: 'cols',
@@ -4499,6 +4500,7 @@ describe('catalog', function () {
                 expect($ctrl.pinnable).toEqual('true');
                 expect($ctrl.removable).toEqual('false');
                 expect($ctrl.addable).toEqual('false');
+                expect($ctrl.linkable).toEqual('true');
                 expect($ctrl.redirectOnAdd).toEqual('true');
                 expect($ctrl.itemTemplateUrl).toEqual('template');
                 expect($ctrl.cols).toEqual('cols');
@@ -5089,15 +5091,19 @@ describe('catalog', function () {
 
     describe('binCatalogItem component', function () {
         var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
-        var item, findCatalogItemByIdMock;
+        var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer;
 
-        beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, topicRegistryMock) {
+        beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, topicRegistryMock,
+                                    editModeRenderer, binLink, updateCatalogItemWriter) {
             binarta.checkpoint.gateway.permissions = [];
             binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p', email: 'e'});
             $rootScope = _$rootScope_;
             $componentController = _$componentController_;
             $location = _$location_;
             topicsMock = topicRegistryMock;
+            editModeRendererMock = editModeRenderer;
+            binLinkMock = binLink;
+            writer = updateCatalogItemWriter;
             pinnerMock = {};
             pinnerMock.pin = jasmine.createSpy('pin').and.returnValue(true);
             pinnerMock.unpin = jasmine.createSpy('unpin').and.returnValue(true);
@@ -5402,6 +5408,35 @@ describe('catalog', function () {
             });
         });
 
+        describe('check if link action is allowed', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.$onInit();
+            });
+
+            it('when linkable but no permission', function () {
+                $ctrl.linkable = 'true';
+                expect($ctrl.isLinkAllowed()).toBeFalsy();
+            });
+
+            describe('when user has permission', function () {
+                beforeEach(function () {
+                    binarta.checkpoint.gateway.addPermission('catalog.item.update');
+                    binarta.checkpoint.profile.refresh();
+                });
+
+                it('and is linkable', function () {
+                    $ctrl.linkable = 'true';
+                    expect($ctrl.isLinkAllowed()).toBeTruthy();
+                });
+
+                it('and is not removable', function () {
+                    $ctrl.linkable = 'false';
+                    expect($ctrl.isLinkAllowed()).toBeFalsy();
+                });
+            });
+        });
+
         describe('when items are pinnable', function () {
             beforeEach(function () {
                 $ctrl.item = item;
@@ -5515,6 +5550,151 @@ describe('catalog', function () {
 
                     it('item is removed from items', function () {
                         expect($ctrl.itemsCtrl.remove).toHaveBeenCalledWith(item);
+                    });
+                });
+            });
+        });
+
+        describe('and item is linkable', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.removable = 'true';
+                $ctrl.$onInit();
+            });
+
+            describe('on link', function () {
+                beforeEach(function () {
+                    $ctrl.link();
+                });
+
+                it('binLink is opened', function () {
+                    expect(binLinkMock.open).toHaveBeenCalled();
+                });
+
+                describe('onSubmit callback', function () {
+                    var link, target, successSpy, errorSpy;
+
+                    beforeEach(function () {
+                        link = 'link';
+                        target = '_blank';
+                        successSpy = jasmine.createSpy('spy');
+                        errorSpy = jasmine.createSpy('spy');
+                        binLinkMock.open.calls.mostRecent().args[0].onSubmit({
+                            href: link,
+                            target: target,
+                            success: successSpy,
+                            error: errorSpy
+                        });
+                    });
+
+                    it('writer is called', function () {
+                        expect(writer).toHaveBeenCalledWith({
+                            data: {
+                                treatInputAsId: false,
+                                context: 'update',
+                                id: $ctrl.item.id,
+                                type: $ctrl.item.type,
+                                link: link,
+                                linkTarget: target
+                            },
+                            success: jasmine.any(Function),
+                            error: jasmine.any(Function)
+                        });
+                    });
+
+                    describe('on write success', function () {
+                        beforeEach(function () {
+                            writer.calls.mostRecent().args[0].success();
+                        });
+
+                        it('item is updated', function () {
+                            expect($ctrl.item.link).toEqual(link);
+                            expect($ctrl.item.linkTarget).toEqual(target);
+                        });
+
+                        it('success callback is executed', function () {
+                            expect(successSpy).toHaveBeenCalled();
+                        });
+                    });
+
+                    describe('on write success', function () {
+                        beforeEach(function () {
+                            writer.calls.mostRecent().args[0].error();
+                        });
+
+                        it('error callback is executed', function () {
+                            expect(errorSpy).toHaveBeenCalled();
+                        });
+                    });
+                });
+
+                describe('onRemove callback', function () {
+                    var successSpy, errorSpy;
+
+                    beforeEach(function () {
+                        successSpy = jasmine.createSpy('spy');
+                        errorSpy = jasmine.createSpy('spy');
+                        binLinkMock.open.calls.mostRecent().args[0].onRemove({
+                            success: successSpy,
+                            error: errorSpy
+                        });
+                    });
+
+                    it('writer is called', function () {
+                        expect(writer).toHaveBeenCalledWith({
+                            data: {
+                                treatInputAsId: false,
+                                context: 'update',
+                                id: $ctrl.item.id,
+                                type: $ctrl.item.type,
+                                link: '',
+                                linkTarget: ''
+                            },
+                            success: jasmine.any(Function),
+                            error: jasmine.any(Function)
+                        });
+                    });
+
+                    describe('on write success', function () {
+                        beforeEach(function () {
+                            writer.calls.mostRecent().args[0].success();
+                        });
+
+                        it('item is updated', function () {
+                            expect($ctrl.item.link).toEqual('');
+                            expect($ctrl.item.linkTarget).toEqual('');
+                        });
+
+                        it('success callback is executed', function () {
+                            expect(successSpy).toHaveBeenCalled();
+                        });
+                    });
+
+                    describe('on write success', function () {
+                        beforeEach(function () {
+                            writer.calls.mostRecent().args[0].error();
+                        });
+
+                        it('error callback is executed', function () {
+                            expect(errorSpy).toHaveBeenCalled();
+                        });
+                    });
+                });
+            });
+
+            describe('on link with previous data', function () {
+                beforeEach(function () {
+                    $ctrl.item.link = 'http://test.com';
+                    $ctrl.item.linkTarget = '_blank';
+                    $ctrl.link();
+                });
+
+                it('binLink is opened', function () {
+                    expect(binLinkMock.open).toHaveBeenCalledWith({
+                        href: $ctrl.item.link,
+                        target: $ctrl.item.linkTarget,
+                        onSubmit: jasmine.any(Function),
+                        onRemove: jasmine.any(Function)
                     });
                 });
             });

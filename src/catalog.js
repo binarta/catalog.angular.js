@@ -1,4 +1,4 @@
-angular.module('catalog', ['ngRoute', 'binarta-applicationjs-angular1', 'binarta-checkpointjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price'])
+angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular1', 'binarta-checkpointjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price'])
     .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])
@@ -1736,6 +1736,7 @@ function BinCatalogItemGroupsComponent() {
         pinnable: '@',
         removable: '@',
         addable: '@',
+        linkable: '@',
         redirectOnAdd: '@',
         itemTemplateUrl: '@',
         cols: '@',
@@ -1768,6 +1769,7 @@ function BinCatalogItemsComponent() {
         pinnable: '@',
         removable: '@',
         addable: '@',
+        linkable: '@',
         redirectOnAdd: '@',
         itemTemplateUrl: '@',
         cols: '@',
@@ -1793,6 +1795,7 @@ function BinCatalogItemsComponent() {
                 if (!$ctrl.pinnable) $ctrl.pinnable = $ctrl.groupsCtrl.pinnable;
                 if (!$ctrl.removable) $ctrl.removable = $ctrl.groupsCtrl.removable;
                 if (!$ctrl.addable) $ctrl.addable = $ctrl.groupsCtrl.addable;
+                if (!$ctrl.linkable) $ctrl.linkable = $ctrl.groupsCtrl.linkable;
                 if (!$ctrl.redirectOnAdd) $ctrl.redirectOnAdd = $ctrl.groupsCtrl.redirectOnAdd;
                 if (!$ctrl.itemTemplateUrl) $ctrl.itemTemplateUrl = $ctrl.groupsCtrl.itemTemplateUrl;
                 if (!$ctrl.cols) $ctrl.cols = $ctrl.groupsCtrl.cols;
@@ -2115,7 +2118,8 @@ function BinCatalogItemComponent() {
         item: '<',
         templateUrl: '@',
         pinnable: '@',
-        removable: '@'
+        removable: '@',
+        linkable: '@'
     };
 
     this.require = {
@@ -2123,8 +2127,10 @@ function BinCatalogItemComponent() {
         detailsCtrl: '?^^binCatalogDetails'
     };
 
-    this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', 'findCatalogItemById',
-        function (binarta, pinner, topics, removeCatalogItem, i18nLocation, findCatalogItemById) {
+    this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation',
+        'findCatalogItemById', 'updateCatalogItemWriter', 'binLink',
+        function (binarta, pinner, topics, removeCatalogItem, i18nLocation, findCatalogItemById,
+                  updateCatalogItem, binLink) {
             var $ctrl = this,
                 destroyHandlers = [];
 
@@ -2148,9 +2154,13 @@ function BinCatalogItemComponent() {
                 $ctrl.isRemoveAllowed = function () {
                     return $ctrl.item && isEnabledByDefault($ctrl.removable) && hasCatalogItemRemovePermission();
                 };
+                $ctrl.isLinkAllowed = function () {
+                    return $ctrl.item && isDisabledByDefault($ctrl.linkable) && hasCatalogItemUpdatePermission();
+                };
 
                 installPinActions();
                 installRemoveAction();
+                installLinkAction();
 
                 topics.subscribe('edit.mode', editModeListener);
                 destroyHandlers.push(function () {
@@ -2189,6 +2199,7 @@ function BinCatalogItemComponent() {
                 if (!$ctrl.movable) $ctrl.movable = $ctrl.itemsCtrl.movable;
                 if (!$ctrl.pinnable) $ctrl.pinnable = $ctrl.itemsCtrl.pinnable;
                 if (!$ctrl.removable) $ctrl.removable = $ctrl.itemsCtrl.removable;
+                if (!$ctrl.linkable) $ctrl.linkable = $ctrl.itemsCtrl.linkable;
                 installMoveActions();
 
                 var pinnedTopic = 'catalog.item.pinned.' + $ctrl.item.id;
@@ -2256,6 +2267,42 @@ function BinCatalogItemComponent() {
 
             function redirectToPartition(partition) {
                 i18nLocation.path('/browse' + partition);
+            }
+
+            function installLinkAction() {
+                $ctrl.link = function () {
+                    binLink.open({
+                        href: $ctrl.item.link,
+                        target: $ctrl.item.linkTarget,
+                        onSubmit: onSubmit,
+                        onRemove: onRemove
+                    });
+                };
+
+                function onRemove(args) {
+                    onSubmit({href: '', target: '', success: args.success, error: args.error});
+                }
+
+                function onSubmit(args) {
+                    updateCatalogItem({
+                        data: {
+                            treatInputAsId: false,
+                            context: 'update',
+                            id: $ctrl.item.id,
+                            type: $ctrl.item.type,
+                            link: args.href,
+                            linkTarget: args.target
+                        },
+                        success: onSuccess,
+                        error: args.error
+                    });
+
+                    function onSuccess() {
+                        $ctrl.item.link = args.href;
+                        $ctrl.item.linkTarget = args.target;
+                        args.success();
+                    }
+                }
             }
     }];
 }
