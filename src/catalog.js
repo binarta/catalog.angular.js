@@ -2336,14 +2336,14 @@ function BinCatalogItemComponent() {
                     if (removed) return;
                     return removeCatalogItem({id: $ctrl.item.id}).then(function () {
                         removed = true;
-                        if ($ctrl.detailsCtrl) redirectToPartition($ctrl.detailsCtrl.partition);
+                        if ($ctrl.detailsCtrl) redirectToPartition($ctrl.detailsCtrl.type, $ctrl.detailsCtrl.partition);
                         if ($ctrl.itemsCtrl) $ctrl.itemsCtrl.remove($ctrl.item);
                     });
                 };
             }
 
-            function redirectToPartition(partition) {
-                i18nLocation.path('/browse' + partition);
+            function redirectToPartition(type, partition) {
+                i18nLocation.path(type === 'blog' ? '/' + type : '/browse' + partition);
             }
 
             function installLinkAction() {

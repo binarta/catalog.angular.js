@@ -5765,6 +5765,21 @@ describe('catalog', function () {
                     });
                 });
 
+                describe('when used with detailsCtrl and type is "blog"', function () {
+                    beforeEach(function () {
+                        $ctrl.detailsCtrl = {
+                            type: 'blog',
+                            partition: '/partition'
+                        };
+                        removeDeferred.resolve();
+                        $rootScope.$digest();
+                    });
+
+                    it('redirect to browse page', function () {
+                        expect($location.path()).toEqual('/lang/blog');
+                    });
+                });
+
                 describe('when used with itemsCtrl', function () {
                     beforeEach(function () {
                         $ctrl.itemsCtrl = {
