@@ -1802,6 +1802,7 @@ function BinCatalogItemGroupsComponent() {
         removable: '@',
         addable: '@',
         linkable: '@',
+        publishable: '@',
         redirectOnAdd: '@',
         itemTemplateUrl: '@',
         cols: '@',
@@ -1835,6 +1836,7 @@ function BinCatalogItemsComponent() {
         removable: '@',
         addable: '@',
         linkable: '@',
+        publishable: '@',
         redirectOnAdd: '@',
         itemTemplateUrl: '@',
         cols: '@',
@@ -1861,6 +1863,7 @@ function BinCatalogItemsComponent() {
                 if (!$ctrl.removable) $ctrl.removable = $ctrl.groupsCtrl.removable;
                 if (!$ctrl.addable) $ctrl.addable = $ctrl.groupsCtrl.addable;
                 if (!$ctrl.linkable) $ctrl.linkable = $ctrl.groupsCtrl.linkable;
+                if (!$ctrl.publishable) $ctrl.publishable = $ctrl.groupsCtrl.publishable;
                 if (!$ctrl.redirectOnAdd) $ctrl.redirectOnAdd = $ctrl.groupsCtrl.redirectOnAdd;
                 if (!$ctrl.itemTemplateUrl) $ctrl.itemTemplateUrl = $ctrl.groupsCtrl.itemTemplateUrl;
                 if (!$ctrl.cols) $ctrl.cols = $ctrl.groupsCtrl.cols;
@@ -2184,7 +2187,8 @@ function BinCatalogItemComponent() {
         templateUrl: '@',
         pinnable: '@',
         removable: '@',
-        linkable: '@'
+        linkable: '@',
+        publishable: '@'
     };
 
     this.require = {
@@ -2193,9 +2197,9 @@ function BinCatalogItemComponent() {
     };
 
     this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation',
-        'findCatalogItemById', 'updateCatalogItemWriter', 'binLink',
+        'findCatalogItemById', 'updateCatalogItemWriter', 'binLink', 'binCatalogItemPublisher',
         function (binarta, pinner, topics, removeCatalogItem, i18nLocation, findCatalogItemById,
-                  updateCatalogItem, binLink) {
+                  updateCatalogItem, binLink, publisher) {
             var $ctrl = this,
                 destroyHandlers = [];
 
@@ -2222,10 +2226,17 @@ function BinCatalogItemComponent() {
                 $ctrl.isLinkAllowed = function () {
                     return $ctrl.item && isDisabledByDefault($ctrl.linkable) && hasCatalogItemUpdatePermission();
                 };
+                $ctrl.isPublishAllowed = function () {
+                    return $ctrl.item && $ctrl.item.status === 'draft' && isDisabledByDefault($ctrl.publishable) && hasCatalogItemUpdatePermission();
+                };
+                $ctrl.isUnpublishAllowed = function () {
+                    return $ctrl.item && $ctrl.item.status === 'published' && isDisabledByDefault($ctrl.publishable) && hasCatalogItemUpdatePermission();
+                };
 
                 installPinActions();
                 installRemoveAction();
                 installLinkAction();
+                installPublishAction();
 
                 topics.subscribe('edit.mode', editModeListener);
                 destroyHandlers.push(function () {
@@ -2265,6 +2276,7 @@ function BinCatalogItemComponent() {
                 if (!$ctrl.pinnable) $ctrl.pinnable = $ctrl.itemsCtrl.pinnable;
                 if (!$ctrl.removable) $ctrl.removable = $ctrl.itemsCtrl.removable;
                 if (!$ctrl.linkable) $ctrl.linkable = $ctrl.itemsCtrl.linkable;
+                if (!$ctrl.publishable) $ctrl.publishable = $ctrl.itemsCtrl.publishable;
                 installMoveActions();
 
                 var pinnedTopic = 'catalog.item.pinned.' + $ctrl.item.id;
@@ -2368,6 +2380,16 @@ function BinCatalogItemComponent() {
                         args.success();
                     }
                 }
+            }
+
+            function installPublishAction() {
+                $ctrl.publish = function () {
+                    publisher.publish($ctrl.item);
+                };
+
+                $ctrl.unpublish = function () {
+                    return publisher.unpublish($ctrl.item);
+                };
             }
     }];
 }

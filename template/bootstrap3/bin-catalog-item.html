@@ -21,6 +21,16 @@
                              i18n-code="catalog.item.unpin.button"
                              ng-show="$ctrl.isUnpinAllowed()">
             </bin-edit-action>
+            <bin-edit-action action="$ctrl.publish()"
+                             icon-class="fa-eye"
+                             i18n-code="catalog.item.publish"
+                             ng-show="$ctrl.isPublishAllowed()">
+            </bin-edit-action>
+            <bin-edit-action action="$ctrl.unpublish()"
+                             icon-class="fa-eye-slash"
+                             i18n-code="catalog.item.unpublish"
+                             ng-show="$ctrl.isUnpublishAllowed()">
+            </bin-edit-action>
             <bin-edit-actions-selector for="delete" danger
                                        icon-class="fa-trash"
                                        i18n-code="catalog.item.remove"

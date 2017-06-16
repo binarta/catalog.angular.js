@@ -4627,6 +4627,7 @@ describe('catalog', function () {
                     removable: 'false',
                     addable: 'false',
                     linkable: 'true',
+                    publishable: 'true',
                     redirectOnAdd: 'true',
                     itemTemplateUrl: 'template',
                     cols: 'cols',
@@ -4645,6 +4646,7 @@ describe('catalog', function () {
                 expect($ctrl.removable).toEqual('false');
                 expect($ctrl.addable).toEqual('false');
                 expect($ctrl.linkable).toEqual('true');
+                expect($ctrl.publishable).toEqual('true');
                 expect($ctrl.redirectOnAdd).toEqual('true');
                 expect($ctrl.itemTemplateUrl).toEqual('template');
                 expect($ctrl.cols).toEqual('cols');
@@ -5235,7 +5237,7 @@ describe('catalog', function () {
 
     describe('binCatalogItem component', function () {
         var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
-        var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer;
+        var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock;
 
         beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, topicRegistryMock,
                                     editModeRenderer, binLink, updateCatalogItemWriter) {
@@ -5255,13 +5257,15 @@ describe('catalog', function () {
             removeDeferred = $q.defer();
             removeMock.and.returnValue(removeDeferred.promise);
             findCatalogItemByIdMock = jasmine.createSpy('spy');
+            publisherMock = jasmine.createSpyObj('spy', ['publish', 'unpublish']);
             item = {
                 id: 'item-id'
             };
             $ctrl = $componentController('binCatalogItem', {
                 itemPinner: pinnerMock,
                 removeCatalogItem: removeMock,
-                findCatalogItemById: findCatalogItemByIdMock
+                findCatalogItemById: findCatalogItemByIdMock,
+                binCatalogItemPublisher: publisherMock
             }, {});
         }));
 
@@ -5574,9 +5578,89 @@ describe('catalog', function () {
                     expect($ctrl.isLinkAllowed()).toBeTruthy();
                 });
 
-                it('and is not removable', function () {
+                it('and is not linkable', function () {
                     $ctrl.linkable = 'false';
                     expect($ctrl.isLinkAllowed()).toBeFalsy();
+                });
+            });
+        });
+
+        describe('check if publish action is allowed', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.$onInit();
+            });
+
+            it('when publishable but no permission', function () {
+                $ctrl.publishable = 'true';
+                expect($ctrl.isPublishAllowed()).toBeFalsy();
+            });
+
+            describe('when user has permission', function () {
+                beforeEach(function () {
+                    binarta.checkpoint.gateway.addPermission('catalog.item.update');
+                    binarta.checkpoint.profile.refresh();
+                });
+
+                it('and is publishable', function () {
+                    $ctrl.publishable = 'true';
+                    expect($ctrl.isPublishAllowed()).toBeFalsy();
+                });
+
+                describe('and item is in status "draft"', function () {
+                    beforeEach(function () {
+                        $ctrl.item.status = 'draft';
+                    });
+
+                    it('and is publishable', function () {
+                        $ctrl.publishable = 'true';
+                        expect($ctrl.isPublishAllowed()).toBeTruthy();
+                    });
+
+                    it('and is not publishable', function () {
+                        $ctrl.publishable = 'false';
+                        expect($ctrl.isPublishAllowed()).toBeFalsy();
+                    });
+                });
+            });
+        });
+
+        describe('check if unpublish action is allowed', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.$onInit();
+            });
+
+            it('when publishable but no permission', function () {
+                $ctrl.publishable = 'true';
+                expect($ctrl.isUnpublishAllowed()).toBeFalsy();
+            });
+
+            describe('when user has permission', function () {
+                beforeEach(function () {
+                    binarta.checkpoint.gateway.addPermission('catalog.item.update');
+                    binarta.checkpoint.profile.refresh();
+                });
+
+                it('and is publishable', function () {
+                    $ctrl.publishable = 'true';
+                    expect($ctrl.isUnpublishAllowed()).toBeFalsy();
+                });
+
+                describe('and item is in status "published"', function () {
+                    beforeEach(function () {
+                        $ctrl.item.status = 'published';
+                    });
+
+                    it('and is publishable', function () {
+                        $ctrl.publishable = 'true';
+                        expect($ctrl.isUnpublishAllowed()).toBeTruthy();
+                    });
+
+                    it('and is not publishable', function () {
+                        $ctrl.publishable = 'false';
+                        expect($ctrl.isUnpublishAllowed()).toBeFalsy();
+                    });
                 });
             });
         });
@@ -5584,7 +5668,6 @@ describe('catalog', function () {
         describe('when items are pinnable', function () {
             beforeEach(function () {
                 $ctrl.item = item;
-                $ctrl.pinnable = 'true';
                 $ctrl.$onInit();
             });
 
@@ -5644,7 +5727,6 @@ describe('catalog', function () {
         describe('and item is removable', function () {
             beforeEach(function () {
                 $ctrl.item = item;
-                $ctrl.removable = 'true';
                 $ctrl.$onInit();
             });
 
@@ -5702,7 +5784,6 @@ describe('catalog', function () {
         describe('and item is linkable', function () {
             beforeEach(function () {
                 $ctrl.item = item;
-                $ctrl.removable = 'true';
                 $ctrl.$onInit();
             });
 
@@ -5840,6 +5921,35 @@ describe('catalog', function () {
                         onSubmit: jasmine.any(Function),
                         onRemove: jasmine.any(Function)
                     });
+                });
+            });
+        });
+
+        describe('and item is publishable', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.$onInit();
+            });
+
+            it('on publish', function () {
+                $ctrl.publish();
+                expect(publisherMock.publish).toHaveBeenCalledWith(item);
+            });
+
+            describe('on unpublish', function () {
+                var returned;
+
+                beforeEach(function () {
+                    publisherMock.unpublish.and.returnValue('promise');
+                    returned = $ctrl.unpublish();
+                });
+
+                it('unpublish is requested', function () {
+                    expect(publisherMock.unpublish).toHaveBeenCalledWith(item);
+                });
+
+                it('propagates promise', function () {
+                    expect(returned).toEqual('promise');
                 });
             });
         });
