@@ -1,4 +1,4 @@
-angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular1', 'binarta-checkpointjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price'])
+angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular1', 'binarta-checkpointjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price', 'momentx'])
     .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])
@@ -12,6 +12,7 @@ angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular
     .factory('catalogPathProcessor', [CatalogPathProcessorFactory])
     .factory('catalogPathParser', ['catalogPathProcessor', 'catalogPathLimit', CatalogPathParserFactory])
     .factory('itemPinner', ['topicMessageDispatcher', 'restServiceHandler', 'config', ItemPinnerFactory])
+    .service('binCatalogItemPublisher', ['$rootScope', 'moment', 'updateCatalogItemWriter', 'editModeRenderer', BinCatalogItemPublisherService])
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
     .controller('AddToCatalogController', ['$scope', '$routeParams', 'topicRegistry', 'findAllCatalogItemTypes', 'addCatalogItem', 'usecaseAdapterFactory', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
@@ -1269,6 +1270,70 @@ function splitInRowsDirectiveFactory($log) {
 
 
 // Start of new components
+
+function BinCatalogItemPublisherService($rootScope, moment, updateCatalogItem, editModeRenderer) {
+    var published = 'published', draft = 'draft', timeFormat = 'lll';
+
+    this.publish = function (item) {
+        var scope = $rootScope.$new();
+        scope.publicationTime = item.publicationTime ? moment(item.publicationTime) : moment();
+        scope.cancel = editModeRenderer.close;
+
+        scope.submit = function () {
+            scope.violation = false;
+            scope.working = true;
+            var time = moment(scope.publicationTime, timeFormat).format();
+
+            updateCatalogItem({
+                data: {
+                    treatInputAsId: false,
+                    context: 'update',
+                    id: item.id,
+                    type: item.type,
+                    blogType: item.blogType,
+                    status: published,
+                    publicationTime: time
+                },
+                success: onSuccess,
+                error: onError
+            });
+
+            function onSuccess() {
+                item.status = published;
+                item.publicationTime = time;
+                editModeRenderer.close();
+            }
+
+            function onError() {
+                scope.violation = true;
+                scope.working = false;
+            }
+        };
+
+        editModeRenderer.open({
+            templateUrl: 'bin-catalog-item-publisher-edit.html',
+            scope: scope
+        });
+    };
+
+    this.unpublish = function (item) {
+        return updateCatalogItem({
+            data: {
+                treatInputAsId: false,
+                context: 'update',
+                id: item.id,
+                type: item.type,
+                blogType: item.blogType,
+                status: draft
+            },
+            success: onSuccess
+        });
+
+        function onSuccess() {
+            item.status = draft;
+        }
+    };
+}
 
 function BinCatalogListComponent() {
     this.templateUrl = ['$attrs', function ($attrs) {

@@ -46,6 +46,7 @@
       "catalog.item.remove": "verwijderen",
       "catalog.item.remove.confirm": "item verwijderen?",
       "catalog.item.link": "link",
+      "catalog.item.publication.time.label": "Publicatietijd:",
       "catalog.partition.remove": "verwijderen",
       "catalog.partition.remove.confirm": "categorie verwijderen?",
       "catalog.violation.partition.upperbound": "Het maximale aantal items is bereikt"
@@ -96,6 +97,7 @@
       "catalog.item.remove": "delete",
       "catalog.item.remove.confirm": "delete item?",
       "catalog.item.link": "link",
+      "catalog.item.publication.time.label": "Publication time:",
       "catalog.partition.remove": "delete",
       "catalog.partition.remove.confirm": "delete category?",
       "catalog.violation.partition.upperbound": "The maximum number of items has been reached"
@@ -146,6 +148,7 @@
       "catalog.item.remove": "effacer",
       "catalog.item.remove.confirm": "effacer l'article?",
       "catalog.item.link": "lien",
+      "catalog.item.publication.time.label": "Temps de publication:",
       "catalog.partition.remove": "effacer",
       "catalog.partition.remove.confirm": "effacer la catégorie?",
       "catalog.violation.partition.upperbound": "Le nombre maximum d'articles a été atteint"
@@ -196,6 +199,7 @@
       "catalog.item.remove": "delete",
       "catalog.item.remove.confirm": "delete item?",
       "catalog.item.link": "link",
+      "catalog.item.publication.time.label": "Publication time:",
       "catalog.partition.remove": "delete",
       "catalog.partition.remove.confirm": "delete category?",
       "catalog.violation.partition.upperbound": "The maximum number of items has been reached"

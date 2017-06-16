@@ -3441,6 +3441,150 @@ describe('catalog', function () {
 
 
 
+    describe('binCatalogItemPublisher service', function () {
+        var sut, item, editModeRendererMock, currentTime, updater;
+
+        beforeEach(inject(function (binCatalogItemPublisher, editModeRenderer, updateCatalogItemWriter) {
+            sut = binCatalogItemPublisher;
+            editModeRendererMock = editModeRenderer;
+            updater = updateCatalogItemWriter;
+            updater.and.returnValue('promise');
+            item = {
+                id: 'id',
+                type: 'type',
+                blogType: 'blog-type'
+            };
+        }));
+
+        describe('on publish', function () {
+            var scope;
+
+            beforeEach(function () {
+                currentTime = moment();
+                sut.publish(item);
+                scope = editModeRendererMock.open.calls.mostRecent().args[0].scope;
+            });
+
+            it('edit-mode renderer is opened', function () {
+                expect(editModeRendererMock.open).toHaveBeenCalled();
+            });
+
+            it('publication time is on scope and set to current date and time', function () {
+                expect(scope.publicationTime).toEqual(currentTime);
+            });
+
+            it('on cancel', function () {
+                scope.cancel();
+                expect(editModeRendererMock.close).toHaveBeenCalled();
+            });
+
+            describe('on submit', function () {
+                var newTime = 'May 31, 2016 10:00 AM', newTimeFormatted;
+
+                beforeEach(function () {
+                    newTimeFormatted = moment(newTime, 'lll').format();
+                    scope.publicationTime = newTime;
+                    scope.submit();
+                });
+
+                it('is working', function () {
+                    expect(scope.working).toBeTruthy();
+                });
+
+                it('item update is requested', function () {
+                    expect(updater).toHaveBeenCalledWith({
+                        data: {
+                            treatInputAsId: false,
+                            context: 'update',
+                            id: item.id,
+                            type: item.type,
+                            blogType: item.blogType,
+                            status: 'published',
+                            publicationTime: newTimeFormatted
+                        },
+                        success: jasmine.any(Function),
+                        error: jasmine.any(Function)
+                    });
+                });
+
+                describe('on error', function () {
+                    beforeEach(function () {
+                        updater.calls.mostRecent().args[0].error();
+                    });
+
+                    it('show violation', function () {
+                        expect(scope.violation).toBeTruthy();
+                    });
+
+                    it('not working', function () {
+                        expect(scope.working).toBeFalsy();
+                    });
+                });
+
+                describe('on success', function () {
+                    beforeEach(function () {
+                        updater.calls.mostRecent().args[0].success();
+                    });
+
+                    it('item is updated', function () {
+                        expect(item.status).toEqual('published');
+                        expect(item.publicationTime).toEqual(newTimeFormatted);
+                    });
+
+                    it('edit-mode renderer is closed', function () {
+                        expect(editModeRendererMock.close).toHaveBeenCalled();
+                    });
+                });
+            });
+        });
+
+        describe('on publish with previous publication time', function () {
+            var scope, time = '2016-05-31T08:00:00Z';
+
+            beforeEach(function () {
+                currentTime = moment();
+                item.publicationTime = time;
+                sut.publish(item);
+                scope = editModeRendererMock.open.calls.mostRecent().args[0].scope;
+            });
+
+            it('publication time is on scope', function () {
+                expect(scope.publicationTime).toEqual(moment(time));
+            });
+        });
+
+        describe('on unpublish', function () {
+            var returned;
+
+            beforeEach(function () {
+                returned = sut.unpublish(item);
+            });
+
+            it('item update is requested', function () {
+                expect(updater).toHaveBeenCalledWith({
+                    data: {
+                        treatInputAsId: false,
+                        context: 'update',
+                        id: item.id,
+                        type: item.type,
+                        blogType: item.blogType,
+                        status: 'draft'
+                    },
+                    success: jasmine.any(Function)
+                });
+            });
+
+            it('on success, update item', function () {
+                updater.calls.mostRecent().args[0].success();
+                expect(item.status).toEqual('draft');
+            });
+
+            it('propagate promise from updater', function () {
+                expect(returned).toEqual('promise');
+            });
+        });
+    });
+
     describe('binCatalogList component', function () {
         var $ctrl, $componentController, $routeParams, search;
         var type = 'type';

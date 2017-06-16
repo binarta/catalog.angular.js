@@ -1,0 +1,23 @@
+<form ng-submit="submit()">
+    <div class="bin-menu-edit-body">
+        <div class="alert alert-danger" ng-show="violation">
+            <i class="fa fa-exclamation-triangle fa-fw"></i>
+            <span i18n code="clerk.menu.try.again.message" read-only ng-bind="::var"></span>
+        </div>
+
+        <div class="form-group bin-moment-picker">
+            <label for="bin-blog-publication-time" i18n code="catalog.item.publication.time.label" read-only ng-bind="::var"></label>
+            <input id="bin-blog-publication-time" class="form-control" ng-model="publicationTime"
+                   moment-picker="publicationTime" format="lll" required>
+        </div>
+    </div>
+    <div class="bin-menu-edit-actions">
+        <button type="submit" class="btn btn-primary"
+                i18n code="clerk.menu.save.button" read-only ng-disabled="working">
+            <span ng-show="working"><i class="fa fa-spinner fa-spin fa-fw"></i></span>
+            <span ng-bind="::var"></span>
+        </button>
+        <button type="button" class="btn btn-default" ng-click="cancel()"
+                i18n code="clerk.menu.cancel.button" read-only ng-bind="::var" ng-disabled="working"></button>
+    </div>
+</form>
