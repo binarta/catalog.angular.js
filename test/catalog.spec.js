@@ -3585,7 +3585,7 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogList component', function () {
+    fdescribe('binCatalogList component', function () {
         var $ctrl, $componentController, $routeParams, search;
         var type = 'type';
         var partition = 'partition';
@@ -3660,7 +3660,8 @@ describe('catalog', function () {
                     },
                     includeCarouselItems: true,
                     complexResult: true,
-                    success: jasmine.any(Function)
+                    success: jasmine.any(Function),
+                    rejected: jasmine.any(Function)
                 });
             });
 
@@ -3767,6 +3768,16 @@ describe('catalog', function () {
                     });
                 });
             });
+
+            describe('on rejected', function () {
+                beforeEach(function () {
+                    search.calls.mostRecent().args[0].rejected();
+                });
+
+                it('not working', function () {
+                    expect($ctrl.isWorking()).toBeFalsy();
+                });
+            });
         });
 
         describe('when type and partition are given', function () {
@@ -3804,7 +3815,8 @@ describe('catalog', function () {
                     },
                     includeCarouselItems: true,
                     complexResult: true,
-                    success: jasmine.any(Function)
+                    success: jasmine.any(Function),
+                    rejected: jasmine.any(Function)
                 });
             });
         });
@@ -3876,7 +3888,8 @@ describe('catalog', function () {
                     },
                     includeCarouselItems: true,
                     complexResult: true,
-                    success: jasmine.any(Function)
+                    success: jasmine.any(Function),
+                    rejected: jasmine.any(Function)
                 });
             });
         });

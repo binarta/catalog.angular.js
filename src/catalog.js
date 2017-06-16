@@ -1400,7 +1400,8 @@ function BinCatalogListComponent() {
                 subset: {count: count, offset: offset},
                 includeCarouselItems: true,
                 complexResult: true,
-                success: onSuccess
+                success: onSuccess,
+                rejected: onRejected
             };
             if ($location.search().q) ctx.q = $location.search().q;
             binartaSearch(ctx);
@@ -1413,6 +1414,10 @@ function BinCatalogListComponent() {
             data.results.forEach(function (item) {
                 $ctrl.items.push(item);
             });
+            working = false;
+        }
+
+        function onRejected() {
             working = false;
         }
 
