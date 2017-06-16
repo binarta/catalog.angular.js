@@ -1717,6 +1717,7 @@ function BinCatalogBreadcrumbComponent() {
             partition.split('/').reduce(transform);
             breadcrumb.push({id: breadcrumb.length === 0 ? toFirstItemId($ctrl.item) : $ctrl.item});
             if (isSingleItemAndNotOnBrowsePath()) setBrowsePathOnFirstItem();
+            if (isBlogPath()) updateBlogPathForFirstItem();
             $ctrl.breadcrumb = breadcrumb;
         }
 
@@ -1755,6 +1756,14 @@ function BinCatalogBreadcrumbComponent() {
 
         function stripSlashes(item) {
             return item.replace(/\//g, '');
+        }
+
+        function isBlogPath() {
+            return breadcrumb[0].path === '/browse/blog/';
+        }
+
+        function updateBlogPathForFirstItem() {
+            breadcrumb[0].path = '/blog';
         }
     }];
 }

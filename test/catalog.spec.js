@@ -4500,6 +4500,25 @@ describe('catalog', function () {
                 });
             });
         });
+
+        describe('when "blog" item', function () {
+            beforeEach(function () {
+                $ctrl.partition = '/blog/';
+                $ctrl.item = '/blog/item';
+                $ctrl.$onChanges();
+            });
+
+            it('back link is available', function () {
+                expect($ctrl.back).toEqual({id: 'navigation.label.blog', path: '/blog'});
+            });
+
+            it('breadcrumb is available', function () {
+                expect($ctrl.breadcrumb).toEqual([
+                    {id: 'navigation.label.blog', path: '/blog'},
+                    {id: '/blog/item'}
+                ]);
+            });
+        });
     });
 
     describe('binCatalogSearch component', function () {
