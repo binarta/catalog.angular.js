@@ -1,0 +1,3 @@
+<span ng-bind="$ctrl.publicationTime"></span>
+<span class="label label-info" ng-if="$ctrl.isDraft()" i18n code="catalog.item.draft" read-only ng-bind="::var"></span>
+<span class="label label-info" ng-if="$ctrl.isScheduled()" i18n code="catalog.item.scheduled" read-only ng-bind="::var"></span>

@@ -3585,7 +3585,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('binCatalogList component', function () {
+    describe('binCatalogList component', function () {
         var $ctrl, $componentController, $routeParams, search;
         var type = 'type';
         var partition = 'partition';
@@ -6019,6 +6019,82 @@ describe('catalog', function () {
             it('unsubscribe on destroy', function () {
                 $ctrl.$onDestroy();
                 expect(topicsMock['edit.mode']).toBeUndefined();
+            });
+        });
+    });
+
+    describe('binCatalogPublicationTime component', function () {
+        var $ctrl;
+
+        beforeEach(inject(function ($componentController) {
+            $ctrl = $componentController('binCatalogPublicationTime');
+            $ctrl.$onInit();
+        }));
+
+        describe('when in draft', function () {
+            beforeEach(function () {
+                $ctrl.status = 'draft';
+                $ctrl.$onChanges();
+            });
+
+            it('is in draft', function () {
+                expect($ctrl.isDraft()).toBeTruthy();
+            });
+
+            it('publication time is empty', function () {
+                expect($ctrl.publicationTime).toEqual('');
+            });
+        });
+
+        describe('when in draft with previous publication time', function () {
+            beforeEach(function () {
+                $ctrl.status = 'draft';
+                $ctrl.time = '2017-07-19 10:00';
+                $ctrl.$onChanges();
+            });
+
+            it('is in draft', function () {
+                expect($ctrl.isDraft()).toBeTruthy();
+            });
+
+            it('publication time is empty', function () {
+                expect($ctrl.publicationTime).toEqual('');
+            });
+        });
+
+        describe('when published', function () {
+            beforeEach(function () {
+                $ctrl.status = 'published';
+                $ctrl.time = '2017-06-19 10:00';
+                $ctrl.$onChanges();
+            });
+
+            it('is not in draft', function () {
+                expect($ctrl.isDraft()).toBeFalsy();
+            });
+
+            it('publication time is formatted', function () {
+                expect($ctrl.publicationTime).toEqual('Jun 19, 2017 10:00 AM');
+            });
+
+            it('is not scheduled', function () {
+                expect($ctrl.isScheduled()).toBeFalsy();
+            });
+        });
+
+        describe('when published in the future', function () {
+            beforeEach(function () {
+                $ctrl.status = 'published';
+                $ctrl.time = moment().add(1, 'days');
+                $ctrl.$onChanges();
+            });
+
+            it('is not in draft', function () {
+                expect($ctrl.isDraft()).toBeFalsy();
+            });
+
+            it('is scheduled', function () {
+                expect($ctrl.isScheduled()).toBeTruthy();
             });
         });
     });

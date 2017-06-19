@@ -49,6 +49,8 @@
       "catalog.item.publication.time.label": "Publicatietijd:",
       "catalog.item.publish": "publiceer",
       "catalog.item.unpublish": "verbergen",
+      "catalog.item.draft": "DRAFT",
+      "catalog.item.scheduled": "GEPLAND",
       "catalog.partition.remove": "verwijderen",
       "catalog.partition.remove.confirm": "categorie verwijderen?",
       "catalog.violation.partition.upperbound": "Het maximale aantal items is bereikt"
@@ -102,6 +104,8 @@
       "catalog.item.publication.time.label": "Publication time:",
       "catalog.item.publish": "publish",
       "catalog.item.unpublish": "unpublish",
+      "catalog.item.draft": "DRAFT",
+      "catalog.item.scheduled": "SCHEDULED",
       "catalog.partition.remove": "delete",
       "catalog.partition.remove.confirm": "delete category?",
       "catalog.violation.partition.upperbound": "The maximum number of items has been reached"
@@ -155,6 +159,8 @@
       "catalog.item.publication.time.label": "Temps de publication:",
       "catalog.item.publish": "publier",
       "catalog.item.unpublish": "annuler la publication",
+      "catalog.item.draft": "BROUILLON",
+      "catalog.item.scheduled": "PROGRAMMÉ",
       "catalog.partition.remove": "effacer",
       "catalog.partition.remove.confirm": "effacer la catégorie?",
       "catalog.violation.partition.upperbound": "Le nombre maximum d'articles a été atteint"
@@ -208,6 +214,8 @@
       "catalog.item.publication.time.label": "Publication time:",
       "catalog.item.publish": "veröffentlichen",
       "catalog.item.unpublish": "verbergen",
+      "catalog.item.draft": "ENTWURF",
+      "catalog.item.scheduled": "SCHEDULED",
       "catalog.partition.remove": "delete",
       "catalog.partition.remove.confirm": "delete category?",
       "catalog.violation.partition.upperbound": "The maximum number of items has been reached"

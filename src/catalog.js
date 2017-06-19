@@ -50,6 +50,7 @@ angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular
     .component('binCatalogEmpty', new BinCatalogEmptyComponent())
     .component('binCatalogDetails', new BinCatalogDetailsComponent())
     .component('binCatalogItem', new BinCatalogItemComponent())
+    .component('binCatalogPublicationTime', new BinCatalogPublicationTime())
     .constant('catalogPathLimit', 10)
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
@@ -2405,6 +2406,35 @@ function BinCatalogItemComponent() {
                     return publisher.unpublish($ctrl.item);
                 };
             }
+    }];
+}
+
+function BinCatalogPublicationTime() {
+    this.templateUrl = 'bin-catalog-publication-time.html';
+
+    this.bindings = {
+        time: '<',
+        status: '<'
+    };
+
+    this.controller = ['moment', function (moment) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            $ctrl.isScheduled = function () {
+                return moment().isBefore($ctrl.time) && !$ctrl.isDraft();
+            };
+
+            $ctrl.isDraft = isDraft;
+        };
+
+        $ctrl.$onChanges = function () {
+            $ctrl.publicationTime = isDraft() ? '' : moment($ctrl.time).format('lll');
+        };
+
+        function isDraft() {
+            return $ctrl.status === 'draft';
+        }
     }];
 }
 
