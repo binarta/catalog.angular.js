@@ -1,7 +1,9 @@
-<bin-catalog-item-list items="$ctrl.results"
-                       movable="false"
-                       cols="{{::$ctrl.cols}}"
-                       center="{{::$ctrl.center}}"
-                       item-template-url="$ctrl.templateUrl">
-</bin-catalog-item-list>
+<bin-catalog-items items="$ctrl.results"
+                   movable="false"
+                   addable="false"
+                   pinnable="true"
+                   cols="{{::$ctrl.cols}}"
+                   center="{{::$ctrl.center}}"
+                   item-template-url="{{::$ctrl.templateUrl}}">
+</bin-catalog-items>
 <div ng-if="$ctrl.searchForMore || $ctrl.editing" ng-transclude="footer"></div>

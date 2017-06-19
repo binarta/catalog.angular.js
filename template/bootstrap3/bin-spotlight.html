@@ -3,21 +3,19 @@
         <div class="container">
             <bin-edit>
                 <bin-edit-actions>
-                    <div class="bin-dropdown-menu-item">
-                        <a class="bin-link" bin-href="/browse/{{::$ctrl.type}}/">
-                            <span><i class="fa fa-plus"></i></span>
-                            <span i18n code="catalog.{{::$ctrl.type}}.add.more.button" read-only ng-bind="::var"></span>
-                        </a>
-                    </div>
-                    <bin-edit-action action="$ctrl.toggleRecentItems()">
-                        <span ng-if="!$ctrl.recentItems">
-                            <span><i class="fa fa-eye"></i></span>
-                            <span i18n code="catalog.show.recent" read-only ng-bind="::var"></span>
-                        </span>
-                        <span ng-if="$ctrl.recentItems">
-                            <span><i class="fa fa-eye-slash"></i></span>
-                            <span i18n code="catalog.hide.recent" read-only ng-bind="::var"></span>
-                        </span>
+                    <bin-edit-action action="$ctrl.goToOverview()"
+                                     icon-class="fa-th"
+                                     i18n-code="catalog.overview">
+                    </bin-edit-action>
+                    <bin-edit-action action="$ctrl.toggleRecentItems()"
+                                     icon-class="fa-eye"
+                                     i18n-code="catalog.show.recent"
+                                     ng-if="!$ctrl.recentItems">
+                    </bin-edit-action>
+                    <bin-edit-action action="$ctrl.toggleRecentItems()"
+                                     icon-class="fa-eye-slash"
+                                     i18n-code="catalog.hide.recent"
+                                     ng-if="$ctrl.recentItems">
                     </bin-edit-action>
                 </bin-edit-actions>
                 <bin-edit-body>

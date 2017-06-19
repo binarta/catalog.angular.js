@@ -24,7 +24,7 @@ angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular
     .controller('ViewCatalogItemController', ['$scope', 'i18nLocation', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', 'binarta', ViewCatalogItemController])
     .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
     .controller('PinItemController', ['$scope', 'itemPinner', 'ngRegisterTopicHandler', PinItemController])
-    .controller('binSpotlightController', ['topicRegistry', 'binarta', 'configWriter', BinSpotlightController])
+    .controller('binSpotlightController', ['topicRegistry', 'binarta', 'configWriter', 'i18nLocation', BinSpotlightController])
     .controller('binSpotlightItemsController', ['topicRegistry', 'binartaSearch', 'viewport', BinSpotlightItemsController])
     .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
     .directive('movableItems', ['ngRegisterTopicHandler', MovableItemsDirectiveFactory])
@@ -1113,7 +1113,7 @@ function BinSpotlightComponent() {
     this.controller = 'binSpotlightController';
 }
 
-function BinSpotlightController(topics, binarta, configWriter) {
+function BinSpotlightController(topics, binarta, configWriter, location) {
     var $ctrl = this;
     $ctrl.totalItemCount = 0;
     $ctrl.pinnedItemCount = 0;
@@ -1126,6 +1126,10 @@ function BinSpotlightController(topics, binarta, configWriter) {
                 $ctrl.recentItems = (value == 'true' || value === true);
             });
         });
+
+        $ctrl.goToOverview = function () {
+            location.path('/browse/' + $ctrl.type + '/');
+        };
 
         $ctrl.$onDestroy = function () {
             topics.unsubscribe('edit.mode', onEditMode);

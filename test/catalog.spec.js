@@ -2788,8 +2788,8 @@ describe('catalog', function () {
         }))
     });
 
-    describe('binSpotlightController', function() {
-        var component;
+    fdescribe('binSpotlightController', function() {
+        var component, location;
         var binarta = {
             application:{config:{
                 findPublic:jasmine.createSpy('findPublic'),
@@ -2802,7 +2802,8 @@ describe('catalog', function () {
         var configWriter = jasmine.createSpy('configWriter');
         var disconnectObserver = jasmine.createSpy('disconnectObserver');
 
-        beforeEach(inject(function($controller) {
+        beforeEach(inject(function($controller, $location) {
+            location = $location;
             component = $controller('binSpotlightController', {binarta:binarta, configWriter:configWriter});
             component.type = 'type';
             binarta.application.config.findPublic.calls.reset();
@@ -2887,6 +2888,11 @@ describe('catalog', function () {
                         expect(topicRegistryMock['edit.mode']).toBeUndefined();
                     }));
                 });
+            });
+
+            it('on go to overview', function () {
+                component.goToOverview();
+                expect(location.path()).toEqual('/lang/browse/type/');
             });
         });
 
