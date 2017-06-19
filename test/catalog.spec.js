@@ -5267,7 +5267,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('binCatalogItem component', function () {
+    describe('binCatalogItem component', function () {
         var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
         var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock;
 
@@ -5319,6 +5319,27 @@ describe('catalog', function () {
             it('image code is available', function () {
                 expect($ctrl.image).toEqual({
                     cover: 'imagesitem-id/cover.img'
+                });
+            });
+
+            it('item path is available', function () {
+                expect($ctrl.itemPath).toEqual('/viewitem-id');
+            });
+
+            it('when item has a localized id', function () {
+                $ctrl.item.localizedId = '/local';
+                $ctrl.$onChanges();
+                expect($ctrl.itemPath).toEqual('/view/local');
+            });
+
+            describe('when item has a carousel', function () {
+                beforeEach(function () {
+                    $ctrl.item.carousel = [{id: '/image/id'}];
+                    $ctrl.$onChanges();
+                });
+
+                it('hero image code is available', function () {
+                    expect($ctrl.image.hero).toEqual('image/id');
                 });
             });
         });

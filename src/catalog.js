@@ -2273,6 +2273,9 @@ function BinCatalogItemComponent() {
                     $ctrl.i18n.lead = $ctrl.item.id + '.lead';
                     $ctrl.i18n.body = $ctrl.item.id + '.body';
                     $ctrl.image.cover = 'images' + $ctrl.item.id + '/cover.img';
+                    $ctrl.itemPath = '/view' + ($ctrl.item.localizedId || $ctrl.item.id);
+                    if ($ctrl.item.carousel && $ctrl.item.carousel.length > 0)
+                        $ctrl.image.hero = $ctrl.item.carousel[0].id.replace(/^\/+/, '');
                 }
             };
 
