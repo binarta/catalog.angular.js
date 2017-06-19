@@ -2217,6 +2217,8 @@ function BinCatalogItemComponent() {
                   updateCatalogItem, binLink, publisher) {
             var $ctrl = this,
                 destroyHandlers = [];
+            $ctrl.i18n = {};
+            $ctrl.image = {};
 
             $ctrl.$onInit = function () {
                 if ($ctrl.detailsCtrl) withDetailsController();
@@ -2265,6 +2267,15 @@ function BinCatalogItemComponent() {
                 });
             };
 
+            $ctrl.$onChanges = function () {
+                if ($ctrl.item) {
+                    $ctrl.i18n.title = $ctrl.item.id;
+                    $ctrl.i18n.lead = $ctrl.item.id + '.lead';
+                    $ctrl.i18n.body = $ctrl.item.id + '.body';
+                    $ctrl.image.cover = 'images' + $ctrl.item.id + '/cover.img';
+                }
+            };
+
             function editModeListener(e) {
                 $ctrl.editing = e;
             }
@@ -2281,6 +2292,7 @@ function BinCatalogItemComponent() {
                 function listenForItemUpdates() {
                     $ctrl.detailsCtrl.onItemUpdate(function (item) {
                         $ctrl.item = item;
+                        $ctrl.$onChanges();
                     });
                 }
             }

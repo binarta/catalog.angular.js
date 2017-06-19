@@ -5267,7 +5267,7 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogItem component', function () {
+    fdescribe('binCatalogItem component', function () {
         var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
         var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock;
 
@@ -5300,6 +5300,28 @@ describe('catalog', function () {
                 binCatalogItemPublisher: publisherMock
             }, {});
         }));
+
+        describe('with item', function () {
+            beforeEach(function () {
+                $ctrl.$onInit();
+                $ctrl.item = item;
+                $ctrl.$onChanges();
+            });
+
+            it('i18n codes are available', function () {
+                expect($ctrl.i18n).toEqual({
+                    title: 'item-id',
+                    lead: 'item-id.lead',
+                    body: 'item-id.body'
+                });
+            });
+
+            it('image code is available', function () {
+                expect($ctrl.image).toEqual({
+                    cover: 'imagesitem-id/cover.img'
+                });
+            });
+        });
 
         describe('with detailsCtrl', function () {
             beforeEach(function () {
@@ -5335,6 +5357,20 @@ describe('catalog', function () {
 
                 it('item is available on ctrl', function () {
                     expect($ctrl.item).toEqual(item);
+                });
+
+                it('i18n codes are available', function () {
+                    expect($ctrl.i18n).toEqual({
+                        title: 'item-id',
+                        lead: 'item-id.lead',
+                        body: 'item-id.body'
+                    });
+                });
+
+                it('image code is available', function () {
+                    expect($ctrl.image).toEqual({
+                        cover: 'imagesitem-id/cover.img'
+                    });
                 });
             });
 
