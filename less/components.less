@@ -64,7 +64,7 @@ bin-catalog-working {
   .dot {
     width: @dot-size;
     height: @dot-size;
-    border: (@dot-size / 5) solid #c0c0c0;
+    background-color: #c0c0c0;
     border-radius: 50%;
     float: left;
     margin: 0 (@dot-size / 2);
@@ -111,6 +111,14 @@ bin-catalog-empty {
   .bin-catalog-empty-title {
     font-size: 28px;
     font-weight: 100;
+  }
+}
+
+bin-catalog-item {
+  display: block;
+
+  .item-line {
+    margin-top: 0;
   }
 }
 

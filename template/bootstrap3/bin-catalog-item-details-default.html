@@ -1,41 +1,37 @@
-<div class="bin-catalog-item">
-    <div class="page-header-wrapper">
-        <div class="page-header">
-            <h1 class="bin-catalog-title" i18n code="{{::$ctrl.i18n.title}}" ng-bind="var" seo-title></h1>
+<div class="row">
+    <div class="col-xs-12 col-sm-4">
+        <div class="item-image">
+            <div bin-image-carousel="$ctrl.item.id" items="$ctrl.item.carousel"></div>
         </div>
     </div>
+    <div class="col-xs-12 col-sm-8">
+        <h1 class="item-line item-title" i18n code="{{::$ctrl.i18n.title}}" ng-bind="var"></h1>
 
-    <div class="row">
-        <div class="col-xs-12 col-sm-4">
-            <div class="item-image">
-                <div bin-image-carousel="$ctrl.item.id" items="$ctrl.item.carousel"></div>
+        <div class="item-line item-price">
+            <bin-price catalog-item="$ctrl.item" on-update="$ctrl.refresh()"></bin-price>
+        </div>
+
+        <% if(shop) { %>
+        <div class="item-line item-cta">
+            <bin-basket mode="add-to-basket-button" item="$ctrl.item" ng-if="$ctrl.item.price"></bin-basket>
+            <div ng-if="application.pages.contact.active && (!$ctrl.item.price || $ctrl.item.price == 0)">
+                <a bin-dhref="/contact?subject=More info about {{::var}}"
+                   class="btn btn-success" i18n code="{{::$ctrl.item.id}}" read-only>
+                    <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
+                </a>
             </div>
         </div>
-        <div class="col-xs-12 col-sm-8">
-            <div class="item-body" i18n code="{{::$ctrl.i18n.body}}" editor="full"
-                 ng-bind-html="var|trust" seo-description ng-show="var || $ctrl.editing">
-            </div>
+        <% } else { %>
+        <div class="item-line item-cta" ng-if="application.pages.contact.active">
+            <a bin-dhref="/contact?subject=More info about {{::var}}"
+               class="btn btn-success" i18n code="{{::$ctrl.item.id}}" read-only>
+                <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
+            </a>
+        </div>
+        <% } %>
 
-            <div class="item-price">
-                <bin-price catalog-item="$ctrl.item" on-update="$ctrl.refresh()"></bin-price>
-            </div>
-
-            <% if(shop) { %>
-                <bin-basket mode="add-to-basket-button" item="$ctrl.item" ng-if="$ctrl.item.price"></bin-basket>
-                <div ng-if="application.pages.contact.active && (!$ctrl.item.price || $ctrl.item.price == 0)">
-                    <a bin-dhref="/contact?subject=More info about {{::var}}"
-                       class="btn btn-success" i18n code="{{::$ctrl.item.id}}" read-only>
-                        <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
-                    </a>
-                </div>
-            <% } else { %>
-                <div ng-if="application.pages.contact.active">
-                    <a bin-dhref="/contact?subject=More info about {{::var}}"
-                       class="btn btn-success" i18n code="{{::$ctrl.item.id}}" read-only>
-                        <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
-                    </a>
-                </div>
-            <% } %>
+        <div class="item-line item-body" i18n code="{{::$ctrl.i18n.body}}" editor="full"
+             ng-bind-html="var|trust" ng-show="var || $ctrl.editing">
         </div>
     </div>
 </div>
