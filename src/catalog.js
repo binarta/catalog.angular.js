@@ -1638,6 +1638,7 @@ function BinCatalogPartitionTitleComponent() {
 
     this.controller = function () {
         var $ctrl = this;
+        $ctrl.i18n = {};
 
         $ctrl.$onInit = function () {
             if ($ctrl.listCtrl) {
@@ -1645,8 +1646,7 @@ function BinCatalogPartitionTitleComponent() {
                 if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.partition;
                 if (!$ctrl.parent) $ctrl.parent = $ctrl.listCtrl.parent;
             }
-            $ctrl.titleCode = $ctrl.parent === '/' ? 'navigation.label.' + $ctrl.type : $ctrl.partition;
-            $ctrl.defaultTitle = $ctrl.type;
+            $ctrl.i18n.title = $ctrl.parent === '/' ? 'navigation.label.' + $ctrl.type : $ctrl.partition;
         };
     };
 }

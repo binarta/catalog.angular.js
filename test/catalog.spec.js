@@ -2788,7 +2788,7 @@ describe('catalog', function () {
         }))
     });
 
-    fdescribe('binSpotlightController', function() {
+    describe('binSpotlightController', function() {
         var component, location;
         var binarta = {
             application:{config:{
