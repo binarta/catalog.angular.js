@@ -1,0 +1,10 @@
+<% if(shop) { %>
+<bin-basket mode="add-to-basket-button" item="$ctrl.item" ng-if="$ctrl.hasPrice()"></bin-basket>
+<a bin-dhref="{{$ctrl.contactPath}}" class="btn btn-success" ng-if="$ctrl.isContactActive() && !$ctrl.hasPrice()"
+   i18n code="catalog.item.more.info.button" read-only ng-bind="var">
+</a>
+<% } else { %>
+<a bin-dhref="{{$ctrl.contactPath}}" class="btn btn-success" ng-if="$ctrl.isContactActive()"
+   i18n code="catalog.item.more.info.button" read-only ng-bind="var">
+</a>
+<% } %>

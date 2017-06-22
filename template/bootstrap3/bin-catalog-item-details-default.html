@@ -11,24 +11,9 @@
             <bin-price catalog-item="$ctrl.item" on-update="$ctrl.refresh()"></bin-price>
         </div>
 
-        <% if(shop) { %>
         <div class="item-line item-cta">
-            <bin-basket mode="add-to-basket-button" item="$ctrl.item" ng-if="$ctrl.item.price"></bin-basket>
-            <div ng-if="application.pages.contact.active && (!$ctrl.item.price || $ctrl.item.price == 0)">
-                <a bin-dhref="/contact?subject=More info about {{::var}}"
-                   class="btn btn-success" i18n code="{{::$ctrl.item.id}}" read-only>
-                    <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
-                </a>
-            </div>
+            <bin-catalog-item-cta item="$ctrl.item"></bin-catalog-item-cta>
         </div>
-        <% } else { %>
-        <div class="item-line item-cta" ng-if="application.pages.contact.active">
-            <a bin-dhref="/contact?subject=More info about {{::var}}"
-               class="btn btn-success" i18n code="{{::$ctrl.item.id}}" read-only>
-                <span i18n code="catalog.item.more.info.button" read-only ng-bind="var"></span>
-            </a>
-        </div>
-        <% } %>
 
         <div class="item-line item-body" i18n code="{{::$ctrl.i18n.body}}" editor="full"
              ng-bind-html="var|trust" ng-show="var || $ctrl.editing">

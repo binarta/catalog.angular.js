@@ -1,4 +1,4 @@
-angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular1', 'binarta-checkpointjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price', 'momentx'])
+angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular1', 'binarta-checkpointjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price', 'momentx', 'application.pages'])
     .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])
@@ -51,6 +51,7 @@ angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular
     .component('binCatalogDetails', new BinCatalogDetailsComponent())
     .component('binCatalogItem', new BinCatalogItemComponent())
     .component('binCatalogPublicationTime', new BinCatalogPublicationTime())
+    .component('binCatalogItemCta', new BinCatalogItemCta())
     .constant('catalogPathLimit', 10)
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
@@ -2454,6 +2455,41 @@ function BinCatalogPublicationTime() {
         function isDraft() {
             return $ctrl.status === 'draft';
         }
+    }];
+}
+
+function BinCatalogItemCta() {
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'bin-catalog-item-cta.html';
+    }];
+
+    this.bindings = {
+        item: '<'
+    };
+
+    this.controller = ['$q', 'binPages', 'i18n', function ($q, pages, i18n) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            $ctrl.contactPath = '/contact';
+
+            $ctrl.isContactActive = function () {
+                return pages.isActive('contact');
+            };
+
+            $ctrl.hasPrice = function () {
+                return $ctrl.item.price && $ctrl.item.price > 0;
+            };
+
+            if ($ctrl.isContactActive()) {
+                $q.all([
+                    i18n.resolve({code: 'catalog.item.more.info.about.button', default: 'More info about'}),
+                    i18n.resolve({code: $ctrl.item.id})
+                ]).then(function (result) {
+                    $ctrl.contactPath += '?subject=' + result[0] + ' ' + result[1];
+                });
+            }
+        };
     }];
 }
 

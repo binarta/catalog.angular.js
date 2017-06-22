@@ -6161,6 +6161,75 @@ describe('catalog', function () {
             });
         });
     });
+
+    describe('binCatalogItemCta', function () {
+        var $ctrl, i18n, i18nDeferred, item, binPages;
+
+        beforeEach(inject(function ($q, $componentController, _binPages_) {
+            i18n = jasmine.createSpyObj('i18n', ['resolve']);
+            i18nDeferred = $q.defer();
+            i18n.resolve.and.returnValue(i18nDeferred.promise);
+            binPages = _binPages_;
+            item = {id: 'itemId'};
+            $ctrl = $componentController('binCatalogItemCta', {i18n: i18n}, {item: item});
+            $ctrl.$onInit();
+        }));
+
+        it('initial contact path', function () {
+            expect($ctrl.contactPath).toEqual('/contact');
+        });
+
+        it('has no price', function () {
+            expect($ctrl.hasPrice()).toBeFalsy();
+        });
+
+        it('when price is zero', function () {
+            $ctrl.item.price = 0;
+            expect($ctrl.hasPrice()).toBeFalsy();
+        });
+
+        it('when price is greater than zero', function () {
+            $ctrl.item.price = 1;
+            expect($ctrl.hasPrice()).toBeTruthy();
+        });
+
+        it('when contact section is not active', function () {
+            binPages.isActive.and.returnValue(false);
+            var actual = $ctrl.isContactActive();
+            expect(binPages.isActive).toHaveBeenCalledWith('contact');
+            expect(actual).toBeFalsy();
+        });
+
+        describe('when contact section is active', function () {
+            beforeEach(function () {
+                binPages.isActive.and.returnValue(true);
+                $ctrl.$onInit();
+            });
+
+            it('contact is active', function () {
+                expect($ctrl.isContactActive()).toBeTruthy();
+            });
+
+            it('catalog name and subject prefix are requested', function () {
+                expect(i18n.resolve).toHaveBeenCalledWith({code: item.id});
+                expect(i18n.resolve).toHaveBeenCalledWith({
+                    code: 'catalog.item.more.info.about.button',
+                    default: 'More info about'
+                });
+            });
+
+            describe('when i18n values are resolved', function () {
+                beforeEach(function () {
+                    i18nDeferred.resolve('t');
+                    $rootScope.$digest();
+                });
+
+                it('contact path is updated', function () {
+                    expect($ctrl.contactPath).toEqual('/contact?subject=t t');
+                });
+            });
+        });
+    });
 });
 
 angular.module('test.app', ['catalog']).config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
