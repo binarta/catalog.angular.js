@@ -109,7 +109,7 @@ function FindCatalogPartitionsFactory(config, $http) {
 function FindCatalogItemByIdFactory($q, config, restServiceHandler, binarta) {
     return function (id, onSuccess) {
         var deferred = $q.defer();
-        binarta.schedule(function() {
+        binarta.schedule(function () {
             var locale = binarta.application.localeForPresentation() || binarta.application.locale();
             return restServiceHandler({
                 params: {
@@ -498,7 +498,7 @@ function AddToCatalogController($scope, $routeParams, topicRegistry, findAllCata
 
     $scope.init = function (params) {
         $scope.config = params;
-        if (params.partition)  $scope.partition = params.partition;
+        if (params.partition) $scope.partition = params.partition;
         if (params.type) preselectedType = params.type;
         if (params.redirectTo) $scope.redirectTo = params.redirectTo;
         if (params.locale) locale = params.locale;
@@ -585,7 +585,7 @@ function ViewCatalogItemController($scope, $location, $routeParams, catalogPathP
     }
 
     var applyItemToScope = function (item) {
-        if(item.localizedId && requestedId != item.localizedId) {
+        if (item.localizedId && requestedId != item.localizedId) {
             $location.path('/view' + item.localizedId);
         } else {
             addItemToScope(item);
@@ -605,7 +605,7 @@ function ViewCatalogItemController($scope, $location, $routeParams, catalogPathP
     this.init = init;
 
     function init(path) {
-        binarta.schedule(function() {
+        binarta.schedule(function () {
             requestedId = $routeParams.id || path;
             findCatalogItemById(requestedId, applyItemToScope);
         });
@@ -853,11 +853,11 @@ function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, us
 function MovableItemsDirectiveFactory(ngRegisterTopicHandler) {
     return {
         scope: {
-            items:'=?movableItems',
-            orientation:'@',
-            when:'=?'
+            items: '=?movableItems',
+            orientation: '@',
+            when: '=?'
         },
-        link:function($scope) {
+        link: function ($scope) {
             if ($scope.items == undefined) $scope.items = [];
             if ($scope.orientation == undefined) $scope.orientation = 'asc';
             if ($scope.when == undefined) $scope.when = true;
@@ -894,18 +894,18 @@ function MovableItemsDirectiveFactory(ngRegisterTopicHandler) {
 function PinItemController($scope, pinner, ngRegisterTopicHandler) {
     var self = this;
 
-    self.init = function(item) {
+    self.init = function (item) {
         self.item = item;
         ngRegisterTopicHandler($scope, 'catalog.item.pinned.' + item.id, pin);
         ngRegisterTopicHandler($scope, 'catalog.item.unpinned.' + item.id, unpin);
     };
 
-    self.pin = function() {
-        pinner.pin({item:self.item, success:pin});
+    self.pin = function () {
+        pinner.pin({item: self.item, success: pin});
     };
 
-    self.unpin = function() {
-        pinner.unpin({item:self.item, success: unpin});
+    self.unpin = function () {
+        pinner.unpin({item: self.item, success: unpin});
     };
 
     function pin() {
@@ -921,17 +921,18 @@ function ItemPinnerFactory(topics, rest, config) {
     function params(usecase, ctx) {
         usecase = usecase || 'catalog.item.pin';
         return {
-            method:'POST',
-            withCredentials:true,
+            method: 'POST',
+            withCredentials: true,
             url: (config.baseUri || '') + 'api/usecase',
             data: {
-                headers:{usecase: usecase},
-                payload: {id:ctx.item.id}
+                headers: {usecase: usecase},
+                payload: {id: ctx.item.id}
             }
         }
     }
+
     function sucessAndFireTopic(topic, ctx) {
-        return function(payload) {
+        return function (payload) {
             topics.fire(topic, ctx.item);
             topics.fire(topic + '.' + ctx.item.id, ctx.item);
             if (ctx.success) ctx.success(payload);
@@ -939,15 +940,15 @@ function ItemPinnerFactory(topics, rest, config) {
     }
 
     return {
-        pin: function(ctx) {
+        pin: function (ctx) {
             return rest({
-                params:params('catalog.item.pin', ctx),
+                params: params('catalog.item.pin', ctx),
                 success: sucessAndFireTopic('catalog.item.pinned', ctx)
             });
         },
-        unpin: function(ctx) {
+        unpin: function (ctx) {
             return rest({
-                params:params('catalog.item.unpin', ctx),
+                params: params('catalog.item.unpin', ctx),
                 success: sucessAndFireTopic('catalog.item.unpinned', ctx)
             });
         }
@@ -956,8 +957,8 @@ function ItemPinnerFactory(topics, rest, config) {
 
 function BinCatalogItemListComponent() {
     this.bindings = {
-        items:'<',
-        movable:'@',
+        items: '<',
+        movable: '@',
         itemTemplateUrl: '<?',
         cols: '@',
         center: '@'
@@ -1053,9 +1054,9 @@ function BinCatalogItemListComponent() {
 
 function BinCatalogListRowsComponent() {
     this.bindings = {
-        items:'<',
-        partition:'<',
-        movable:'@'
+        items: '<',
+        partition: '<',
+        movable: '@'
     };
     this.templateUrl = 'catalog-list-rows.html';
 }
@@ -1063,7 +1064,7 @@ function BinCatalogListRowsComponent() {
 function BinCatalogListItemComponent() {
     this.templateUrl = 'catalog-list-item.html';
     this.bindings = {
-        item:'<',
+        item: '<',
         isFirst: '<',
         isLast: '<'
     };
@@ -1101,8 +1102,8 @@ function BinCatalogListItemComponent() {
 
 function BinSpotlightComponent() {
     this.bindings = {
-        type:'@',
-        cols:'@',
+        type: '@',
+        cols: '@',
         center: '@',
         itemTemplateUrl: '<?'
     };
@@ -1154,7 +1155,7 @@ function BinSpotlightController(topics, binarta, configWriter, location) {
 
 function BinSpotlightItemsComponent() {
     this.bindings = {
-        pinned:'@'
+        pinned: '@'
     };
     this.require = {
         spotlightCtrl: '^binSpotlight'
@@ -1204,7 +1205,7 @@ function BinSpotlightItemsController(topics, search, viewport) {
             $ctrl.spotlightCtrl.plus({size: $ctrl.results.length, isPinned: isPinned});
         }
 
-        $ctrl.$onDestroy = function() {
+        $ctrl.$onDestroy = function () {
             if ($ctrl.pinned == 'true') uninstallPinnedTopics();
             $ctrl.spotlightCtrl.plus({size: -$ctrl.results.length, isPinned: isPinned});
         };
@@ -1233,7 +1234,7 @@ function BinSpotlightItemsController(topics, search, viewport) {
     }
 
     function onUnpinned(item) {
-        var idx = $ctrl.results.reduce(function(p, c, i) {
+        var idx = $ctrl.results.reduce(function (p, c, i) {
             if (c.id == item.id) return i;
             return p;
         }, -1);
@@ -1272,7 +1273,6 @@ function splitInRowsDirectiveFactory($log) {
         });
     }
 }
-
 
 
 // Start of new components
@@ -1416,7 +1416,8 @@ function BinCatalogListComponent() {
         function onSuccess(data) {
             moreItemsAvailable = data.hasMore;
             if (moreItemsAvailable) offset += count;
-            else $ctrl.searchMore = function () {};
+            else $ctrl.searchMore = function () {
+            };
             data.results.forEach(function (item) {
                 $ctrl.items.push(item);
             });
@@ -1724,7 +1725,7 @@ function BinCatalogBreadcrumbComponent() {
 
         function setBreadcrumb() {
             breadcrumb = [];
-            partition = $ctrl.partition || '/';
+            partition = $ctrl.partition || '/';
             partition.split('/').reduce(transform);
             breadcrumb.push({id: breadcrumb.length === 0 ? toFirstItemId($ctrl.item) : $ctrl.item});
             if (isSingleItemAndNotOnBrowsePath()) setBrowsePathOnFirstItem();
@@ -1814,10 +1815,10 @@ function BinCatalogItemGroupsComponent() {
     this.templateUrl = 'bin-catalog-item-groups.html';
 
     this.bindings = {
-        items:'<',
+        items: '<',
         type: '@',
         partition: '@',
-        movable:'@',
+        movable: '@',
         pinnable: '@',
         removable: '@',
         addable: '@',
@@ -1848,10 +1849,10 @@ function BinCatalogItemsComponent() {
     this.templateUrl = 'bin-catalog-items.html';
 
     this.bindings = {
-        items:'<',
+        items: '<',
         type: '@',
         partition: '@',
-        movable:'@',
+        movable: '@',
         pinnable: '@',
         removable: '@',
         addable: '@',
@@ -2343,17 +2344,33 @@ function BinCatalogItemComponent() {
             }
 
             function installMoveActions() {
-                $ctrl.moveUp = function () {return $ctrl.itemsCtrl.moveUp($ctrl.item);};
-                $ctrl.moveDown = function () {return $ctrl.itemsCtrl.moveDown($ctrl.item);};
-                $ctrl.moveTop = function () {return $ctrl.itemsCtrl.moveTop($ctrl.item);};
-                $ctrl.moveBottom = function () {return $ctrl.itemsCtrl.moveBottom($ctrl.item);};
-                $ctrl.isFirst = function () {return $ctrl.itemsCtrl.items[0] === $ctrl.item;};
-                $ctrl.isLast = function () {return $ctrl.itemsCtrl.items[$ctrl.itemsCtrl.items.length - 1] === $ctrl.item;};
+                $ctrl.moveUp = function () {
+                    return $ctrl.itemsCtrl.moveUp($ctrl.item);
+                };
+                $ctrl.moveDown = function () {
+                    return $ctrl.itemsCtrl.moveDown($ctrl.item);
+                };
+                $ctrl.moveTop = function () {
+                    return $ctrl.itemsCtrl.moveTop($ctrl.item);
+                };
+                $ctrl.moveBottom = function () {
+                    return $ctrl.itemsCtrl.moveBottom($ctrl.item);
+                };
+                $ctrl.isFirst = function () {
+                    return $ctrl.itemsCtrl.items[0] === $ctrl.item;
+                };
+                $ctrl.isLast = function () {
+                    return $ctrl.itemsCtrl.items[$ctrl.itemsCtrl.items.length - 1] === $ctrl.item;
+                };
             }
 
             function installPinActions() {
-                $ctrl.pin = function() {return pinner.pin({item:$ctrl.item, success:pin});};
-                $ctrl.unpin = function() {return pinner.unpin({item:$ctrl.item, success: unpin});};
+                $ctrl.pin = function () {
+                    return pinner.pin({item: $ctrl.item, success: pin});
+                };
+                $ctrl.unpin = function () {
+                    return pinner.unpin({item: $ctrl.item, success: unpin});
+                };
             }
 
             function pin() {
@@ -2426,7 +2443,7 @@ function BinCatalogItemComponent() {
                     return publisher.unpublish($ctrl.item);
                 };
             }
-    }];
+        }];
 }
 
 function BinCatalogPublicationTime() {
@@ -2478,7 +2495,7 @@ function BinCatalogItemCta() {
             };
 
             $ctrl.hasPrice = function () {
-                return $ctrl.item.price && $ctrl.item.price > 0;
+                return $ctrl.item.price && $ctrl.item.price > 0;
             };
 
             if ($ctrl.isContactActive()) {
