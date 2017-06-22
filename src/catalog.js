@@ -52,6 +52,7 @@ angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular
     .component('binCatalogItem', new BinCatalogItemComponent())
     .component('binCatalogPublicationTime', new BinCatalogPublicationTime())
     .component('binCatalogItemCta', new BinCatalogItemCta())
+    .component('binCatalogItemTitle', new BinCatalogItemTitleComponent())
     .constant('catalogPathLimit', 10)
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
@@ -2508,6 +2509,37 @@ function BinCatalogItemCta() {
             }
         };
     }];
+}
+
+function BinCatalogItemTitleComponent() {
+    this.templateUrl = 'bin-catalog-item-title.html';
+
+    this.bindings = {
+        templateUrl: '@',
+        item: '<'
+    };
+
+    this.require = {
+        detailsCtrl: '?^^binCatalogDetails'
+    };
+
+    this.controller = function () {
+        var $ctrl = this;
+        $ctrl.i18n = {};
+
+        $ctrl.$onInit = function () {
+            $ctrl.templateUrl = $ctrl.templateUrl || 'bin-catalog-item-title-default.html';
+            if ($ctrl.item) setTitle();
+            if (!$ctrl.item && $ctrl.detailsCtrl) $ctrl.detailsCtrl.onItemUpdate(function (item) {
+                $ctrl.item = item;
+                setTitle();
+            });
+        };
+
+        function setTitle(id) {
+            $ctrl.i18n.title = $ctrl.item.id;
+        }
+    };
 }
 
 function isEnabledByDefault(prop) {
