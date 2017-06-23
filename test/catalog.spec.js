@@ -6155,6 +6155,27 @@ describe('catalog', function () {
             });
         });
 
+        describe('when published with custom format', function () {
+            beforeEach(function () {
+                $ctrl.status = 'published';
+                $ctrl.time = '2017-06-19 10:00';
+                $ctrl.format = 'LL';
+                $ctrl.$onChanges();
+            });
+
+            it('is not in draft', function () {
+                expect($ctrl.isDraft()).toBeFalsy();
+            });
+
+            it('publication time is formatted', function () {
+                expect($ctrl.publicationTime).toEqual('June 19, 2017');
+            });
+
+            it('is not scheduled', function () {
+                expect($ctrl.isScheduled()).toBeFalsy();
+            });
+        });
+
         describe('when published in the future', function () {
             beforeEach(function () {
                 $ctrl.status = 'published';

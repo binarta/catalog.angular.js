@@ -2453,7 +2453,8 @@ function BinCatalogPublicationTime() {
 
     this.bindings = {
         time: '<',
-        status: '<'
+        status: '<',
+        format: '@'
     };
 
     this.controller = ['moment', function (moment) {
@@ -2468,11 +2469,15 @@ function BinCatalogPublicationTime() {
         };
 
         $ctrl.$onChanges = function () {
-            $ctrl.publicationTime = isDraft() ? '' : moment($ctrl.time).format('lll');
+            $ctrl.publicationTime = isDraft() ? '' : moment($ctrl.time).format(getFormat());
         };
 
         function isDraft() {
             return $ctrl.status === 'draft';
+        }
+
+        function getFormat() {
+            return $ctrl.format || 'lll';
         }
     }];
 }
