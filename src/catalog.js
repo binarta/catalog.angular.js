@@ -2283,7 +2283,7 @@ function BinCatalogItemComponent() {
                     $ctrl.image.cover = 'images' + $ctrl.item.id + '/cover.img';
                     $ctrl.itemPath = '/view' + ($ctrl.item.localizedId || $ctrl.item.id);
                     var heroImage = binImageCarousel.getHeroImage({prefetchedItems: $ctrl.item.carousel});
-                    if (heroImage) $ctrl.image.hero = heroImage;
+                    if (heroImage) $ctrl.image.hero = heroImage.path;
                 }
             };
 

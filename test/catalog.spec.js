@@ -5343,7 +5343,7 @@ describe('catalog', function () {
             describe('when item has a carousel', function () {
                 beforeEach(function () {
                     $ctrl.item.carousel = [{id: '/image/id'}];
-                    imageCarousel.getHeroImage.and.returnValue('hero');
+                    imageCarousel.getHeroImage.and.returnValue({path: 'hero'});
                     $ctrl.$onChanges();
                 });
 
