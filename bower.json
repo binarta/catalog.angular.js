@@ -16,7 +16,8 @@
     "binarta.application.angular": "1.*.*",
     "binarta.price.angular": "0.*.*",
     "binarta.momentx.angular": "0.*.*",
-    "binarta.application.pages.angular": "0.*.*"
+    "binarta.application.pages.angular": "0.*.*",
+    "binarta.image.carousel.angular": "1.*.*"
   },
   "devDependencies": {
     "angular-mocks": "1.5.*",

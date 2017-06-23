@@ -5275,10 +5275,10 @@ describe('catalog', function () {
 
     describe('binCatalogItem component', function () {
         var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
-        var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock;
+        var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock, imageCarousel;
 
         beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, topicRegistryMock,
-                                    editModeRenderer, binLink, updateCatalogItemWriter) {
+                                    editModeRenderer, binLink, updateCatalogItemWriter, binImageCarousel) {
             binarta.checkpoint.gateway.permissions = [];
             binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p', email: 'e'});
             $rootScope = _$rootScope_;
@@ -5288,6 +5288,7 @@ describe('catalog', function () {
             editModeRendererMock = editModeRenderer;
             binLinkMock = binLink;
             writer = updateCatalogItemWriter;
+            imageCarousel = binImageCarousel;
             pinnerMock = {};
             pinnerMock.pin = jasmine.createSpy('pin').and.returnValue(true);
             pinnerMock.unpin = jasmine.createSpy('unpin').and.returnValue(true);
@@ -5342,11 +5343,18 @@ describe('catalog', function () {
             describe('when item has a carousel', function () {
                 beforeEach(function () {
                     $ctrl.item.carousel = [{id: '/image/id'}];
+                    imageCarousel.getHeroImage.and.returnValue('hero');
                     $ctrl.$onChanges();
                 });
 
+                it('hero image is requested', function () {
+                    expect(imageCarousel.getHeroImage).toHaveBeenCalledWith({
+                        prefetchedItems: $ctrl.item.carousel
+                    });
+                });
+
                 it('hero image code is available', function () {
-                    expect($ctrl.image.hero).toEqual('image/id');
+                    expect($ctrl.image.hero).toEqual('hero');
                 });
             });
         });

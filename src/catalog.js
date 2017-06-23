@@ -1,4 +1,4 @@
-angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular1', 'binarta-checkpointjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price', 'momentx', 'application.pages'])
+angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular1', 'binarta-checkpointjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price', 'momentx', 'application.pages', 'image.carousel'])
     .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])
@@ -2219,9 +2219,9 @@ function BinCatalogItemComponent() {
     };
 
     this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation',
-        'findCatalogItemById', 'updateCatalogItemWriter', 'binLink', 'binCatalogItemPublisher',
+        'findCatalogItemById', 'updateCatalogItemWriter', 'binLink', 'binCatalogItemPublisher', 'binImageCarousel',
         function (binarta, pinner, topics, removeCatalogItem, i18nLocation, findCatalogItemById,
-                  updateCatalogItem, binLink, publisher) {
+                  updateCatalogItem, binLink, publisher, binImageCarousel) {
             var $ctrl = this,
                 destroyHandlers = [];
             $ctrl.i18n = {};
@@ -2282,8 +2282,8 @@ function BinCatalogItemComponent() {
                     $ctrl.i18n.body = $ctrl.item.id + '.body';
                     $ctrl.image.cover = 'images' + $ctrl.item.id + '/cover.img';
                     $ctrl.itemPath = '/view' + ($ctrl.item.localizedId || $ctrl.item.id);
-                    if ($ctrl.item.carousel && $ctrl.item.carousel.length > 0)
-                        $ctrl.image.hero = $ctrl.item.carousel[0].id.replace(/^\/+/, '');
+                    var heroImage = binImageCarousel.getHeroImage({prefetchedItems: $ctrl.item.carousel});
+                    if (heroImage) $ctrl.image.hero = heroImage;
                 }
             };
 
