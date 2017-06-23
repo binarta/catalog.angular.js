@@ -2277,6 +2277,7 @@ function BinCatalogItemComponent() {
             $ctrl.$onChanges = function () {
                 if ($ctrl.item) {
                     $ctrl.i18n.title = $ctrl.item.id;
+                    $ctrl.i18n.altTitle = $ctrl.item.id + '.title';
                     $ctrl.i18n.lead = $ctrl.item.id + '.lead';
                     $ctrl.i18n.body = $ctrl.item.id + '.body';
                     $ctrl.image.cover = 'images' + $ctrl.item.id + '/cover.img';

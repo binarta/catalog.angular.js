@@ -5317,6 +5317,7 @@ describe('catalog', function () {
             it('i18n codes are available', function () {
                 expect($ctrl.i18n).toEqual({
                     title: 'item-id',
+                    altTitle: 'item-id.title',
                     lead: 'item-id.lead',
                     body: 'item-id.body'
                 });
@@ -5389,6 +5390,7 @@ describe('catalog', function () {
                 it('i18n codes are available', function () {
                     expect($ctrl.i18n).toEqual({
                         title: 'item-id',
+                        altTitle: 'item-id.title',
                         lead: 'item-id.lead',
                         body: 'item-id.body'
                     });
