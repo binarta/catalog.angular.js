@@ -2237,6 +2237,27 @@ function BinCatalogItemComponent() {
                     if ($ctrl.item) return findCatalogItemById($ctrl.item.id, applyItem);
                 };
 
+                $ctrl.update = function (request, response) {
+                    var data = {
+                        treatInputAsId: false,
+                        context: 'update',
+                        id: $ctrl.item.id,
+                        type: $ctrl.item.type
+                    };
+                    data[request.key] = request.value;
+
+                    updateCatalogItem({
+                        data: data,
+                        success: onSuccess,
+                        error: response.error
+                    });
+
+                    function onSuccess() {
+                        $ctrl.item[request.key] = request.value;
+                        response.success();
+                    }
+                };
+
                 $ctrl.isMoveAllowed = function () {
                     return $ctrl.item && isEnabledByDefault($ctrl.movable) && hasCatalogItemUpdatePermission();
                 };

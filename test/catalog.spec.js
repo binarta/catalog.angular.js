@@ -5357,6 +5357,54 @@ describe('catalog', function () {
                     expect($ctrl.image.hero).toEqual('hero');
                 });
             });
+
+            describe('exposes update function', function () {
+                var successSpy, errorSpy;
+
+                beforeEach(function () {
+                    successSpy = jasmine.createSpy('success');
+                    errorSpy = jasmine.createSpy('error');
+                    $ctrl.update({key: 'customKey', value: 'customValue'}, {success: successSpy, error: errorSpy});
+                });
+
+                it('item is updated', function () {
+                    expect(writer).toHaveBeenCalledWith({
+                        data: {
+                            treatInputAsId: false,
+                            context: 'update',
+                            id: $ctrl.item.id,
+                            type: $ctrl.item.type,
+                            customKey: 'customValue'
+                        },
+                        success: jasmine.any(Function),
+                        error: errorSpy
+                    });
+                });
+
+                describe('on success', function () {
+                    beforeEach(function () {
+                        writer.calls.mostRecent().args[0].success();
+                    });
+
+                    it('value on item is updated', function () {
+                        expect($ctrl.item['customKey']).toEqual('customValue');
+                    });
+
+                    it('success handler is executed', function () {
+                        expect(successSpy).toHaveBeenCalled();
+                    });
+                });
+
+                describe('on error', function () {
+                    beforeEach(function () {
+                        writer.calls.mostRecent().args[0].error();
+                    });
+
+                    it('error handler is executed', function () {
+                        expect(errorSpy).toHaveBeenCalled();
+                    });
+                });
+            });
         });
 
         describe('with detailsCtrl', function () {
