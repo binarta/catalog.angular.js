@@ -1847,7 +1847,9 @@ function BinCatalogItemGroupsComponent() {
 }
 
 function BinCatalogItemsComponent() {
-    this.templateUrl = 'bin-catalog-items.html';
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'bin-catalog-items.html';
+    }];
 
     this.bindings = {
         items: '<',
