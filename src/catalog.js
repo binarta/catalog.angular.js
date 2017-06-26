@@ -2511,7 +2511,8 @@ function BinCatalogItemCta() {
     }];
 
     this.bindings = {
-        item: '<'
+        item: '<',
+        purchasable: '@'
     };
 
     this.controller = ['$q', 'binPages', 'i18n', function ($q, pages, i18n) {
@@ -2526,6 +2527,10 @@ function BinCatalogItemCta() {
 
             $ctrl.hasPrice = function () {
                 return $ctrl.item.price && $ctrl.item.price > 0;
+            };
+
+            $ctrl.isPurchasable = function () {
+                return isEnabledByDefault($ctrl.purchasable) && $ctrl.hasPrice();
             };
 
             if ($ctrl.isContactActive()) {

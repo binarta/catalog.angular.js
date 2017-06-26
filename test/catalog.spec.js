@@ -6272,6 +6272,22 @@ describe('catalog', function () {
             expect($ctrl.hasPrice()).toBeTruthy();
         });
 
+        describe('with price', function () {
+            beforeEach(function () {
+                $ctrl.item.price = 1;
+            });
+
+            it('when item is purchasable', function () {
+                $ctrl.purchasable = 'true';
+                expect($ctrl.isPurchasable()).toBeTruthy();
+            });
+
+            it('when item is not purchasable', function () {
+                $ctrl.purchasable = 'false';
+                expect($ctrl.isPurchasable()).toBeFalsy();
+            });
+        });
+
         it('when contact section is not active', function () {
             binPages.isActive.and.returnValue(false);
             var actual = $ctrl.isContactActive();
