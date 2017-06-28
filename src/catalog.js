@@ -2259,7 +2259,7 @@ function BinCatalogItemComponent() {
                 };
 
                 $ctrl.isMoveAllowed = function () {
-                    return $ctrl.item && isEnabledByDefault($ctrl.movable) && hasCatalogItemUpdatePermission();
+                    return $ctrl.item && $ctrl.itemsCtrl && isEnabledByDefault($ctrl.movable) && hasCatalogItemUpdatePermission();
                 };
                 $ctrl.isPinAllowed = function () {
                     return $ctrl.item && !$ctrl.item.pinned && isDisabledByDefault($ctrl.pinnable) && hasCatalogItemPinPermission();
@@ -2570,7 +2570,7 @@ function BinCatalogItemTitleComponent() {
             });
         };
 
-        function setTitle(id) {
+        function setTitle() {
             $ctrl.i18n.title = $ctrl.item.id;
         }
     };

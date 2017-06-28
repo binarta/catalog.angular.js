@@ -5544,6 +5544,35 @@ describe('catalog', function () {
                 expect(topicsMock['catalog.item.pinned.' + item.id]).toBeUndefined();
                 expect(topicsMock['catalog.item.unpinned.' + item.id]).toBeUndefined();
             });
+
+            describe('check if move action is allowed', function () {
+                beforeEach(function () {
+                    $ctrl.item = item;
+                    $ctrl.$onInit();
+                });
+
+                it('when movable but no permission', function () {
+                    $ctrl.movable = 'true';
+                    expect($ctrl.isMoveAllowed()).toBeFalsy();
+                });
+
+                describe('when user has permission', function () {
+                    beforeEach(function () {
+                        binarta.checkpoint.gateway.addPermission('catalog.item.update');
+                        binarta.checkpoint.profile.refresh();
+                    });
+
+                    it('and is movable', function () {
+                        $ctrl.movable = 'true';
+                        expect($ctrl.isMoveAllowed()).toBeTruthy();
+                    });
+
+                    it('and is not movable', function () {
+                        $ctrl.movable = 'false';
+                        expect($ctrl.isMoveAllowed()).toBeFalsy();
+                    });
+                });
+            });
         });
 
         describe('on refresh', function () {
@@ -5576,35 +5605,6 @@ describe('catalog', function () {
 
                 it('item is updated', function () {
                     expect($ctrl.item).toEqual(newItem);
-                });
-            });
-        });
-
-        describe('check if move action is allowed', function () {
-            beforeEach(function () {
-                $ctrl.item = item;
-                $ctrl.$onInit();
-            });
-
-            it('when movable but no permission', function () {
-                $ctrl.movable = 'true';
-                expect($ctrl.isMoveAllowed()).toBeFalsy();
-            });
-
-            describe('when user has permission', function () {
-                beforeEach(function () {
-                    binarta.checkpoint.gateway.addPermission('catalog.item.update');
-                    binarta.checkpoint.profile.refresh();
-                });
-
-                it('and is movable', function () {
-                    $ctrl.movable = 'true';
-                    expect($ctrl.isMoveAllowed()).toBeTruthy();
-                });
-
-                it('and is not movable', function () {
-                    $ctrl.movable = 'false';
-                    expect($ctrl.isMoveAllowed()).toBeFalsy();
                 });
             });
         });
