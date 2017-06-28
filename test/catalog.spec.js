@@ -3595,6 +3595,7 @@ describe('catalog', function () {
         var $ctrl, $componentController, $routeParams, search;
         var type = 'type';
         var partition = 'partition';
+        var defaultCount = 50;
 
         beforeEach(inject(function (_$componentController_, _$routeParams_, binartaSearch) {
             $componentController = _$componentController_;
@@ -3661,7 +3662,7 @@ describe('catalog', function () {
                         orientation: 'desc'
                     }],
                     subset: {
-                        count: 12,
+                        count: defaultCount,
                         offset: 0
                     },
                     includeCarouselItems: true,
@@ -3713,8 +3714,8 @@ describe('catalog', function () {
 
                     it('new items are requested with an offset', function () {
                         expect(search.calls.mostRecent().args[0].subset).toEqual({
-                            count: 12,
-                            offset: 12
+                            count: defaultCount,
+                            offset: defaultCount
                         });
                     });
 
@@ -3744,7 +3745,7 @@ describe('catalog', function () {
 
                     it('new items are requested and offset is reset', function () {
                         expect(search.calls.mostRecent().args[0].subset).toEqual({
-                            count: 12,
+                            count: defaultCount,
                             offset: 0
                         });
                     });
@@ -3816,7 +3817,7 @@ describe('catalog', function () {
                         orientation: 'desc'
                     }],
                     subset: {
-                        count: 12,
+                        count: defaultCount,
                         offset: 0
                     },
                     includeCarouselItems: true,
@@ -3889,7 +3890,7 @@ describe('catalog', function () {
                         orientation: 'desc'
                     }],
                     subset: {
-                        count: 12,
+                        count: defaultCount,
                         offset: 0
                     },
                     includeCarouselItems: true,

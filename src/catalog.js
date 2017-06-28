@@ -1357,7 +1357,7 @@ function BinCatalogListComponent() {
 
     this.controller = ['$location', '$routeParams', 'catalogPathParser', 'binartaSearch', function ($location, $routeParams, catalogPathParser, binartaSearch) {
         var $ctrl = this;
-        var count = 12, offset = 0, moreItemsAvailable = false, working = false;
+        var count = 50, offset = 0, moreItemsAvailable = false, working = false;
 
         $ctrl.$onInit = function () {
             $ctrl.items = [];
