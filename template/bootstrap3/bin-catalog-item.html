@@ -4,32 +4,32 @@
             <bin-edit-action action="$ctrl.link()"
                              icon-class="fa-link"
                              i18n-code="catalog.item.link"
-                             ng-show="$ctrl.isLinkAllowed()">
+                             ng-if="$ctrl.isLinkAllowed()">
             </bin-edit-action>
             <bin-edit-actions-selector for="move"
                                        icon-class="fa-arrows"
                                        i18n-code="catalog.item.move"
-                                       ng-show="$ctrl.isMoveAllowed()">
+                                       ng-if="$ctrl.isMoveAllowed()">
             </bin-edit-actions-selector>
             <bin-edit-action action="$ctrl.pin()"
                              icon-class="fa-thumb-tack"
                              i18n-code="catalog.item.pin.button"
-                             ng-show="$ctrl.isPinAllowed()">
+                             ng-if="$ctrl.isPinAllowed()">
             </bin-edit-action>
             <bin-edit-action action="$ctrl.unpin()"
                              icon-class="fa-thumb-tack fa-rotate-90"
                              i18n-code="catalog.item.unpin.button"
-                             ng-show="$ctrl.isUnpinAllowed()">
+                             ng-if="$ctrl.isUnpinAllowed()">
             </bin-edit-action>
             <bin-edit-action action="$ctrl.publish()"
                              icon-class="fa-eye"
                              i18n-code="catalog.item.publish"
-                             ng-show="$ctrl.isPublishAllowed()">
+                             ng-if="$ctrl.isPublishAllowed()">
             </bin-edit-action>
             <bin-edit-action action="$ctrl.unpublish()"
                              icon-class="fa-eye-slash"
                              i18n-code="catalog.item.unpublish"
-                             ng-show="$ctrl.isUnpublishAllowed()">
+                             ng-if="$ctrl.isUnpublishAllowed()">
             </bin-edit-action>
             <bin-edit-actions-selector for="delete" danger
                                        icon-class="fa-trash"
