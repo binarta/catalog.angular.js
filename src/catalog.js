@@ -2163,7 +2163,7 @@ function BinCatalogDetailsComponent() {
         itemId: '@'
     };
 
-    this.controller = ['$location', '$routeParams', 'catalogPathParser', 'findCatalogItemById',
+    this.controller = ['i18nLocation', '$routeParams', 'catalogPathParser', 'findCatalogItemById',
         function ($location, $routeParams, catalogPathParser, findCatalogItemById) {
             var $ctrl = this;
             var onItemUpdateListeners = [];

@@ -2324,11 +2324,11 @@ describe('catalog', function () {
             writer.invokedFor(args);
         });
 
-        it('treat input as id is enabled by default', function() {
+        it('treat input as id is enabled by default', function () {
             expect(writer.data().treatInputAsId).toBeTruthy();
         });
 
-        it('treat input as id can be overridden', function() {
+        it('treat input as id can be overridden', function () {
             writer.spy.calls.reset();
             args.data.treatInputAsId = false;
             sut(args);
@@ -2513,24 +2513,24 @@ describe('catalog', function () {
         });
     });
 
-    describe('movable-items directive', function() {
+    describe('movable-items directive', function () {
         var $scope, $compile;
 
-        beforeEach(inject(function($rootScope, _$compile_, topicRegistryMock) {
+        beforeEach(inject(function ($rootScope, _$compile_, topicRegistryMock) {
             $scope = $rootScope.$new();
             $compile = _$compile_;
             notifications = topicRegistryMock;
 
         }));
 
-        it('directive receives default configuration values', function() {
+        it('directive receives default configuration values', function () {
             var element = $compile('<div movable-items></div>')($scope);
             expect(element.isolateScope().items).toEqual([]);
             expect(element.isolateScope().orientation).toEqual('asc');
             expect(element.isolateScope().when).toEqual(true);
         });
 
-        it('directive can be configured', function() {
+        it('directive can be configured', function () {
             $scope.items = ['one', 'two'];
             $scope.enabled = false;
             var element = $compile('<div movable-items="items" orientation="desc" when="enabled"></div>')($scope);
@@ -2539,19 +2539,19 @@ describe('catalog', function () {
             expect(element.isolateScope().when).toEqual($scope.enabled);
         });
 
-        describe('when directive is enabled for asc', function() {
+        describe('when directive is enabled for asc', function () {
             var element;
 
-            beforeEach(function() {
+            beforeEach(function () {
                 $scope.items = [
-                    {id:'I1', priority:1},
-                    {id:'I2', priority:2},
-                    {id:'I3', priority:3}
+                    {id: 'I1', priority: 1},
+                    {id: 'I2', priority: 2},
+                    {id: 'I3', priority: 3}
                 ];
                 element = $compile('<div movable-items="items"></div>')($scope);
             });
 
-            describe('and catalog.item.paste is fired', function() {
+            describe('and catalog.item.paste is fired', function () {
                 it('first to middle', function () {
                     notifications['catalog.item.paste']({id: 'I1', priority: 2});
                     expect($scope.items[0]).toEqual({id: 'I2', priority: 1});
@@ -2582,19 +2582,19 @@ describe('catalog', function () {
             });
         });
 
-        describe('when directive is enabled for desc', function() {
+        describe('when directive is enabled for desc', function () {
             var element;
 
-            beforeEach(function() {
+            beforeEach(function () {
                 $scope.items = [
-                    {id:'I3', priority:3},
-                    {id:'I2', priority:2},
-                    {id:'I1', priority:1}
+                    {id: 'I3', priority: 3},
+                    {id: 'I2', priority: 2},
+                    {id: 'I1', priority: 1}
                 ];
                 element = $compile('<div movable-items="items" orientation="desc"></div>')($scope);
             });
 
-            describe('and catalog.item.paste is fired', function() {
+            describe('and catalog.item.paste is fired', function () {
                 it('first to middle', function () {
                     notifications['catalog.item.paste']({id: 'I3', priority: 2});
                     expect($scope.items[0]).toEqual({id: 'I2', priority: 3});
@@ -2627,12 +2627,12 @@ describe('catalog', function () {
 
     });
 
-    describe('itemPinner', function() {
+    describe('itemPinner', function () {
         var pinner, rest, config;
         var ctx;
         var isSuccess;
 
-        beforeEach(inject(function(itemPinner, restServiceHandler, _config_) {
+        beforeEach(inject(function (itemPinner, restServiceHandler, _config_) {
             pinner = itemPinner;
             rest = restServiceHandler;
             config = _config_;
@@ -2641,9 +2641,9 @@ describe('catalog', function () {
             rest.and.returnValue('promise');
             ctx = {
                 item: {
-                    id:1
+                    id: 1
                 },
-                success:function() {
+                success: function () {
                     isSuccess = true;
                 }
             }
@@ -2653,14 +2653,14 @@ describe('catalog', function () {
             return rest.calls.argsFor(0)[0];
         }
 
-        describe('when pinning an item', function() {
+        describe('when pinning an item', function () {
             var returnValue;
 
-            beforeEach(function() {
+            beforeEach(function () {
                 returnValue = pinner.pin(ctx);
             });
 
-            it('usecase request is sent', function() {
+            it('usecase request is sent', function () {
                 expect(request().params.method).toEqual('POST');
                 expect(request().params.withCredentials).toEqual(true);
                 expect(request().params.url).toEqual(config.baseUri + 'api/usecase');
@@ -2672,30 +2672,30 @@ describe('catalog', function () {
                 expect(returnValue).toEqual('promise');
             });
 
-            describe('on success', function() {
-                beforeEach(function() {
+            describe('on success', function () {
+                beforeEach(function () {
                     request().success('data');
                 });
 
-                it('success handler is executed', function() {
+                it('success handler is executed', function () {
                     expect(isSuccess).toEqual(true);
                 });
 
-                it('catalog.item.pinned events are fired', inject(function(topicMessageDispatcherMock) {
+                it('catalog.item.pinned events are fired', inject(function (topicMessageDispatcherMock) {
                     expect(topicMessageDispatcherMock['catalog.item.pinned']).toEqual(ctx.item);
                     expect(topicMessageDispatcherMock['catalog.item.pinned.' + ctx.item.id]).toEqual(ctx.item);
                 }))
             });
         });
 
-        describe('when unpinning an item', function() {
+        describe('when unpinning an item', function () {
             var returnValue;
 
-            beforeEach(function() {
+            beforeEach(function () {
                 returnValue = pinner.unpin(ctx);
             });
 
-            it('usecase request is sent', function() {
+            it('usecase request is sent', function () {
                 expect(request().params.method).toEqual('POST');
                 expect(request().params.withCredentials).toEqual(true);
                 expect(request().params.url).toEqual(config.baseUri + 'api/usecase');
@@ -2707,16 +2707,16 @@ describe('catalog', function () {
                 expect(returnValue).toEqual('promise');
             });
 
-            describe('on success', function() {
-                beforeEach(function() {
+            describe('on success', function () {
+                beforeEach(function () {
                     request().success('data');
                 });
 
-                it('success handler is executed', function() {
+                it('success handler is executed', function () {
                     expect(isSuccess).toEqual(true);
                 });
 
-                it('catalog.item.unpinned events are fired', inject(function(topicMessageDispatcherMock) {
+                it('catalog.item.unpinned events are fired', inject(function (topicMessageDispatcherMock) {
                     expect(topicMessageDispatcherMock['catalog.item.unpinned']).toEqual(ctx.item);
                     expect(topicMessageDispatcherMock['catalog.item.unpinned.' + ctx.item.id]).toEqual(ctx.item);
                 }))
@@ -2724,167 +2724,169 @@ describe('catalog', function () {
         });
     });
 
-    describe('PinItemController', function() {
+    describe('PinItemController', function () {
         var ctrl, pinner, item;
 
-        beforeEach(inject(function($controller, itemPinner, $rootScope) {
+        beforeEach(inject(function ($controller, itemPinner, $rootScope) {
             spyOn(itemPinner, 'pin');
             spyOn(itemPinner, 'unpin');
-            ctrl = $controller('PinItemController', {$scope:$rootScope.$new()});
+            ctrl = $controller('PinItemController', {$scope: $rootScope.$new()});
             item = {
-                id:1
+                id: 1
             };
             ctrl.init(item);
         }));
 
-        describe('when pinning', function() {
-            beforeEach(function() {
+        describe('when pinning', function () {
+            beforeEach(function () {
                 ctrl.pin();
             });
 
-            it('call the item pinner', inject(function(itemPinner) {
+            it('call the item pinner', inject(function (itemPinner) {
                 expect(itemPinner.pin.calls.argsFor(0)[0].item.id).toEqual(item.id);
             }));
 
-            describe('with success', function() {
-                beforeEach(inject(function(itemPinner) {
+            describe('with success', function () {
+                beforeEach(inject(function (itemPinner) {
                     itemPinner.pin.calls.argsFor(0)[0].success();
                 }));
 
-                it('the item is flagged as pinned', function() {
+                it('the item is flagged as pinned', function () {
                     expect(item.pinned).toBe(true);
                 })
             });
         });
 
-        describe('when unpinning', function() {
-            beforeEach(function() {
+        describe('when unpinning', function () {
+            beforeEach(function () {
                 ctrl.unpin();
             });
 
-            it('call the item pinner', inject(function(itemPinner) {
+            it('call the item pinner', inject(function (itemPinner) {
                 expect(itemPinner.unpin.calls.argsFor(0)[0].item.id).toEqual(item.id);
             }));
 
-            describe('with success', function() {
-                beforeEach(inject(function(itemPinner) {
+            describe('with success', function () {
+                beforeEach(inject(function (itemPinner) {
                     itemPinner.unpin.calls.argsFor(0)[0].success();
                 }));
 
-                it('the item is flagged as not pinned', function() {
+                it('the item is flagged as not pinned', function () {
                     expect(item.pinned).toBe(false);
                 })
             });
         });
 
-        it('when another controller for the same item pins we need to update the flag', inject(function(topicRegistryMock) {
+        it('when another controller for the same item pins we need to update the flag', inject(function (topicRegistryMock) {
             topicRegistryMock['catalog.item.pinned.' + item.id](item);
             expect(item.pinned).toBe(true);
         }));
 
-        it('when another controller for the same item unpins we need to update the flag', inject(function(topicRegistryMock) {
+        it('when another controller for the same item unpins we need to update the flag', inject(function (topicRegistryMock) {
             topicRegistryMock['catalog.item.unpinned.' + item.id](item);
             expect(item.pinned).toBe(false);
         }))
     });
 
-    describe('binSpotlightController', function() {
+    describe('binSpotlightController', function () {
         var component, location;
         var binarta = {
-            application:{config:{
-                findPublic:jasmine.createSpy('findPublic'),
-                observePublic:jasmine.createSpy('observePublic')
-            }},
-            schedule:function(fn) {
+            application: {
+                config: {
+                    findPublic: jasmine.createSpy('findPublic'),
+                    observePublic: jasmine.createSpy('observePublic')
+                }
+            },
+            schedule: function (fn) {
                 this.scheduledFn = fn;
             }
         };
         var configWriter = jasmine.createSpy('configWriter');
         var disconnectObserver = jasmine.createSpy('disconnectObserver');
 
-        beforeEach(inject(function($controller, $location) {
+        beforeEach(inject(function ($controller, $location) {
             location = $location;
-            component = $controller('binSpotlightController', {binarta:binarta, configWriter:configWriter});
+            component = $controller('binSpotlightController', {binarta: binarta, configWriter: configWriter});
             component.type = 'type';
             binarta.application.config.findPublic.calls.reset();
             binarta.application.config.observePublic.calls.reset();
             configWriter.calls.reset();
             disconnectObserver.calls.reset();
-            binarta.application.config.observePublic.and.returnValue({disconnect:disconnectObserver});
+            binarta.application.config.observePublic.and.returnValue({disconnect: disconnectObserver});
         }));
 
-        it('total item count initializes to 0', function() {
+        it('total item count initializes to 0', function () {
             expect(component.totalItemCount).toEqual(0);
         });
 
-        describe('$onInit', function() {
-            beforeEach(function() {
+        describe('$onInit', function () {
+            beforeEach(function () {
                 component.$onInit();
             });
 
-            describe('and edit.mode was fired', function() {
-                beforeEach(inject(function(topicRegistryMock) {
+            describe('and edit.mode was fired', function () {
+                beforeEach(inject(function (topicRegistryMock) {
                     topicRegistryMock['edit.mode'](true);
                 }));
 
-                it('then editing flag is updated', function() {
+                it('then editing flag is updated', function () {
                     expect(component.editing).toBe(true);
                 })
             });
 
-            describe('and scheduled action was executed', function() {
-                beforeEach(function() {
+            describe('and scheduled action was executed', function () {
+                beforeEach(function () {
                     binarta.scheduledFn();
                 });
 
-                it('public config was consulted', function() {
+                it('public config was consulted', function () {
                     expect(binarta.application.config.findPublic.calls.argsFor(0)[0]).toEqual('catalog.type.recent.items');
                 });
 
-                describe('and public config results are triggered', function() {
-                    beforeEach(function() {
+                describe('and public config results are triggered', function () {
+                    beforeEach(function () {
                         binarta.application.config.findPublic.calls.argsFor(0)[1]('true');
                     });
 
-                    it('then flags are set', function() {
+                    it('then flags are set', function () {
                         expect(component.recentItems).toBe(true);
                     });
 
-                    describe('and recent items are toggled', function() {
-                        beforeEach(function() {
+                    describe('and recent items are toggled', function () {
+                        beforeEach(function () {
                             component.toggleRecentItems();
                         });
 
-                        it('then the flag is updated', function() {
+                        it('then the flag is updated', function () {
                             expect(component.recentItems).toBe(false);
                         });
 
-                        it('and config is written', function() {
+                        it('and config is written', function () {
                             expect(configWriter.calls.argsFor(0)[0]).toEqual({
-                                key:'catalog.type.recent.items',
-                                value:component.recentItems,
-                                scope:'public'
+                                key: 'catalog.type.recent.items',
+                                value: component.recentItems,
+                                scope: 'public'
                             });
                         });
                     });
                 });
 
-                describe('and public config results are triggered with boolean', function() {
-                    beforeEach(function() {
+                describe('and public config results are triggered with boolean', function () {
+                    beforeEach(function () {
                         binarta.application.config.findPublic.calls.argsFor(0)[1](true);
                     });
 
-                    it('then flags are set', function() {
+                    it('then flags are set', function () {
                         expect(component.recentItems).toBe(true);
                     });
                 });
 
-                describe('and $onDestroy', function() {
-                    beforeEach(function() {
+                describe('and $onDestroy', function () {
+                    beforeEach(function () {
                         component.$onDestroy();
                     });
 
-                    it('unsubscribed from edit.mode', inject(function(topicRegistryMock) {
+                    it('unsubscribed from edit.mode', inject(function (topicRegistryMock) {
                         expect(topicRegistryMock['edit.mode']).toBeUndefined();
                     }));
                 });
@@ -2896,27 +2898,29 @@ describe('catalog', function () {
             });
         });
 
-        it('total item count can be manipulated', function() {
+        it('total item count can be manipulated', function () {
             component.plus({size: 1});
             expect(component.totalItemCount).toEqual(1);
         });
 
-        it('pinned item count can be manipulated', function() {
+        it('pinned item count can be manipulated', function () {
             component.plus({size: 1, isPinned: true});
             expect(component.pinnedItemCount).toEqual(1);
         });
     });
-    
-    describe('binSpotlightItemsController', function() {
+
+    describe('binSpotlightItemsController', function () {
         var $ctrl;
         var visibleXs;
         var viewport = {
-            visibleXs:function() { return visibleXs; }
+            visibleXs: function () {
+                return visibleXs;
+            }
         };
         var search;
 
-        beforeEach(inject(function($controller, binartaSearch) {
-            $ctrl = $controller('binSpotlightItemsController', {viewport:viewport});
+        beforeEach(inject(function ($controller, binartaSearch) {
+            $ctrl = $controller('binSpotlightItemsController', {viewport: viewport});
 
             $ctrl.spotlightCtrl = {
                 type: 'type',
@@ -2931,8 +2935,8 @@ describe('catalog', function () {
             return search.calls.argsFor(0)[0];
         }
 
-        describe('$onInit', function() {
-            beforeEach(function() {
+        describe('$onInit', function () {
+            beforeEach(function () {
                 $ctrl.$onInit();
             });
 
@@ -2940,21 +2944,21 @@ describe('catalog', function () {
                 expect($ctrl.templateUrl).toEqual('bin-catalog-item-list-default.html');
             });
 
-            it('results are initialized to empty list', function() {
+            it('results are initialized to empty list', function () {
                 expect($ctrl.results.length).toEqual(0);
             });
 
-            describe('on edit.mode was fired', function() {
-                beforeEach(inject(function(topicRegistryMock) {
+            describe('on edit.mode was fired', function () {
+                beforeEach(inject(function (topicRegistryMock) {
                     topicRegistryMock['edit.mode'](true);
                 }));
 
-                it('then editing flag is updated', function() {
+                it('then editing flag is updated', function () {
                     expect($ctrl.editing).toBe(true);
                 })
             });
 
-            it('search is executed', function() {
+            it('search is executed', function () {
                 expect(args().entity).toEqual('catalog-item');
                 expect(args().action).toEqual('search');
                 expect(args().subset).toEqual({
@@ -2963,7 +2967,7 @@ describe('catalog', function () {
                 });
                 expect(args().includeCarouselItems).toBe(true);
                 expect(args().sortings).toEqual([
-                    {on:'creationTime', orientation:'desc'}
+                    {on: 'creationTime', orientation: 'desc'}
                 ]);
                 expect(args().filters).toEqual({
                     type: $ctrl.spotlightCtrl.type
@@ -2971,45 +2975,45 @@ describe('catalog', function () {
                 expect(args().complexResult).toBe(true);
             });
 
-            it('when viewport is for small device we limit to search pages of 6 items', function() {
+            it('when viewport is for small device we limit to search pages of 6 items', function () {
                 visibleXs = true;
                 search.calls.reset();
                 $ctrl.$onInit();
                 expect(args().subset.count).toEqual(6);
             });
 
-            describe('with success', function() {
+            describe('with success', function () {
                 var items;
 
-                beforeEach(function() {
+                beforeEach(function () {
                     items = [
                         {id: 1},
                         {id: 2}
                     ];
                     search.calls.argsFor(0)[0].success({
-                        hasMore:true,
+                        hasMore: true,
                         results: items
                     });
                 });
 
-                it('then items are exposed', function() {
+                it('then items are exposed', function () {
                     expect($ctrl.results).toEqual(items);
                 });
 
-                it('search for more flag is exposed', function() {
+                it('search for more flag is exposed', function () {
                     expect($ctrl.searchForMore).toBe(true);
                 });
 
-                it('and item count is sent to parent ctrl', function() {
+                it('and item count is sent to parent ctrl', function () {
                     expect($ctrl.spotlightCtrl.plus).toHaveBeenCalledWith({size: items.length, isPinned: false});
                 });
 
-                describe('and component is destroyed', function() {
-                    beforeEach(function() {
+                describe('and component is destroyed', function () {
+                    beforeEach(function () {
                         $ctrl.$onDestroy();
                     });
 
-                    it('negative item count is sent to parent ctrl', function() {
+                    it('negative item count is sent to parent ctrl', function () {
                         expect($ctrl.spotlightCtrl.plus).toHaveBeenCalledWith({size: -items.length, isPinned: false});
                     });
                 });
@@ -3017,10 +3021,10 @@ describe('catalog', function () {
 
         });
 
-        describe('$onInit with pinned configuration', function() {
+        describe('$onInit with pinned configuration', function () {
             var items;
 
-            beforeEach(function() {
+            beforeEach(function () {
                 items = [
                     {id: 1},
                     {id: 2}
@@ -3028,73 +3032,73 @@ describe('catalog', function () {
                 $ctrl.pinned = 'true';
                 $ctrl.$onInit();
                 search.calls.argsFor(0)[0].success({
-                    hasMore:true,
+                    hasMore: true,
                     results: items
                 })
             });
 
-            it('search for more is always true', function() {
+            it('search for more is always true', function () {
                 expect($ctrl.searchForMore).toBe(true);
             });
 
-            it('search is filtered by pinned', function() {
+            it('search is filtered by pinned', function () {
                 expect(args().filters.pinned).toBe(true);
             });
 
-            it('topic handlers are installed', inject(function(topicRegistryMock) {
+            it('topic handlers are installed', inject(function (topicRegistryMock) {
                 expect(topicRegistryMock['catalog.item.pinned']).toBeDefined();
                 expect(topicRegistryMock['catalog.item.unpinned']).toBeDefined();
             }));
 
-            it('and item count is sent to parent ctrl', function() {
+            it('and item count is sent to parent ctrl', function () {
                 expect($ctrl.spotlightCtrl.plus).toHaveBeenCalledWith({size: items.length, isPinned: true});
             });
 
-            describe('and catalog.item.pinned event is received', function() {
-                beforeEach(inject(function(topicRegistryMock) {
-                    topicRegistryMock['catalog.item.pinned']({id:3, type:'type'});
+            describe('and catalog.item.pinned event is received', function () {
+                beforeEach(inject(function (topicRegistryMock) {
+                    topicRegistryMock['catalog.item.pinned']({id: 3, type: 'type'});
                 }));
 
-                it('item is added to the list', function() {
-                    expect($ctrl.results[2]).toEqual({id:3, type:'type'})
+                it('item is added to the list', function () {
+                    expect($ctrl.results[2]).toEqual({id: 3, type: 'type'})
                 });
 
-                it('and increase item count by 1 on parent', function() {
+                it('and increase item count by 1 on parent', function () {
                     expect($ctrl.spotlightCtrl.plus).toHaveBeenCalledWith({size: 1, isPinned: true});
                 });
 
-                it('when item.pinned is received for wrong type do not add to list', inject(function(topicRegistryMock) {
+                it('when item.pinned is received for wrong type do not add to list', inject(function (topicRegistryMock) {
                     $ctrl.spotlightCtrl.plus.calls.reset();
-                    topicRegistryMock['catalog.item.pinned']({id:4, type:'wrong'});
+                    topicRegistryMock['catalog.item.pinned']({id: 4, type: 'wrong'});
                     expect($ctrl.results.length).toBe(3);
                     expect($ctrl.spotlightCtrl.plus).not.toHaveBeenCalled();
                 }));
 
-                describe('and catalog.item.unpinned event is received', function() {
-                    beforeEach(inject(function(topicRegistryMock) {
-                        topicRegistryMock['catalog.item.unpinned']({id:3});
+                describe('and catalog.item.unpinned event is received', function () {
+                    beforeEach(inject(function (topicRegistryMock) {
+                        topicRegistryMock['catalog.item.unpinned']({id: 3});
                     }));
 
-                    it('item is removed again', function() {
+                    it('item is removed again', function () {
                         expect($ctrl.results.length).toEqual(2);
                     });
 
-                    it('and decrease item count by 1 on parent', function() {
+                    it('and decrease item count by 1 on parent', function () {
                         expect($ctrl.spotlightCtrl.plus).toHaveBeenCalledWith({size: -1, isPinned: true});
                     });
                 });
 
-                describe('and $onDestroy', function() {
-                    beforeEach(function() {
+                describe('and $onDestroy', function () {
+                    beforeEach(function () {
                         $ctrl.$onDestroy();
                     });
 
-                    it('then topic handlers are uninstalled', inject(function(topicRegistryMock) {
+                    it('then topic handlers are uninstalled', inject(function (topicRegistryMock) {
                         expect(topicRegistryMock['catalog.item.pinned']).toBeUndefined();
                         expect(topicRegistryMock['catalog.item.unpinned']).toBeUndefined();
                     }));
 
-                    it('negative item count is sent to parent ctrl', function() {
+                    it('negative item count is sent to parent ctrl', function () {
                         expect($ctrl.spotlightCtrl.plus).toHaveBeenCalledWith({size: -items.length, isPinned: true});
                     });
                 });
@@ -3444,7 +3448,6 @@ describe('catalog', function () {
             });
         });
     });
-
 
 
     describe('binCatalogItemPublisher service', function () {
@@ -4064,12 +4067,12 @@ describe('catalog', function () {
                 var partition;
 
                 beforeEach(function () {
-                    partition = {id:'foo'};
+                    partition = {id: 'foo'};
                     $ctrl.add(partition);
                 });
 
                 it('partition is added to partition list and uiStatus is applied', function () {
-                    expect($ctrl.partitions[$ctrl.partitions.length - 1]).toEqual({id:'foo', uiStatus:'added'});
+                    expect($ctrl.partitions[$ctrl.partitions.length - 1]).toEqual({id: 'foo', uiStatus: 'added'});
                 });
 
                 it('after delay, uiStatus is removed', function () {
@@ -4947,12 +4950,12 @@ describe('catalog', function () {
                 var item;
 
                 beforeEach(function () {
-                    item = {id:'foo'};
+                    item = {id: 'foo'};
                     $ctrl.add(item);
                 });
 
                 it('item is added to items list and uiStatus is applied', function () {
-                    expect($ctrl.items[0]).toEqual({id:'foo', uiStatus:'added'});
+                    expect($ctrl.items[0]).toEqual({id: 'foo', uiStatus: 'added'});
                 });
 
                 it('after delay, uiStatus is removed', function () {
@@ -5146,7 +5149,7 @@ describe('catalog', function () {
 
                 describe('when items are available', function () {
                     beforeEach(function () {
-                        $ctrl.listCtrl.items.push({id:0});
+                        $ctrl.listCtrl.items.push({id: 0});
                     });
 
                     it('is not working', function () {
@@ -5228,8 +5231,8 @@ describe('catalog', function () {
                         findCatalogItemByIdMock.calls.mostRecent().args[1](item);
                     });
 
-                    it('redirect to localized version', function () {
-                        expect($location.path()).toEqual('/view' + item.localizedId);
+                    it('redirect to localized version under the current language', function () {
+                        expect($location.path()).toEqual('/lang/view' + item.localizedId);
                     });
 
                     it('item is not updated', function () {
@@ -5825,14 +5828,14 @@ describe('catalog', function () {
                 $ctrl.$onInit();
             });
 
-            describe('on pin', function() {
+            describe('on pin', function () {
                 var returnValue;
 
-                beforeEach(function() {
+                beforeEach(function () {
                     returnValue = $ctrl.pin();
                 });
 
-                it('call the item pinner', function() {
+                it('call the item pinner', function () {
                     expect(pinnerMock.pin.calls.mostRecent().args[0].item.id).toEqual($ctrl.item.id);
                 });
 
@@ -5840,25 +5843,25 @@ describe('catalog', function () {
                     expect(returnValue).toBe(true);
                 });
 
-                describe('on success', function() {
-                    beforeEach(function() {
+                describe('on success', function () {
+                    beforeEach(function () {
                         pinnerMock.pin.calls.mostRecent().args[0].success();
                     });
 
-                    it('the item is flagged as pinned', function() {
+                    it('the item is flagged as pinned', function () {
                         expect($ctrl.item.pinned).toBeTruthy();
                     })
                 });
             });
 
-            describe('on unpin', function() {
+            describe('on unpin', function () {
                 var returnValue;
 
-                beforeEach(function() {
+                beforeEach(function () {
                     returnValue = $ctrl.unpin();
                 });
 
-                it('call the item pinner', function() {
+                it('call the item pinner', function () {
                     expect(pinnerMock.unpin.calls.argsFor(0)[0].item.id).toEqual($ctrl.item.id);
                 });
 
@@ -5866,12 +5869,12 @@ describe('catalog', function () {
                     expect(returnValue).toBe(true);
                 });
 
-                describe('on success', function() {
-                    beforeEach(function() {
+                describe('on success', function () {
+                    beforeEach(function () {
                         pinnerMock.unpin.calls.argsFor(0)[0].success();
                     });
 
-                    it('the item is flagged as not pinned', function() {
+                    it('the item is flagged as not pinned', function () {
                         expect($ctrl.item.pinned).toBe(false);
                     })
                 });
