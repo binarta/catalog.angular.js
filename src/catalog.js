@@ -2220,12 +2220,14 @@ function BinCatalogItemComponent() {
         detailsCtrl: '?^^binCatalogDetails'
     };
 
-    this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation',
-        'findCatalogItemById', 'updateCatalogItemWriter', 'binLink', 'binCatalogItemPublisher', 'binImageCarousel',
+    this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', 'findCatalogItemById',
+        'updateCatalogItemWriter', 'binLink', 'binCatalogItemPublisher', 'binImageCarousel', 'moment',
         function (binarta, pinner, topics, removeCatalogItem, i18nLocation, findCatalogItemById,
-                  updateCatalogItem, binLink, publisher, binImageCarousel) {
+                  updateCatalogItem, binLink, publisher, binImageCarousel, moment) {
             var $ctrl = this,
-                destroyHandlers = [];
+                destroyHandlers = [],
+                draft = 'draft',
+                published = 'published';
             $ctrl.i18n = {};
             $ctrl.image = {};
 
@@ -2258,6 +2260,18 @@ function BinCatalogItemComponent() {
                     }
                 };
 
+                $ctrl.isDraft = function () {
+                    return $ctrl.item.status === draft;
+                };
+
+                $ctrl.isScheduled = function () {
+                    return $ctrl.item.status === published && moment().isBefore($ctrl.item.publicationTime);
+                };
+
+                $ctrl.isPublished = function () {
+                    return !$ctrl.item.status || $ctrl.item.status === published;
+                };
+
                 $ctrl.isMoveAllowed = function () {
                     return $ctrl.item && $ctrl.itemsCtrl && isEnabledByDefault($ctrl.movable) && hasCatalogItemUpdatePermission();
                 };
@@ -2274,10 +2288,10 @@ function BinCatalogItemComponent() {
                     return $ctrl.item && isDisabledByDefault($ctrl.linkable) && hasCatalogItemUpdatePermission();
                 };
                 $ctrl.isPublishAllowed = function () {
-                    return $ctrl.item && $ctrl.item.status === 'draft' && isDisabledByDefault($ctrl.publishable) && hasCatalogItemUpdatePermission();
+                    return $ctrl.item && $ctrl.item.status === draft && isDisabledByDefault($ctrl.publishable) && hasCatalogItemUpdatePermission();
                 };
                 $ctrl.isUnpublishAllowed = function () {
-                    return $ctrl.item && $ctrl.item.status === 'published' && isDisabledByDefault($ctrl.publishable) && hasCatalogItemUpdatePermission();
+                    return $ctrl.item && $ctrl.item.status === published && isDisabledByDefault($ctrl.publishable) && hasCatalogItemUpdatePermission();
                 };
 
                 installPinActions();

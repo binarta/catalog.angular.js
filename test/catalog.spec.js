@@ -5279,10 +5279,10 @@ describe('catalog', function () {
 
     describe('binCatalogItem component', function () {
         var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
-        var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock, imageCarousel;
+        var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock, imageCarousel, moment;
 
         beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, topicRegistryMock,
-                                    editModeRenderer, binLink, updateCatalogItemWriter, binImageCarousel) {
+                                    editModeRenderer, binLink, updateCatalogItemWriter, binImageCarousel, _moment_) {
             binarta.checkpoint.gateway.permissions = [];
             binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p', email: 'e'});
             $rootScope = _$rootScope_;
@@ -5293,6 +5293,7 @@ describe('catalog', function () {
             binLinkMock = binLink;
             writer = updateCatalogItemWriter;
             imageCarousel = binImageCarousel;
+            moment = _moment_;
             pinnerMock = {};
             pinnerMock.pin = jasmine.createSpy('pin').and.returnValue(true);
             pinnerMock.unpin = jasmine.createSpy('unpin').and.returnValue(true);
@@ -5407,6 +5408,76 @@ describe('catalog', function () {
                     it('error handler is executed', function () {
                         expect(errorSpy).toHaveBeenCalled();
                     });
+                });
+            });
+
+            describe('when item has no status', function () {
+                it('it is published by default', function () {
+                    expect($ctrl.isPublished()).toBeTruthy();
+                });
+
+                it('it is not in draft', function () {
+                    expect($ctrl.isDraft()).toBeFalsy();
+                });
+
+                it('it is not scheduled', function () {
+                    expect($ctrl.isScheduled()).toBeFalsy();
+                });
+            });
+
+            describe('when item has status "draft"', function () {
+                beforeEach(function () {
+                    $ctrl.item.status = 'draft';
+                });
+
+                it('it is not published', function () {
+                    expect($ctrl.isPublished()).toBeFalsy();
+                });
+
+                it('it is in draft', function () {
+                    expect($ctrl.isDraft()).toBeTruthy();
+                });
+
+                it('it is not scheduled', function () {
+                    expect($ctrl.isScheduled()).toBeFalsy();
+                });
+            });
+
+            describe('when item has status "published" and has publication time in the past', function () {
+                beforeEach(function () {
+                    $ctrl.item.status = 'published';
+                    $ctrl.item.publicationTime = moment().subtract(1, 'day');
+                });
+
+                it('it is published', function () {
+                    expect($ctrl.isPublished()).toBeTruthy();
+                });
+
+                it('it is not in draft', function () {
+                    expect($ctrl.isDraft()).toBeFalsy();
+                });
+
+                it('it is not scheduled', function () {
+                    expect($ctrl.isScheduled()).toBeFalsy();
+                });
+            });
+
+            describe('when item has status "published" and has publication time in future', function () {
+                beforeEach(function () {
+                    $ctrl.item.status = 'published';
+                    $ctrl.item.publicationTime = moment().add(1, 'day');
+                });
+
+                it('it is published', function () {
+                    expect($ctrl.isPublished()).toBeTruthy();
+                });
+
+                it('it is not in draft', function () {
+                    expect($ctrl.isDraft()).toBeFalsy();
+                });
+
+                it('it is scheduled', function () {
+                    expect($ctrl.isScheduled()).toBeTruthy();
                 });
             });
         });
