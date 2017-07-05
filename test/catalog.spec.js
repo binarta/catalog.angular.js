@@ -4640,6 +4640,31 @@ describe('catalog', function () {
         });
     });
 
+    describe('binCatalogItemGroups component', function () {
+        var $componentController, $ctrl;
+
+        beforeEach(inject(function (_$componentController_) {
+            $componentController = _$componentController_;
+            $ctrl = $componentController('binCatalogItemGroups', null, {items: []});
+            $ctrl.$onInit();
+        }));
+
+        describe('with main partition', function () {
+            beforeEach(function () {
+                $ctrl.partition = 'p';
+            });
+
+            it('and no items in main partition', function () {
+                expect($ctrl.noItemsInMainPartition()).toBeTruthy();
+            });
+
+            it('and with items in main partition', function () {
+                $ctrl.items.push({id: 1, partition: 'p'});
+                expect($ctrl.noItemsInMainPartition()).toBeFalsy();
+            });
+        });
+    });
+
     describe('binCatalogItems component', function () {
         var $componentController, $ctrl, $timeout, bindings, items, writer, topics;
 

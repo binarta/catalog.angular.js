@@ -1,5 +1,5 @@
 <div bin-group-by="partition" on="$ctrl.items">
-    <bin-catalog-items items="$ctrl.items" ng-if="groups.length === 0"></bin-catalog-items>
+    <bin-catalog-items items="[]" ng-if="$ctrl.noItemsInMainPartition()"></bin-catalog-items>
     <div ng-repeat="group in groups track by group.id">
         <div class="row" ng-if="::$ctrl.partition !== group.items[0].partition">
             <div class="col-xs-12">

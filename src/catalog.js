@@ -1842,6 +1842,14 @@ function BinCatalogItemGroupsComponent() {
                 if (!$ctrl.items) $ctrl.items = $ctrl.listCtrl.items;
                 if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.partition;
             }
+
+            $ctrl.noItemsInMainPartition = function () {
+                var check = true;
+                angular.forEach($ctrl.items, function (item) {
+                    if (item.partition === $ctrl.partition) check = false;
+                });
+                return check;
+            };
         };
     };
 }
