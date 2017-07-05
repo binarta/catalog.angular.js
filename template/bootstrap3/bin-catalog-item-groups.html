@@ -6,6 +6,6 @@
                 <h2 class="partition-title" i18n code="{{::group.items[0].partition}}" read-only ng-bind="::var"></h2>
             </div>
         </div>
-        <bin-catalog-items items="group.items"></bin-catalog-items>
+        <bin-catalog-items items="group.items" partition="{{::group.items[0].partition}}"></bin-catalog-items>
     </div>
 </div>
