@@ -4545,13 +4545,37 @@ describe('catalog', function () {
     });
 
     describe('binCatalogSearch component', function () {
-        var $componentController, $ctrl, searchParam;
+        var $componentController, $ctrl, $timeout, elementSpy, inputSpy, searchParam, type, fadeDuration = 150;
 
-        beforeEach(inject(function (_$componentController_) {
+        beforeEach(inject(function (_$componentController_, _$timeout_) {
             $componentController = _$componentController_;
-            $ctrl = $componentController('binCatalogSearch', null, {});
+            $timeout = _$timeout_;
+            elementSpy = jasmine.createSpyObj('element', ['find']);
+            inputSpy = jasmine.createSpyObj('input', ['bind', 'focus', 'fadeIn', 'fadeOut']);
+            $ctrl = $componentController('binCatalogSearch', {$element: elementSpy}, {});
             searchParam = 'search';
+            type = 'type';
         }));
+
+        function assertSearch() {
+            it('search param is added to location', function () {
+                expect(location.search().q).toEqual(searchParam);
+            });
+
+            it('redirect to search path', function () {
+                expect(location.path()).toEqual('/lang/search/' + type);
+            });
+        }
+
+        function assertNoSearch() {
+            it('search param is not added to location', function () {
+                expect(location.search().q).not.toEqual(searchParam);
+            });
+
+            it('not redirected to search path', function () {
+                expect(location.path()).not.toEqual('/lang/search/' + type);
+            });
+        }
 
         describe('when search param is defined', function () {
             beforeEach(function () {
@@ -4567,7 +4591,7 @@ describe('catalog', function () {
         describe('when not on search path', function () {
             beforeEach(function () {
                 $ctrl.$onInit();
-                $ctrl.type = 'type';
+                $ctrl.type = type;
             });
 
             describe('on submit', function () {
@@ -4576,27 +4600,21 @@ describe('catalog', function () {
                     $ctrl.submit();
                 });
 
-                it('search param is added to location', function () {
-                    expect(location.search().q).toEqual(searchParam);
-                });
-
-                it('redirect to search path', function () {
-                    expect(location.path()).toEqual('/lang/search/type');
-                });
+                assertSearch();
             });
         });
 
         describe('with listCtrl', function () {
             beforeEach(function () {
                 $ctrl.listCtrl = {
-                    type: 'T',
+                    type: type,
                     search: jasmine.createSpy('spy')
                 };
                 $ctrl.$onInit();
             });
 
             it('type is set', function () {
-                expect($ctrl.type).toEqual('T');
+                expect($ctrl.type).toEqual(type);
             });
 
             describe('on submit', function () {
@@ -4605,9 +4623,7 @@ describe('catalog', function () {
                     $ctrl.submit();
                 });
 
-                it('redirect to search path', function () {
-                    expect(location.path()).toEqual('/lang/search/T');
-                });
+                assertSearch();
 
                 it('search for new items', function () {
                     expect($ctrl.listCtrl.search).toHaveBeenCalled();
@@ -4618,13 +4634,13 @@ describe('catalog', function () {
         describe('with detailsCtrl', function () {
             beforeEach(function () {
                 $ctrl.detailsCtrl = {
-                    type: 'T'
+                    type: type
                 };
                 $ctrl.$onInit();
             });
 
             it('type is set', function () {
-                expect($ctrl.type).toEqual('T');
+                expect($ctrl.type).toEqual(type);
             });
 
             describe('on submit', function () {
@@ -4633,8 +4649,95 @@ describe('catalog', function () {
                     $ctrl.submit();
                 });
 
-                it('redirect to search path', function () {
-                    expect(location.path()).toEqual('/lang/search/T');
+                assertSearch();
+            });
+        });
+
+        describe('when no input element is present', function () {
+            beforeEach(function () {
+                $ctrl.$onInit();
+                $ctrl.$postLink();
+                $ctrl.type = 'type';
+                $ctrl.q = searchParam;
+            });
+
+            describe('on searchOnFocus', function () {
+                beforeEach(function () {
+                    $ctrl.submitWhenFocussed();
+                });
+
+                assertSearch();
+            });
+        });
+
+        describe('with input element', function () {
+            beforeEach(function () {
+                elementSpy.find.and.returnValue(inputSpy);
+                $ctrl.$onInit();
+                $ctrl.$postLink();
+                $ctrl.type = 'type';
+                $ctrl.q = searchParam;
+            });
+
+            describe('on searchOnFocus', function () {
+                beforeEach(function () {
+                    $ctrl.submitWhenFocussed();
+                });
+
+                it('input element is fade in', function () {
+                    expect(inputSpy.fadeIn).toHaveBeenCalledWith(fadeDuration);
+                });
+
+                it('set focus on input element', function () {
+                    expect(inputSpy.focus).toHaveBeenCalled();
+                });
+
+                it('focus event is bound', function () {
+                    expect(inputSpy.bind).toHaveBeenCalledWith('focus', jasmine.any(Function));
+                });
+
+                it('blur event is bound', function () {
+                    expect(inputSpy.bind).toHaveBeenCalledWith('blur', jasmine.any(Function));
+                });
+
+                assertNoSearch();
+
+                describe('on focus', function () {
+                    beforeEach(function () {
+                        inputSpy.bind.calls.first().args[1]();
+                    });
+
+                    describe('when method is executed again', function () {
+                        beforeEach(function () {
+                            $ctrl.submitWhenFocussed();
+                        });
+
+                        assertSearch();
+                    });
+
+                    describe('when element loses focus', function () {
+                        beforeEach(function () {
+                            inputSpy.bind.calls.mostRecent().args[1]();
+                            $timeout.flush();
+                        });
+
+                        it('input element is fade out', function () {
+                            expect(inputSpy.fadeOut).toHaveBeenCalledWith(fadeDuration);
+                        });
+
+                        describe('when method is executed again', function () {
+                            beforeEach(function () {
+                                inputSpy.focus.calls.reset();
+                                $ctrl.submitWhenFocussed();
+                            });
+
+                            assertNoSearch();
+
+                            it('set focus on input element', function () {
+                                expect(inputSpy.focus).toHaveBeenCalled();
+                            });
+                        });
+                    });
                 });
             });
         });

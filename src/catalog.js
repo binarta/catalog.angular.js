@@ -1795,8 +1795,8 @@ function BinCatalogSearchComponent() {
         detailsCtrl: '?^^binCatalogDetails'
     };
 
-    this.controller = ['$location', 'i18nLocation', function ($location, i18nLocation) {
-        var $ctrl = this;
+    this.controller = ['$element', '$location', '$timeout', 'i18nLocation', function ($element, $location, $timeout, i18nLocation) {
+        var $ctrl = this, isFocused, fadeDuration = 150, input;
 
         $ctrl.$onInit = function () {
             $ctrl.q = $location.search().q;
@@ -1808,7 +1808,36 @@ function BinCatalogSearchComponent() {
                 i18nLocation.path('/search/' + $ctrl.type);
                 if ($ctrl.listCtrl) $ctrl.listCtrl.search();
             };
+
+            $ctrl.submitWhenFocussed = function () {
+                if (isFocused || !input) {
+                    if ($ctrl.q) $ctrl.submit();
+                } else focus();
+            };
         };
+
+        $ctrl.$postLink = function () {
+            input = $element.find('input');
+            if (input) bindInputEvents();
+        };
+
+        function focus() {
+            input.fadeIn(fadeDuration);
+            input.focus();
+        }
+
+        function bindInputEvents() {
+            input.bind('focus', function () {
+                isFocused = true;
+            });
+
+            input.bind('blur', function () {
+                $timeout(function () {
+                    isFocused = false;
+                    input.fadeOut(fadeDuration);
+                });
+            });
+        }
     }];
 }
 
