@@ -6633,6 +6633,43 @@ describe('catalog', function () {
             });
         });
     });
+
+    describe('binCatalogItemRequestInfoButton', function () {
+        var $ctrl, i18n, pages;
+
+        beforeEach(inject(function ($componentController) {
+            i18n = jasmine.createSpyObj('i18n', ['resolve']);
+            i18n.resolve.and.returnValues('foo', 'bar');
+            pages = jasmine.createSpyObj('pages', ['isActive']);
+            pages.isActive.and.returnValue(true);
+            $ctrl = $componentController('binCatalogItemRequestInfoButton', {i18n: i18n, binPages: pages});
+            $ctrl.detailsCtrl = jasmine.createSpyObj('detailsCtrl', ['isComponentRegistered']);
+            $ctrl.detailsCtrl.isComponentRegistered.and.returnValue(true);
+            $ctrl.item = {
+                id: 'id'
+            };
+            $ctrl.$onInit();
+        }));
+
+        it('check default button class', function () {
+            expect($ctrl.buttonClass).toEqual('btn btn-success');
+        });
+
+        it('check if contact section is active', function () {
+            expect($ctrl.isContactActive()).toBeTruthy();
+            expect(pages.isActive.calls.mostRecent().args[0]).toEqual('contact');
+        });
+
+        it('check if request info form is registered', function () {
+            expect($ctrl.isRequestInfoFormRegistered()).toBeTruthy();
+            expect($ctrl.detailsCtrl.isComponentRegistered.calls.mostRecent().args[0]).toEqual('requestInfoForm');
+        });
+
+        it('item name is appended to contact path', function () {
+            $rootScope.$digest();
+            expect($ctrl.contactPath).toEqual('/contact?subject=foo%20bar');
+        });
+    });
 });
 
 angular.module('test.app', ['catalog']).config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {

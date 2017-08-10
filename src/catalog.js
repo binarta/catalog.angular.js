@@ -54,6 +54,7 @@ angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular
     .component('binCatalogItemCta', new BinCatalogItemCta())
     .component('binCatalogItemTitle', new BinCatalogItemTitleComponent())
     .component('binCatalogItemRequestInfoForm', new BinCatalogItemRequestInfoForm())
+    .component('binCatalogItemRequestInfoButton', new BinCatalogItemRequestInfoButton())
     .constant('catalogPathLimit', 10)
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
@@ -2688,6 +2689,45 @@ function BinCatalogItemRequestInfoForm() {
         function setSubject(prefix, itemName) {
             $ctrl.subject = prefix + ' - ' + itemName + ' -';
         }
+    }];
+}
+
+function BinCatalogItemRequestInfoButton() {
+    this.templateUrl = 'bin-catalog-item-request-info-button.html';
+
+    this.bindings = {
+        item: '<',
+        buttonClass: '@'
+    };
+
+    this.require = {
+        detailsCtrl: '^^binCatalogDetails'
+    };
+
+    this.controller = ['$q', 'i18n', 'binPages', function ($q, i18n, pages) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            $ctrl.contactPath = '/contact';
+            $ctrl.buttonClass = $ctrl.buttonClass || 'btn btn-success';
+
+            $ctrl.isContactActive = function () {
+                return pages.isActive('contact');
+            };
+
+            $ctrl.isRequestInfoFormRegistered = function () {
+                return $ctrl.detailsCtrl.isComponentRegistered('requestInfoForm');
+            };
+
+            if ($ctrl.isContactActive()) {
+                $q.all([
+                    i18n.resolve({code: 'catalog.item.more.info.about.button'}),
+                    i18n.resolve({code: $ctrl.item.id})
+                ]).then(function (result) {
+                    $ctrl.contactPath += '?subject=' + encodeURIComponent(result[0] + ' ' + result[1]);
+                });
+            }
+        };
     }];
 }
 
