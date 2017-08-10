@@ -1,10 +1,6 @@
 <% if(shop) { %>
 <bin-basket mode="add-to-basket-button" item="$ctrl.item" ng-if="$ctrl.isPurchasable()"></bin-basket>
-<a bin-dhref="{{$ctrl.contactPath}}" class="btn btn-success" ng-if="$ctrl.isContactActive() && !$ctrl.isPurchasable()"
-   i18n code="catalog.item.more.info.button" read-only ng-bind="var">
-</a>
+<bin-catalog-item-request-info-button item="$ctrl.item" ng-if="!$ctrl.isPurchasable()"></bin-catalog-item-request-info-button>
 <% } else { %>
-<a bin-dhref="{{$ctrl.contactPath}}" class="btn btn-success" ng-if="$ctrl.isContactActive()"
-   i18n code="catalog.item.more.info.button" read-only ng-bind="var">
-</a>
+<bin-catalog-item-request-info-button item="$ctrl.item"></bin-catalog-item-request-info-button>
 <% } %>
