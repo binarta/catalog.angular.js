@@ -5402,6 +5402,14 @@ describe('catalog', function () {
                     });
                 });
             });
+
+            it('on register component', function () {
+                $ctrl.registerComponent('a');
+                $ctrl.registerComponent('b');
+                expect($ctrl.isComponentRegistered('a')).toBeTruthy();
+                expect($ctrl.isComponentRegistered('b')).toBeTruthy();
+                expect($ctrl.isComponentRegistered('c')).toBeFalsy();
+            });
         });
     });
 
@@ -6525,6 +6533,103 @@ describe('catalog', function () {
                 it('contact path is updated', function () {
                     expect($ctrl.contactPath).toEqual('/contact?subject=t t');
                 });
+            });
+        });
+    });
+
+    describe('binCatalogItemRequestInfoForm', function () {
+        var $ctrl, i18n, item, topics;
+
+        beforeEach(inject(function ($componentController) {
+            i18n = jasmine.createSpyObj('i18n', ['resolve']);
+            topics = jasmine.createSpyObj('topics', ['subscribe', 'unsubscribe']);
+            $ctrl = $componentController('binCatalogItemRequestInfoForm', {i18n: i18n, topicRegistry: topics});
+            $ctrl.detailsCtrl = jasmine.createSpyObj('detailsCtrl', ['registerComponent', 'isComponentRegistered', 'onItemUpdate']);
+            item = {
+                id: 'id'
+            };
+        }));
+
+        describe('on init', function () {
+            beforeEach(function () {
+                $ctrl.$onInit();
+            });
+
+            it('component is registered on detailsCtrl', function () {
+                expect($ctrl.detailsCtrl.registerComponent).toHaveBeenCalledWith('requestInfoForm');
+            });
+
+            it('is listening on item updates', function () {
+                expect($ctrl.detailsCtrl.onItemUpdate).toHaveBeenCalled();
+            });
+
+            it('default templateUrl is set', function () {
+                expect($ctrl.templateUrl).toEqual('bin-catalog-item-request-info-form.html');
+            });
+
+            describe('on item update', function () {
+                beforeEach(function () {
+                    i18n.resolve.and.returnValues('foo', 'bar');
+                    $ctrl.detailsCtrl.onItemUpdate.calls.mostRecent().args[0](item);
+                });
+
+                it('i18n translations are requested', function () {
+                    expect(i18n.resolve).toHaveBeenCalledWith({code: 'catalog.item.more.info.about.button'});
+                    expect(i18n.resolve).toHaveBeenCalledWith({code: 'id'});
+                });
+
+                describe('on i18n values resolved', function () {
+                    beforeEach(function () {
+                        $rootScope.$digest();
+                    });
+
+                    it('subject is available', function () {
+                        expect($ctrl.subject).toEqual('foo - bar -');
+                    });
+
+                    it('listen for item name changes', function () {
+                        expect(topics.subscribe).toHaveBeenCalledWith('i18n.updated', jasmine.any(Function));
+                    });
+
+                    it('when name changes, update subject', function () {
+                        topics.subscribe.calls.mostRecent().args[1]({code: item.id, translation: 't'});
+                        expect($ctrl.subject).toEqual('foo - t -');
+                    });
+
+                    it('when event is received for other code, do not update subject', function () {
+                        topics.subscribe.calls.mostRecent().args[1]({code: 'other', translation: 't'});
+                        expect($ctrl.subject).toEqual('foo - bar -');
+                    });
+
+                    describe('on component destroyed', function () {
+                        beforeEach(function () {
+                            $ctrl.$onDestroy();
+                        });
+
+                        it('unsubscribe handler for listening on name changes', function () {
+                            expect(topics.unsubscribe).toHaveBeenCalledWith('i18n.updated', topics.subscribe.calls.mostRecent().args[1]);
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('when component has already been registered', function () {
+            beforeEach(function () {
+                $ctrl.detailsCtrl.isComponentRegistered.and.returnValue(true);
+                $ctrl.$onInit();
+            });
+
+            it('new instance is not registered', function () {
+                expect($ctrl.detailsCtrl.registerComponent).not.toHaveBeenCalled();
+            });
+
+            it('is not listening on item updates', function () {
+                expect($ctrl.detailsCtrl.onItemUpdate).not.toHaveBeenCalled();
+            });
+
+            it('templateUrl is not set', function () {
+                expect($ctrl.templateUrl).toBeUndefined();
             });
         });
     });

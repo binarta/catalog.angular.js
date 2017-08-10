@@ -53,6 +53,7 @@ angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular
     .component('binCatalogPublicationTime', new BinCatalogPublicationTime())
     .component('binCatalogItemCta', new BinCatalogItemCta())
     .component('binCatalogItemTitle', new BinCatalogItemTitleComponent())
+    .component('binCatalogItemRequestInfoForm', new BinCatalogItemRequestInfoForm())
     .constant('catalogPathLimit', 10)
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
@@ -2202,14 +2203,23 @@ function BinCatalogDetailsComponent() {
 
     this.controller = ['i18nLocation', '$routeParams', 'catalogPathParser', 'findCatalogItemById',
         function ($location, $routeParams, catalogPathParser, findCatalogItemById) {
-            var $ctrl = this;
-            var onItemUpdateListeners = [];
+            var $ctrl = this,
+                onItemUpdateListeners = [],
+                componentRegistrations = [];
 
             this.$onInit = function () {
                 if (!$ctrl.type) parsePropertiesFromRoute();
                 $ctrl.refresh = findItem;
                 $ctrl.onItemUpdate = addUpdateItemListener;
                 findItem();
+
+                $ctrl.registerComponent = function (name) {
+                    componentRegistrations.push(name);
+                };
+
+                $ctrl.isComponentRegistered = function (name) {
+                    return componentRegistrations.indexOf(name) !== -1;
+                };
             };
 
             function parsePropertiesFromRoute() {
@@ -2625,6 +2635,60 @@ function BinCatalogItemTitleComponent() {
             $ctrl.i18n.title = $ctrl.item.id;
         }
     };
+}
+
+function BinCatalogItemRequestInfoForm() {
+    this.template = '<div id="bin-catalog-item-request-info-form" ng-include="::$ctrl.templateUrl"></div>';
+
+    this.bindings = {
+        templateUrl: '@'
+    };
+
+    this.require = {
+        detailsCtrl: '^^binCatalogDetails'
+    };
+
+    this.controller = ['$q', '$log', 'i18n', 'topicRegistry', function ($q, $log, i18n, topicRegistry) {
+        var $ctrl = this, destroyHandlers = [], name = 'requestInfoForm';
+
+        $ctrl.$onInit = function () {
+            if ($ctrl.detailsCtrl.isComponentRegistered(name)) {
+                $log.warn('Request info form can only be used once on the same page.');
+                return;
+            }
+            $ctrl.detailsCtrl.registerComponent(name);
+            $ctrl.templateUrl = $ctrl.templateUrl || 'bin-catalog-item-request-info-form.html';
+            $ctrl.detailsCtrl.onItemUpdate(onItemUpdate);
+        };
+
+        $ctrl.$onDestroy = function () {
+            destroyHandlers.forEach(function (handler) {
+                handler();
+            });
+        };
+
+        function onItemUpdate(item) {
+            $q.all([
+                i18n.resolve({code: 'catalog.item.more.info.about.button'}),
+                i18n.resolve({code: item.id})
+            ]).then(function (result) {
+                setSubject(result[0], result[1]);
+                topicRegistry.subscribe('i18n.updated', i18nUpdatedEvent);
+
+                function i18nUpdatedEvent(ctx) {
+                    if (ctx.code === item.id) setSubject(result[0], ctx.translation);
+                }
+
+                destroyHandlers.push(function () {
+                    topicRegistry.unsubscribe('i18n.updated', i18nUpdatedEvent);
+                });
+            });
+        }
+
+        function setSubject(prefix, itemName) {
+            $ctrl.subject = prefix + ' - ' + itemName + ' -';
+        }
+    }];
 }
 
 function isEnabledByDefault(prop) {
