@@ -20,18 +20,8 @@ angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular
     .controller('QueryCatalogController', ['$scope', 'ngRegisterTopicHandler', 'findCatalogItemsByPartition', 'findCatalogItemById', 'topicMessageDispatcher', '$q', QueryCatalogController])
     .controller('AddPartitionToCatalogController', ['config', '$scope', '$location', '$routeParams', 'scopedRestServiceHandler', 'topicMessageDispatcher', AddPartitionToCatalogController])
     .controller('UpdateCatalogItemController', ['config', '$scope', 'updateCatalogItem', 'usecaseAdapterFactory', 'topicMessageDispatcher', 'findCatalogItemById', UpdateCatalogItemController])
-    .controller('BrowseCatalogController', ['$scope', '$routeParams', 'catalogPathParser', BrowseCatalogController])
-    .controller('ViewCatalogItemController', ['$scope', 'i18nLocation', '$routeParams', 'catalogPathParser', 'topicRegistry', 'findCatalogItemById', 'binarta', ViewCatalogItemController])
-    .controller('MoveCatalogItemController', ['$scope', 'sessionStorage', 'updateCatalogItem', 'usecaseAdapterFactory', 'ngRegisterTopicHandler', 'topicMessageDispatcher', MoveCatalogItemController])
-    .controller('PinItemController', ['$scope', 'itemPinner', 'ngRegisterTopicHandler', PinItemController])
     .controller('binSpotlightController', ['topicRegistry', 'binarta', 'configWriter', 'i18nLocation', BinSpotlightController])
     .controller('binSpotlightItemsController', ['topicRegistry', 'binartaSearch', 'viewport', BinSpotlightItemsController])
-    .directive('splitInRows', ['$log', splitInRowsDirectiveFactory])
-    .directive('movableItems', ['ngRegisterTopicHandler', MovableItemsDirectiveFactory])
-    .component('binCatalogItemList', new BinCatalogItemListComponent())
-    .component('binCatalogListRows', new BinCatalogListRowsComponent())
-    .component('binCatalogListItem', new BinCatalogListItemComponent())
-    .component('binPinnedItemsToggle', new BinPinnedItemsToggle())
     .component('binSpotlight', new BinSpotlightComponent())
     .component('binSpotlightItems', new BinSpotlightItemsComponent())
     .component('binCatalogList', new BinCatalogListComponent())
@@ -64,22 +54,10 @@ angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular
     .config(['$routeProvider', 'catalogPathLimit', function ($routeProvider, catalogPathLimit) {
         for (var i = 0; i <= catalogPathLimit; i++) {
             var path = generatePath(i);
-            $routeProvider.when('/browse' + path + '/', {
-                templateUrl: 'partials/catalog/browse.html',
-                controller: 'BrowseCatalogController as catalogCtrl'
-            });
-            $routeProvider.when('/view' + path, {
-                templateUrl: 'partials/catalog/item.html',
-                controller: 'ViewCatalogItemController as catalogCtrl'
-            });
-            $routeProvider.when('/:locale/browse' + path + '/', {
-                templateUrl: 'partials/catalog/browse.html',
-                controller: 'BrowseCatalogController as catalogCtrl'
-            });
-            $routeProvider.when('/:locale/view' + path, {
-                templateUrl: 'partials/catalog/item.html',
-                controller: 'ViewCatalogItemController as catalogCtrl'
-            });
+            $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html'});
+            $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html'});
+            $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html'});
+            $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html'});
         }
 
         function generatePath(levels) {
@@ -213,22 +191,6 @@ function CatalogPathParserFactory(catalogPathProcessor, catalogPathLimit) {
         var path = toPath(params);
         return catalogPathProcessor(path, type);
     }
-}
-
-function BrowseCatalogController($scope, $routeParams, catalogPathParser) {
-    var current = catalogPathParser($routeParams);
-
-    $scope.path = current.path;
-    $scope.head = current.head;
-    $scope.name = current.name;
-    $scope.parent = current.parent;
-    $scope.breadcrumbs = current.breadcrumbs;
-
-    this.path = current.path;
-    this.head = current.head;
-    this.name = current.name;
-    this.parent = current.parent;
-    this.breadcrumbs = current.breadcrumbs;
 }
 
 function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItemsByPartition, findCatalogItemById, topicMessageDispatcher, $q) {
@@ -558,74 +520,6 @@ function AddToCatalogController($scope, $routeParams, topicRegistry, findAllCata
     });
 }
 
-function ViewCatalogItemController($scope, $location, $routeParams, catalogPathParser, topicRegistry, findCatalogItemById, binarta) {
-    var self = this;
-    var current = catalogPathParser($routeParams, 'file');
-    var requestedId;
-
-    $scope.path = current.path;
-    $scope.head = current.head;
-    $scope.name = current.name;
-    $scope.parent = current.parent;
-    $scope.breadcrumbs = current.breadcrumbs;
-
-    this.path = current.path;
-    this.head = current.head;
-    this.name = current.name;
-    this.parent = current.parent;
-    this.breadcrumbs = current.breadcrumbs;
-
-    $scope.templateUri = function () {
-        return templateUri($scope);
-    };
-
-    this.templateUri = function () {
-        return templateUri(self);
-    };
-
-    function templateUri(ctx) {
-        return 'partials/catalog/item/' + (!ctx.item || ctx.item.type == undefined ? 'default' : ctx.item.type) + '.html';
-    }
-
-    var applyItemToScope = function (item) {
-        if (item.localizedId && requestedId != item.localizedId) {
-            $location.path('/view' + item.localizedId);
-        } else {
-            addItemToScope(item);
-            $scope.item = item;
-            self.item = item;
-        }
-    };
-
-    // @deprecated instead put item on $scope.item
-    function addItemToScope(item) {
-        Object.keys(item).forEach(function (key) {
-            if (key != 'locale') $scope[key] = item[key];
-        });
-    }
-
-    $scope.init = init;
-    this.init = init;
-
-    function init(path) {
-        binarta.schedule(function () {
-            requestedId = $routeParams.id || path;
-            findCatalogItemById(requestedId, applyItemToScope);
-        });
-    }
-
-    this.refresh = function (args) {
-        var id = args ? args.id : self.item.id;
-        return findCatalogItemById(id, applyItemToScope);
-    };
-
-    topicRegistry.subscribe('catalog.item.updated', self.refresh);
-
-    $scope.$on('$destroy', function () {
-        topicRegistry.unsubscribe('catalog.item.updated', self.refresh);
-    });
-}
-
 function AddPartitionToCatalogController(config, $scope, $location, $routeParams, restServiceHandler, topicMessageDispatcher) {
     var self = this;
 
@@ -817,109 +711,6 @@ function UpdateCatalogItemFactory(updateCatalogItemWriter, topicMessageDispatche
     }
 }
 
-function MoveCatalogItemController($scope, sessionStorage, updateCatalogItem, usecaseAdapterFactory, ngRegisterTopicHandler, topicMessageDispatcher) {
-    var self = this;
-
-    $scope.idle = true;
-    $scope.init = function (item) {
-        self.item = item
-    };
-    $scope.cut = function () {
-        sessionStorage.moveCatalogItemClipboard = self.item.id;
-        topicMessageDispatcher.fire('catalog.item.cut', 'ok');
-    };
-    $scope.paste = function () {
-        var ctx = usecaseAdapterFactory($scope);
-        ctx.data = {
-            treatInputAsId: false,
-            context: 'updatePriority',
-            id: {id: sessionStorage.moveCatalogItemClipboard},
-            priority: self.item.priority
-        };
-        ctx.success = function () {
-            topicMessageDispatcher.fire('catalog.item.paste', {
-                id: sessionStorage.moveCatalogItemClipboard,
-                priority: self.item.priority
-            });
-        };
-        updateCatalogItem(ctx);
-    };
-
-    ngRegisterTopicHandler($scope, 'catalog.item.cut', function () {
-        $scope.idle = false;
-    });
-    ngRegisterTopicHandler($scope, 'catalog.item.paste', function () {
-        $scope.idle = true;
-    });
-}
-
-function MovableItemsDirectiveFactory(ngRegisterTopicHandler) {
-    return {
-        scope: {
-            items: '=?movableItems',
-            orientation: '@',
-            when: '=?'
-        },
-        link: function ($scope) {
-            if ($scope.items == undefined) $scope.items = [];
-            if ($scope.orientation == undefined) $scope.orientation = 'asc';
-            if ($scope.when == undefined) $scope.when = true;
-            if ($scope.when) ngRegisterTopicHandler($scope, 'catalog.item.paste', function (evt) {
-                var fromIdx = $scope.items.reduce(function (p, c, i) {
-                    return c.id == evt.id ? i : p;
-                }, undefined);
-                var from = $scope.items[fromIdx];
-
-                $scope.items.forEach(function (it) {
-                    if ($scope.orientation == 'asc') {
-                        it.priority += (it.priority <= evt.priority && it.priority > from.priority ? -1 : 0);
-                        it.priority += (it.priority >= evt.priority && it.priority < from.priority ? 1 : 0);
-                    } else {
-                        it.priority += (it.priority >= evt.priority && it.priority < from.priority ? 1 : 0);
-                        it.priority += (it.priority <= evt.priority && it.priority > from.priority ? -1 : 0);
-                    }
-                });
-
-                from.priority = evt.priority;
-
-                $scope.items.sort(function (x, y) {
-                    if ($scope.orientation == 'asc') {
-                        return x.priority - y.priority;
-                    } else {
-                        return y.priority - x.priority;
-                    }
-                });
-            })
-        }
-    }
-}
-
-function PinItemController($scope, pinner, ngRegisterTopicHandler) {
-    var self = this;
-
-    self.init = function (item) {
-        self.item = item;
-        ngRegisterTopicHandler($scope, 'catalog.item.pinned.' + item.id, pin);
-        ngRegisterTopicHandler($scope, 'catalog.item.unpinned.' + item.id, unpin);
-    };
-
-    self.pin = function () {
-        pinner.pin({item: self.item, success: pin});
-    };
-
-    self.unpin = function () {
-        pinner.unpin({item: self.item, success: unpin});
-    };
-
-    function pin() {
-        self.item.pinned = true;
-    }
-
-    function unpin() {
-        self.item.pinned = false;
-    }
-}
-
 function ItemPinnerFactory(topics, rest, config) {
     function params(usecase, ctx) {
         usecase = usecase || 'catalog.item.pin';
@@ -956,151 +747,6 @@ function ItemPinnerFactory(topics, rest, config) {
             });
         }
     }
-}
-
-function BinCatalogItemListComponent() {
-    this.bindings = {
-        items: '<',
-        movable: '@',
-        itemTemplateUrl: '<?',
-        cols: '@',
-        center: '@'
-    };
-    this.templateUrl = 'catalog-item-list.html';
-
-    this.controller = ['$q', 'updateCatalogItemWriter', function ($q, updateCatalogItem) {
-        var $ctrl = this;
-
-        $ctrl.$onInit = function () {
-            if ($ctrl.movable == 'true') {
-                $ctrl.moveUp = function (item) {
-                    var newPriority;
-                    for (var i = 0; i < $ctrl.items.length; i++) {
-                        if ($ctrl.items[i] == item) break;
-                        newPriority = $ctrl.items[i].priority;
-                    }
-
-                    if (newPriority) return update({
-                        priority: newPriority,
-                        item: item
-                    });
-                };
-
-                $ctrl.moveDown = function (item) {
-                    var newPriority;
-                    for (var i = 0; i < $ctrl.items.length - 1; i++) {
-                        if ($ctrl.items[i] == item) {
-                            newPriority = $ctrl.items[++i].priority;
-                            break;
-                        }
-                    }
-
-                    if (newPriority) return update({
-                        priority: newPriority,
-                        item: item
-                    });
-                };
-
-                $ctrl.moveTop = function (item) {
-                    var firstItem = $ctrl.items[0];
-                    if (firstItem != item) return update({
-                        priority: firstItem.priority,
-                        item: item
-                    });
-                };
-
-                $ctrl.moveBottom = function (item) {
-                    var lastItem = $ctrl.items[$ctrl.items.length - 1];
-                    if (lastItem != item) return update({
-                        priority: lastItem.priority,
-                        item: item
-                    });
-                };
-            }
-
-            function update(args) {
-                var deferred = $q.defer();
-                updateCatalogItem({
-                    data: {
-                        treatInputAsId: false,
-                        context: 'updatePriority',
-                        id: {id: args.item.id},
-                        priority: args.priority
-                    },
-                    success: onSuccess
-                });
-                return deferred.promise;
-
-                function onSuccess() {
-                    rearrangePriorities(args);
-                    sort();
-                    deferred.resolve();
-                }
-            }
-
-            function rearrangePriorities(args) {
-                $ctrl.items.forEach(function (it) {
-                    it.priority += (it.priority >= args.priority && it.priority < args.item.priority ? 1 : 0);
-                    it.priority += (it.priority <= args.priority && it.priority > args.item.priority ? -1 : 0);
-                });
-                args.item.priority = args.priority;
-            }
-
-            function sort() {
-                $ctrl.items.sort(function (x, y) {
-                    return y.priority - x.priority;
-                });
-            }
-        };
-    }];
-}
-
-function BinCatalogListRowsComponent() {
-    this.bindings = {
-        items: '<',
-        partition: '<',
-        movable: '@'
-    };
-    this.templateUrl = 'catalog-list-rows.html';
-}
-
-function BinCatalogListItemComponent() {
-    this.templateUrl = 'catalog-list-item.html';
-    this.bindings = {
-        item: '<',
-        isFirst: '<',
-        isLast: '<'
-    };
-    this.require = {
-        listCtrl: '^binCatalogItemList'
-    };
-
-    this.controller = [function () {
-        var $ctrl = this;
-
-        $ctrl.$onInit = function () {
-            $ctrl.templateUrl = $ctrl.listCtrl.itemTemplateUrl || 'bin-catalog-item-list-default.html';
-            $ctrl.movable = $ctrl.listCtrl.movable;
-
-            if ($ctrl.movable == 'true') {
-                $ctrl.moveUp = function () {
-                    return $ctrl.listCtrl.moveUp($ctrl.item);
-                };
-
-                $ctrl.moveDown = function () {
-                    return $ctrl.listCtrl.moveDown($ctrl.item);
-                };
-
-                $ctrl.moveTop = function () {
-                    return $ctrl.listCtrl.moveTop($ctrl.item);
-                };
-
-                $ctrl.moveBottom = function () {
-                    return $ctrl.listCtrl.moveBottom($ctrl.item);
-                };
-            }
-        };
-    }];
 }
 
 function BinSpotlightComponent() {
@@ -1247,36 +893,6 @@ function BinSpotlightItemsController(topics, search, viewport) {
         }
     }
 }
-
-function BinPinnedItemsToggle() {
-    this.bindings = {
-        section: '@'
-    };
-    this.templateUrl = 'bin-pinned-items-toggle.html';
-}
-
-// @deprecated
-function splitInRowsDirectiveFactory($log) {
-    return function ($scope, el, attrs) {
-        $log.warn('Deprecation warning: splitInRows is no longer maintained, use binSplitInRows instead.');
-
-        function splitInRows(items, columns) {
-            var rows = [];
-            var columnCount = parseInt(columns);
-            if (columnCount > 0) {
-                for (var i = 0; i <= (items.length - 1); i = i + columnCount) {
-                    rows.push(items.slice(i, i + columnCount));
-                }
-            }
-            return rows;
-        }
-
-        $scope.$watchCollection(attrs.splitInRows, function (newItems) {
-            if (newItems) $scope.rows = splitInRows(newItems, attrs.columns);
-        });
-    }
-}
-
 
 // Start of new components
 

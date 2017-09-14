@@ -12,14 +12,14 @@ var minifyHtmlOpts = {
 };
 
 gulp.task('catalog-unavailable-bootstrap3', function () {
-    gulp.src(['template/bootstrap3/*.html', 'template/bootstrap3/unavailable/*.html'])
+    gulp.src(['template/bootstrap3/*.html'])
         .pipe(minifyHtml(minifyHtmlOpts))
         .pipe(templateCache('catalog-unavailable-tpls-bootstrap3.js', {standalone: true, module: 'catalog.templates'}))
         .pipe(gulp.dest('src'));
 });
 
 gulp.task('catalog-bootstrap3', function () {
-    gulp.src(['template/bootstrap3/*.html', 'template/bootstrap3/available/*.html'])
+    gulp.src(['template/bootstrap3/*.html'])
         .pipe(template({shop: false}))
         .pipe(minifyHtml(minifyHtmlOpts))
         .pipe(templateCache('catalog-tpls-bootstrap3.js', {standalone: true, module: 'catalog.templates'}))
@@ -27,7 +27,7 @@ gulp.task('catalog-bootstrap3', function () {
 });
 
 gulp.task('catalog-shop-bootstrap3', function () {
-    gulp.src(['template/bootstrap3/*.html', 'template/bootstrap3/available/*.html'])
+    gulp.src(['template/bootstrap3/*.html'])
         .pipe(template({shop: true}))
         .pipe(minifyHtml(minifyHtmlOpts))
         .pipe(templateCache('catalog-shop-tpls-bootstrap3.js', {standalone: true, module: 'catalog.templates'}))
