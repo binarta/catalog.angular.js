@@ -5374,13 +5374,13 @@ describe('catalog', function () {
     });
 
     describe('binCatalogItemCta', function () {
-        var $ctrl, i18n, i18nDeferred, item, binPages;
+        var $ctrl, i18n, i18nDeferred, item, binSections;
 
-        beforeEach(inject(function ($q, $componentController, _binPages_) {
+        beforeEach(inject(function ($q, $componentController, _binSections_) {
             i18n = jasmine.createSpyObj('i18n', ['resolve']);
             i18nDeferred = $q.defer();
             i18n.resolve.and.returnValue(i18nDeferred.promise);
-            binPages = _binPages_;
+            binSections = _binSections_;
             item = {id: 'itemId'};
             $ctrl = $componentController('binCatalogItemCta', {i18n: i18n}, {item: item});
             $ctrl.$onInit();
@@ -5421,15 +5421,15 @@ describe('catalog', function () {
         });
 
         it('when contact section is not active', function () {
-            binPages.isActive.and.returnValue(false);
+            binSections.isActive.and.returnValue(false);
             var actual = $ctrl.isContactActive();
-            expect(binPages.isActive).toHaveBeenCalledWith('contact');
+            expect(binSections.isActive).toHaveBeenCalledWith('contact');
             expect(actual).toBeFalsy();
         });
 
         describe('when contact section is active', function () {
             beforeEach(function () {
-                binPages.isActive.and.returnValue(true);
+                binSections.isActive.and.returnValue(true);
                 $ctrl.$onInit();
             });
 
@@ -5556,14 +5556,14 @@ describe('catalog', function () {
     });
 
     describe('binCatalogItemRequestInfoButton', function () {
-        var $ctrl, i18n, pages;
+        var $ctrl, i18n, sections;
 
         beforeEach(inject(function ($componentController) {
             i18n = jasmine.createSpyObj('i18n', ['resolve']);
             i18n.resolve.and.returnValues('foo', 'bar');
-            pages = jasmine.createSpyObj('pages', ['isActive']);
-            pages.isActive.and.returnValue(true);
-            $ctrl = $componentController('binCatalogItemRequestInfoButton', {i18n: i18n, binPages: pages});
+            sections = jasmine.createSpyObj('sections', ['isActive']);
+            sections.isActive.and.returnValue(true);
+            $ctrl = $componentController('binCatalogItemRequestInfoButton', {i18n: i18n, binSections: sections});
             $ctrl.detailsCtrl = jasmine.createSpyObj('detailsCtrl', ['isComponentRegistered']);
             $ctrl.detailsCtrl.isComponentRegistered.and.returnValue(true);
             $ctrl.item = {
@@ -5578,7 +5578,7 @@ describe('catalog', function () {
 
         it('check if contact section is active', function () {
             expect($ctrl.isContactActive()).toBeTruthy();
-            expect(pages.isActive.calls.mostRecent().args[0]).toEqual('contact');
+            expect(sections.isActive.calls.mostRecent().args[0]).toEqual('contact');
         });
 
         it('check if request info form is registered', function () {

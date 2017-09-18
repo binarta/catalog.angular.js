@@ -1,4 +1,4 @@
 angular.module('application.pages', [])
-    .service('binPages', function () {
+    .service('binSections', function () {
         this.isActive = jasmine.createSpy('isActive');
     });

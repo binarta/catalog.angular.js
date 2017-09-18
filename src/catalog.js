@@ -2193,14 +2193,14 @@ function BinCatalogItemCta() {
         purchasable: '@'
     };
 
-    this.controller = ['$q', 'binPages', 'i18n', function ($q, pages, i18n) {
+    this.controller = ['$q', 'binSections', 'i18n', function ($q, sections, i18n) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
             $ctrl.contactPath = '/contact';
 
             $ctrl.isContactActive = function () {
-                return pages.isActive('contact');
+                return sections.isActive('contact');
             };
 
             $ctrl.hasPrice = function () {
@@ -2320,7 +2320,7 @@ function BinCatalogItemRequestInfoButton() {
         detailsCtrl: '^^binCatalogDetails'
     };
 
-    this.controller = ['$q', 'i18n', 'binPages', function ($q, i18n, pages) {
+    this.controller = ['$q', 'i18n', 'binSections', function ($q, i18n, sections) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
@@ -2328,7 +2328,7 @@ function BinCatalogItemRequestInfoButton() {
             $ctrl.buttonClass = $ctrl.buttonClass || 'btn btn-success';
 
             $ctrl.isContactActive = function () {
-                return pages.isActive('contact');
+                return sections.isActive('contact');
             };
 
             $ctrl.isRequestInfoFormRegistered = function () {
