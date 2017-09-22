@@ -5484,10 +5484,6 @@ describe('catalog', function () {
                 expect($ctrl.detailsCtrl.onItemUpdate).toHaveBeenCalled();
             });
 
-            it('default templateUrl is set', function () {
-                expect($ctrl.templateUrl).toEqual('bin-catalog-item-request-info-form.html');
-            });
-
             describe('on item update', function () {
                 beforeEach(function () {
                     i18n.resolve.and.returnValues('foo', 'bar');
@@ -5556,9 +5552,10 @@ describe('catalog', function () {
     });
 
     describe('binCatalogItemRequestInfoButton', function () {
-        var $ctrl, i18n, sections;
+        var $ctrl, i18n, sections, scrollTo;
 
-        beforeEach(inject(function ($componentController) {
+        beforeEach(inject(function ($componentController, binScrollTo) {
+            scrollTo = binScrollTo;
             i18n = jasmine.createSpyObj('i18n', ['resolve']);
             i18n.resolve.and.returnValues('foo', 'bar');
             sections = jasmine.createSpyObj('sections', ['isActive']);
@@ -5589,6 +5586,11 @@ describe('catalog', function () {
         it('item name is appended to contact path', function () {
             $rootScope.$digest();
             expect($ctrl.contactPath).toEqual('/contact?subject=foo%20bar');
+        });
+
+        it('on scroll to form', function () {
+            $ctrl.scrollToForm();
+            expect(scrollTo).toHaveBeenCalledWith('bin-catalog-item-request-info-form');
         });
     });
 });

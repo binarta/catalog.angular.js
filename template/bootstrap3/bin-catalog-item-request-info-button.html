@@ -3,8 +3,8 @@
         <span i18n code="catalog.item.more.info.button" read-only ng-bind="::var"></span>
         <i class="fa fa-angle-right fa-fw"></i>
     </a>
-    <a href="#bin-catalog-item-request-info-form" ng-class="::$ctrl.buttonClass" du-smooth-scroll ng-if="$ctrl.isRequestInfoFormRegistered()">
+    <button type="button" ng-click="$ctrl.scrollToForm()" ng-class="::$ctrl.buttonClass" ng-if="$ctrl.isRequestInfoFormRegistered()">
         <span i18n code="catalog.item.more.info.button" read-only ng-bind="::var"></span>
         <i class="fa fa-angle-down fa-fw"></i>
-    </a>
+    </button>
 </div>

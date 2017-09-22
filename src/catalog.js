@@ -2255,7 +2255,9 @@ function BinCatalogItemTitleComponent() {
 }
 
 function BinCatalogItemRequestInfoForm() {
-    this.template = '<div id="bin-catalog-item-request-info-form" ng-include="::$ctrl.templateUrl"></div>';
+    this.templateUrl = ['$attrs', function ($attrs) {
+        return $attrs.templateUrl || 'bin-catalog-item-request-info-form.html';
+    }];
 
     this.bindings = {
         templateUrl: '@'
@@ -2274,7 +2276,6 @@ function BinCatalogItemRequestInfoForm() {
                 return;
             }
             $ctrl.detailsCtrl.registerComponent(name);
-            $ctrl.templateUrl = $ctrl.templateUrl || 'bin-catalog-item-request-info-form.html';
             $ctrl.detailsCtrl.onItemUpdate(onItemUpdate);
         };
 
@@ -2320,7 +2321,7 @@ function BinCatalogItemRequestInfoButton() {
         detailsCtrl: '^^binCatalogDetails'
     };
 
-    this.controller = ['$q', 'i18n', 'binSections', function ($q, i18n, sections) {
+    this.controller = ['$q', 'i18n', 'binSections', 'binScrollTo', function ($q, i18n, sections, scrollTo) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
@@ -2333,6 +2334,10 @@ function BinCatalogItemRequestInfoButton() {
 
             $ctrl.isRequestInfoFormRegistered = function () {
                 return $ctrl.detailsCtrl.isComponentRegistered('requestInfoForm');
+            };
+
+            $ctrl.scrollToForm = function () {
+                scrollTo('bin-catalog-item-request-info-form');
             };
 
             if ($ctrl.isContactActive()) {
