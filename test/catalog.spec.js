@@ -4382,7 +4382,8 @@ describe('catalog', function () {
                     title: 'item-id',
                     altTitle: 'item-id.title',
                     lead: 'item-id.lead',
-                    body: 'item-id.body'
+                    body: 'item-id.body',
+                    cta: 'item-id.cta'
                 });
             });
 
@@ -4580,7 +4581,8 @@ describe('catalog', function () {
                         title: 'item-id',
                         altTitle: 'item-id.title',
                         lead: 'item-id.lead',
-                        body: 'item-id.body'
+                        body: 'item-id.body',
+                        cta: 'item-id.cta'
                     });
                 });
 

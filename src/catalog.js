@@ -1981,6 +1981,7 @@ function BinCatalogItemComponent() {
                     $ctrl.i18n.altTitle = $ctrl.item.id + '.title';
                     $ctrl.i18n.lead = $ctrl.item.id + '.lead';
                     $ctrl.i18n.body = $ctrl.item.id + '.body';
+                    $ctrl.i18n.cta = $ctrl.item.id + '.cta';
                     $ctrl.image.cover = 'images' + $ctrl.item.id + '/cover.img';
                     $ctrl.itemPath = '/view' + ($ctrl.item.localizedId || $ctrl.item.id);
                     var heroImage = binImageCarousel.getHeroImage({prefetchedItems: $ctrl.item.carousel});
