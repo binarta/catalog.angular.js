@@ -3761,6 +3761,59 @@ describe('catalog', function () {
                 expect($ctrl.type).toEqual('type');
                 expect($ctrl.partition).toEqual('partition');
             });
+
+            describe('on remove', function () {
+                beforeEach(function () {
+                    $ctrl.remove($ctrl.items[0]);
+                });
+
+                describe('after delay', function () {
+                    beforeEach(function () {
+                        $timeout.flush(300);
+                    });
+
+                    it('item is removed from list on listCtrl', function () {
+                        expect($ctrl.listCtrl.items).toEqual([]);
+                    });
+                });
+            });
+        });
+
+        describe('with list and itemGroups controllers', function () {
+            beforeEach(function () {
+                bindings.listCtrl = {
+                    items: ['item'],
+                    type: 'type',
+                    partition: 'partition'
+                };
+                bindings.groupsCtrl = {
+                    items: ['item'],
+                    type: 'type',
+                    partition: 'partition'
+                };
+                $ctrl = $componentController('binCatalogItems', null, bindings);
+                $ctrl.$onInit();
+            });
+
+            describe('on remove', function () {
+                beforeEach(function () {
+                    $ctrl.remove($ctrl.items[0]);
+                });
+
+                describe('after delay', function () {
+                    beforeEach(function () {
+                        $timeout.flush(300);
+                    });
+
+                    it('item is removed from list on groupsCtrl', function () {
+                        expect($ctrl.groupsCtrl.items).toEqual([]);
+                    });
+
+                    it('item is removed from list on listCtrl', function () {
+                        expect($ctrl.listCtrl.items).toEqual([]);
+                    });
+                });
+            });
         });
 
         describe('with items', function () {
@@ -4021,9 +4074,14 @@ describe('catalog', function () {
                         expect(item.uiStatus).toEqual('removed');
                     });
 
-                    it('after delay, remove item from items', function () {
-                        $timeout.flush(300);
-                        expect($ctrl.items).not.toContain(item);
+                    describe('after delay', function () {
+                        beforeEach(function () {
+                            $timeout.flush(300);
+                        });
+
+                        it('remove item from items', function () {
+                            expect($ctrl.items).not.toContain(item);
+                        });
                     });
                 });
             });

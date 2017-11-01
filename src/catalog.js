@@ -1570,7 +1570,11 @@ function BinCatalogItemsComponent() {
             $ctrl.remove = function (item) {
                 item.uiStatus = 'removed';
                 $timeout(function () {
-                    $ctrl.items.splice($ctrl.items.indexOf(item), 1);
+                    var index = $ctrl.items.indexOf(item);
+                    $ctrl.items.splice(index, 1);
+                    ['groupsCtrl', 'listCtrl'].forEach(function (ctrl) {
+                        if ($ctrl[ctrl] && index !== -1) $ctrl[ctrl].items.splice(index, 1);
+                    });
                 }, delay);
             };
 
