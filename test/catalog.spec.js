@@ -2139,6 +2139,63 @@ describe('catalog', function () {
             component.plus({size: 1, isPinned: true});
             expect(component.pinnedItemCount).toEqual(1);
         });
+
+        describe('with on-no-items and on-has-items callbacks', function () {
+            beforeEach(function () {
+                component.onNoItems = jasmine.createSpy('onNoItems');
+                component.onHasItems = jasmine.createSpy('onHasItems');
+            });
+
+            describe('on init', function () {
+                beforeEach(function () {
+                    component.$onInit();
+                });
+
+                it('on-no-items callback is executed', function () {
+                    expect(component.onNoItems).toHaveBeenCalled();
+                });
+
+                describe('when in edit-mode', function () {
+                    beforeEach(inject(function (topicRegistryMock) {
+                        topicRegistryMock['edit.mode'](true);
+                    }));
+
+                    it('on-has-items callback is executed', function () {
+                        expect(component.onHasItems).toHaveBeenCalled();
+                    });
+                });
+            });
+
+            describe('on item is added to the spotlight view', function () {
+                beforeEach(function () {
+                    component.plus({size: 1});
+                });
+
+                it('on-no-items callback is not executed', function () {
+                    expect(component.onNoItems).not.toHaveBeenCalled();
+                });
+
+                it('on-has-items callback is executed', function () {
+                    expect(component.onHasItems).toHaveBeenCalled();
+                });
+
+                describe('on item removed from spotlight view', function () {
+                    beforeEach(function () {
+                        component.onNoItems.calls.reset();
+                        component.onHasItems.calls.reset();
+                        component.plus({size: -1});
+                    });
+
+                    it('on-no-items callback is executed', function () {
+                        expect(component.onNoItems).toHaveBeenCalled();
+                    });
+
+                    it('on-has-items callback is not executed', function () {
+                        expect(component.onHasItems).not.toHaveBeenCalled();
+                    });
+                });
+            });
+        });
     });
 
     describe('binSpotlightItemsController', function () {

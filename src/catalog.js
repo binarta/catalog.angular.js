@@ -754,7 +754,9 @@ function BinSpotlightComponent() {
         type: '@',
         cols: '@',
         center: '@',
-        itemTemplateUrl: '<?'
+        itemTemplateUrl: '<?',
+        onNoItems: '&',
+        onHasItems: '&'
     };
     this.transclude = {
         header: '?binSpotlightHeader',
@@ -785,10 +787,13 @@ function BinSpotlightController(topics, binarta, configWriter, location) {
         $ctrl.$onDestroy = function () {
             topics.unsubscribe('edit.mode', onEditMode);
         };
+
+        executeCallbacks();
     };
 
     this.plus = function (args) {
         $ctrl.totalItemCount += args.size;
+        executeCallbacks();
         if (args.isPinned) $ctrl.pinnedItemCount += args.size;
     };
 
@@ -799,6 +804,13 @@ function BinSpotlightController(topics, binarta, configWriter, location) {
 
     function onEditMode(editing) {
         $ctrl.editing = editing;
+        executeCallbacks();
+    }
+
+    function executeCallbacks() {
+        if ($ctrl.totalItemCount <= 0 && !$ctrl.editing) {
+            if ($ctrl.onNoItems) $ctrl.onNoItems();
+        } else if ($ctrl.onHasItems) $ctrl.onHasItems();
     }
 }
 
@@ -808,9 +820,6 @@ function BinSpotlightItemsComponent() {
     };
     this.require = {
         spotlightCtrl: '^binSpotlight'
-    };
-    this.transclude = {
-        footer: '?binSpotlightFooter'
     };
     this.templateUrl = 'bin-spotlight-items.html';
     this.controller = 'binSpotlightItemsController';
