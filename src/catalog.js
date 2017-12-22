@@ -1579,12 +1579,16 @@ function BinCatalogItemsComponent() {
             $ctrl.remove = function (item) {
                 item.uiStatus = 'removed';
                 $timeout(function () {
-                    var index = $ctrl.items.indexOf(item);
-                    $ctrl.items.splice(index, 1);
+                    removeItemFromList($ctrl.items, item);
                     ['groupsCtrl', 'listCtrl'].forEach(function (ctrl) {
-                        if ($ctrl[ctrl] && index !== -1) $ctrl[ctrl].items.splice(index, 1);
+                        if ($ctrl[ctrl]) removeItemFromList($ctrl[ctrl].items, item);
                     });
                 }, delay);
+
+                function removeItemFromList(items, item) {
+                    var index = items.indexOf(item);
+                    if (index !== -1) items.splice(index, 1);
+                }
             };
 
             topicRegistry.subscribe('edit.mode', editModeListener);

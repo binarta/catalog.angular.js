@@ -3837,14 +3837,18 @@ describe('catalog', function () {
         });
 
         describe('with list and itemGroups controllers', function () {
+            var items;
+
             beforeEach(function () {
+                items = ['item1', 'item2', 'item3'];
+
                 bindings.listCtrl = {
-                    items: ['item'],
+                    items: items,
                     type: 'type',
                     partition: 'partition'
                 };
                 bindings.groupsCtrl = {
-                    items: ['item'],
+                    items: items,
                     type: 'type',
                     partition: 'partition'
                 };
@@ -3863,11 +3867,11 @@ describe('catalog', function () {
                     });
 
                     it('item is removed from list on groupsCtrl', function () {
-                        expect($ctrl.groupsCtrl.items).toEqual([]);
+                        expect($ctrl.groupsCtrl.items).toEqual(['item2', 'item3']);
                     });
 
                     it('item is removed from list on listCtrl', function () {
-                        expect($ctrl.listCtrl.items).toEqual([]);
+                        expect($ctrl.listCtrl.items).toEqual(['item2', 'item3']);
                     });
                 });
             });
