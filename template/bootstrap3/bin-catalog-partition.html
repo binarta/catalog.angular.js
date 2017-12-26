@@ -1,11 +1,38 @@
 <div ng-class="$ctrl.partition.uiStatus">
     <bin-edit>
         <bin-edit-actions>
+            <bin-edit-actions-selector for="move"
+                                       icon-class="fa-arrows"
+                                       i18n-code="catalog.item.move"
+                                       ng-if="$ctrl.isMoveAllowed()">
+            </bin-edit-actions-selector>
             <bin-edit-actions-selector for="delete" danger
                                        icon-class="fa-trash"
                                        i18n-code="catalog.partition.remove"
                                        ng-if="$ctrl.isRemoveAllowed()">
             </bin-edit-actions-selector>
+        </bin-edit-actions>
+        <bin-edit-actions for="move" button-i18n-code="catalog.item.move">
+            <bin-edit-action action="$ctrl.moveUp()"
+                             icon-class="fa-angle-up"
+                             i18n-code="catalog.item.move.up"
+                             disabled="$ctrl.isFirst()">
+            </bin-edit-action>
+            <bin-edit-action action="$ctrl.moveDown()"
+                             icon-class="fa-angle-down"
+                             i18n-code="catalog.item.move.down"
+                             disabled="$ctrl.isLast()">
+            </bin-edit-action>
+            <bin-edit-action action="$ctrl.moveTop()"
+                             icon-class="fa-angle-double-up"
+                             i18n-code="catalog.item.move.top"
+                             disabled="$ctrl.isFirst()">
+            </bin-edit-action>
+            <bin-edit-action action="$ctrl.moveBottom()"
+                             icon-class="fa-angle-double-down"
+                             i18n-code="catalog.item.move.bottom"
+                             disabled="$ctrl.isLast()">
+            </bin-edit-action>
         </bin-edit-actions>
         <bin-edit-actions for="delete">
             <bin-edit-action action="$ctrl.remove()" danger
