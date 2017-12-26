@@ -1139,6 +1139,7 @@ function BinCatalogPartitionsComponent() {
             findCatalogPartitions({
                 query: 'ownedBy',
                 filters: {owner: $ctrl.partition},
+                sortings: [{on: 'priority', orientation: 'asc'}],
                 success: onSuccess
             });
         }

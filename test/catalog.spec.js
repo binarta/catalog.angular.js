@@ -2146,7 +2146,7 @@ describe('catalog', function () {
                 component.onHasItems = jasmine.createSpy('onHasItems');
             });
 
-            describe('on init', function () {
+            describe('on init', function () {
                 beforeEach(function () {
                     component.$onInit();
                 });
@@ -2923,6 +2923,7 @@ describe('catalog', function () {
                 expect(findCatalogPartitionsMock).toHaveBeenCalledWith({
                     query: 'ownedBy',
                     filters: {owner: 'partition'},
+                    sortings: [{on: 'priority', orientation: 'asc'}],
                     success: jasmine.any(Function)
                 });
             });
@@ -4484,7 +4485,8 @@ describe('catalog', function () {
 
     describe('binCatalogItem component', function () {
         var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
-        var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock, imageCarousel, moment;
+        var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock, imageCarousel,
+            moment;
 
         beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, topicRegistryMock,
                                     editModeRenderer, binLink, updateCatalogItemWriter, binImageCarousel, _moment_) {
