@@ -1233,6 +1233,7 @@ function BinCatalogPartitionComponent() {
                 return $ctrl.partition && isEnabledByDefault($ctrl.removable) && hasCatalogPartitionRemovePermission();
             };
 
+            installMoveActions();
             installRemoveAction();
         };
 
@@ -1242,6 +1243,27 @@ function BinCatalogPartitionComponent() {
 
         function hasCatalogPartitionRemovePermission() {
             return binarta.checkpoint.profile.hasPermission('catalog.partition.remove');
+        }
+
+        function installMoveActions() {
+            // $ctrl.moveUp = function () {
+            //     return $ctrl.itemsCtrl.moveUp($ctrl.item);
+            // };
+            // $ctrl.moveDown = function () {
+            //     return $ctrl.itemsCtrl.moveDown($ctrl.item);
+            // };
+            // $ctrl.moveTop = function () {
+            //     return $ctrl.itemsCtrl.moveTop($ctrl.item);
+            // };
+            // $ctrl.moveBottom = function () {
+            //     return $ctrl.itemsCtrl.moveBottom($ctrl.item);
+            // };
+            $ctrl.isFirst = function () {
+                return $ctrl.partitionsCtrl.partitions[0] === $ctrl.partition;
+            };
+            $ctrl.isLast = function () {
+                return $ctrl.partitionsCtrl.partitions[$ctrl.partitionsCtrl.partitions.length - 1] === $ctrl.partition;
+            };
         }
 
         function installRemoveAction() {
