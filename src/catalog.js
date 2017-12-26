@@ -1226,12 +1226,19 @@ function BinCatalogPartitionComponent() {
             if (!$ctrl.removable) $ctrl.removable = $ctrl.partitionsCtrl.removable;
             if (!$ctrl.templateUrl) $ctrl.templateUrl = 'bin-catalog-partition-list-default.html';
 
+            $ctrl.isMoveAllowed = function () {
+                return isEnabledByDefault($ctrl.movable) && hasCatalogPartitionUpdatePriorityPermission();
+            };
             $ctrl.isRemoveAllowed = function () {
                 return $ctrl.partition && isEnabledByDefault($ctrl.removable) && hasCatalogPartitionRemovePermission();
             };
 
             installRemoveAction();
         };
+
+        function hasCatalogPartitionUpdatePriorityPermission() {
+            return binarta.checkpoint.profile.hasPermission('catalog.partition.update.priority');
+        }
 
         function hasCatalogPartitionRemovePermission() {
             return binarta.checkpoint.profile.hasPermission('catalog.partition.remove');
@@ -2196,7 +2203,7 @@ function BinCatalogPublicationTime() {
         }
 
         function getFormat() {
-            return $ctrl.format || 'lll';
+            return $ctrl.format || 'lll';
         }
     }];
 }

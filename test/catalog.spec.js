@@ -3224,6 +3224,35 @@ describe('catalog', function () {
             expect($ctrl.templateUrl).toEqual('override.html');
         });
 
+        describe('check if move action is allowed', function () {
+            beforeEach(function () {
+                $ctrl.partition = partition;
+                $ctrl.$onInit();
+            });
+
+            it('when movable but no permission', function () {
+                $ctrl.movable = 'true';
+                expect($ctrl.isMoveAllowed()).toBeFalsy();
+            });
+
+            describe('when user has permission', function () {
+                beforeEach(function () {
+                    binarta.checkpoint.gateway.addPermission('catalog.partition.update.priority');
+                    binarta.checkpoint.profile.refresh();
+                });
+
+                it('and is movable', function () {
+                    $ctrl.movable = 'true';
+                    expect($ctrl.isMoveAllowed()).toBeTruthy();
+                });
+
+                it('and is not movable', function () {
+                    $ctrl.movable = 'false';
+                    expect($ctrl.isMoveAllowed()).toBeFalsy();
+                });
+            });
+        });
+
         describe('check if remove action is allowed', function () {
             beforeEach(function () {
                 $ctrl.partition = partition;
