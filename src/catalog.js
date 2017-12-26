@@ -1084,7 +1084,7 @@ function BinCatalogPartitionsComponent() {
         listCtrl: '?^^binCatalogList'
     };
 
-    this.controller = ['$timeout', 'findCatalogPartitions', 'topicRegistry', 'binarta', function ($timeout, findCatalogPartitions, topicRegistry, binarta) {
+    this.controller = ['$timeout', 'findCatalogPartitions', 'topicRegistry', 'binarta', 'config', 'restServiceHandler', '$q', function ($timeout, findCatalogPartitions, topicRegistry, binarta, config, rest, $q) {
         var $ctrl = this,
             editing = false,
             delay = 300;
@@ -1095,6 +1095,7 @@ function BinCatalogPartitionsComponent() {
                 if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.partition;
                 if (!$ctrl.parent) $ctrl.parent = $ctrl.listCtrl.parent;
             }
+            installMoveActions();
             search();
 
             $ctrl.isPartitionListVisible = function () {
@@ -1152,6 +1153,84 @@ function BinCatalogPartitionsComponent() {
 
         function hasCatalogPartitionAddPermission() {
             return binarta.checkpoint.profile.hasPermission('catalog.partition.add');
+        }
+
+        function installMoveActions() {
+            $ctrl.moveUp = moveUp;
+            $ctrl.moveDown = moveDown;
+            $ctrl.moveTop = moveTop;
+            $ctrl.moveBottom = moveBottom;
+
+            function moveUp(item) {
+                var priority = $ctrl.partitions.reduce(function (p, c) {
+                    return c.priority < item.priority ? c.priority : p;
+                }, item.priority);
+                if (priority != item.priority)
+                    return setPriority(item.id, priority);
+            }
+
+            function moveDown(item) {
+                var priority = $ctrl.partitions.reduce(function (p, c) {
+                    if (p > item.priority)
+                        return p;
+                    return c.priority > item.priority ? c.priority : p;
+                }, item.priority);
+                if (priority != item.priority)
+                    return setPriority(item.id, priority);
+            }
+
+            function moveTop(partition) {
+                var first = $ctrl.partitions[0];
+                if (first != partition)
+                    return setPriority(partition.id, first.priority);
+            }
+
+            function moveBottom(partition) {
+                var last = $ctrl.partitions[$ctrl.partitions.length - 1];
+                if (last !== partition)
+                    return setPriority(partition.id, last.priority);
+            }
+
+            function setPriority(partitionId, priority) {
+                var d = $q.defer();
+                rest({
+                    params: {
+                        url: (config.baseUri || '') + 'api/usecase',
+                        method: 'POST',
+                        data: {
+                            headers: {usecase: 'catalog.partition.update.priority'},
+                            payload: {
+                                id: partitionId,
+                                priority: priority
+                            }
+                        },
+                        withCredentials: true
+                    },
+                    success: function () {
+                        rearrangePriorities(partitionId, priority);
+                        sort();
+                        d.resolve();
+                    }
+                });
+                return d.promise;
+            }
+
+            function rearrangePriorities(partitionId, priority) {
+                var partition = $ctrl.partitions.reduce(function (p, c) {
+                    return c.id == partitionId ? c : p;
+                }, undefined);
+                $ctrl.partitions.forEach(function (it) {
+                    it.priority += (it.priority >= priority && it.priority < partition.priority ? 1 : 0);
+                    it.priority += (it.priority <= priority && it.priority > partition.priority ? -1 : 0);
+                });
+                partition.priority = priority;
+            }
+
+            function sort() {
+                $ctrl.partitions.sort(function (x, y) {
+                    return x.priority - y.priority;
+                });
+            }
         }
     }];
 }
@@ -1247,18 +1326,18 @@ function BinCatalogPartitionComponent() {
         }
 
         function installMoveActions() {
-            // $ctrl.moveUp = function () {
-            //     return $ctrl.itemsCtrl.moveUp($ctrl.item);
-            // };
-            // $ctrl.moveDown = function () {
-            //     return $ctrl.itemsCtrl.moveDown($ctrl.item);
-            // };
-            // $ctrl.moveTop = function () {
-            //     return $ctrl.itemsCtrl.moveTop($ctrl.item);
-            // };
-            // $ctrl.moveBottom = function () {
-            //     return $ctrl.itemsCtrl.moveBottom($ctrl.item);
-            // };
+            $ctrl.moveUp = function () {
+                return $ctrl.partitionsCtrl.moveUp($ctrl.partition);
+            };
+            $ctrl.moveDown = function () {
+                return $ctrl.partitionsCtrl.moveDown($ctrl.partition);
+            };
+            $ctrl.moveTop = function () {
+                return $ctrl.partitionsCtrl.moveTop($ctrl.partition);
+            };
+            $ctrl.moveBottom = function () {
+                return $ctrl.partitionsCtrl.moveBottom($ctrl.partition);
+            };
             $ctrl.isFirst = function () {
                 return $ctrl.partitionsCtrl.partitions[0] === $ctrl.partition;
             };

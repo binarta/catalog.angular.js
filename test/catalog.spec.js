@@ -2895,7 +2895,11 @@ describe('catalog', function () {
             $ctrl = $componentController('binCatalogPartitions', {
                 findCatalogPartitions: findCatalogPartitionsMock
             });
-            partitions = ['1', '2', '3'];
+            partitions = [
+                {id: '/products/1', priority: 1},
+                {id: '/products/2', priority: 2},
+                {id: '/products/3', priority: 3}
+            ];
         }));
 
         describe('with listCtrl', function () {
@@ -3072,6 +3076,210 @@ describe('catalog', function () {
                         $timeout.flush(300);
                         expect($ctrl.partitions).not.toContain(partition);
                     });
+                });
+            });
+
+            describe('on move up', function () {
+                var done;
+
+                beforeEach(inject(function (config, restServiceHandler) {
+                    rest = restServiceHandler;
+                    config.baseUri = 'http://host/context/';
+                    $ctrl.moveUp(partitions[2]).finally(function() {
+                        done = true;
+                    });
+                }));
+
+                it('update partition priority', function () {
+                    expect(rest.calls.mostRecent().args[0].params.url).toEqual('http://host/context/api/usecase');
+                    expect(rest.calls.mostRecent().args[0].params.method).toEqual('POST');
+                    expect(rest.calls.mostRecent().args[0].params.data).toEqual({
+                        headers: {usecase: 'catalog.partition.update.priority'},
+                        payload: {id: '/products/3', priority: 2}
+                    });
+                    expect(rest.calls.mostRecent().args[0].params.withCredentials).toEqual(true);
+                });
+
+                describe('on update success', function () {
+                    beforeEach(function () {
+                        rest.calls.mostRecent().args[0].success();
+                    });
+
+                    it('partitions are reprioritized and sorted', function () {
+                        expect(partitions).toEqual([
+                            {id: '/products/1', priority: 1},
+                            {id: '/products/3', priority: 2},
+                            {id: '/products/2', priority: 3}
+                        ]);
+                    });
+
+                    it('returned promise completes allowed the UI to update', function() {
+                        expect(done).toBeTruthy();
+                    });
+                });
+            });
+
+            describe('on move first partition up', function () {
+                beforeEach(inject(function (restServiceHandler) {
+                    rest = restServiceHandler;
+                    $ctrl.moveUp(partitions[0]);
+                }));
+
+                it('partition is not updated', function () {
+                    expect(rest).not.toHaveBeenCalled();
+                });
+            });
+
+            describe('on move down', function () {
+                var done;
+
+                beforeEach(inject(function (config, restServiceHandler) {
+                    rest = restServiceHandler;
+                    config.baseUri = 'http://host/context/';
+                    $ctrl.moveDown(partitions[0]).finally(function() {
+                        done = true;
+                    });
+                }));
+
+                it('update partition priority', function () {
+                    expect(rest.calls.mostRecent().args[0].params.url).toEqual('http://host/context/api/usecase');
+                    expect(rest.calls.mostRecent().args[0].params.method).toEqual('POST');
+                    expect(rest.calls.mostRecent().args[0].params.data).toEqual({
+                        headers: {usecase: 'catalog.partition.update.priority'},
+                        payload: {id: '/products/1', priority: 2}
+                    });
+                    expect(rest.calls.mostRecent().args[0].params.withCredentials).toEqual(true);
+                });
+
+                describe('on update success', function () {
+                    beforeEach(function () {
+                        rest.calls.mostRecent().args[0].success();
+                    });
+
+                    it('partitions are reprioritized and sorted', function () {
+                        expect(partitions).toEqual([
+                            {id: '/products/2', priority: 1},
+                            {id: '/products/1', priority: 2},
+                            {id: '/products/3', priority: 3}
+                        ]);
+                    });
+
+                    it('returned promise completes allowed the UI to update', function() {
+                        expect(done).toBeTruthy();
+                    });
+                });
+            });
+
+            describe('on move last partition down', function () {
+                beforeEach(inject(function (restServiceHandler) {
+                    rest = restServiceHandler;
+                    $ctrl.moveDown(partitions[2]);
+                }));
+
+                it('partition is not updated', function () {
+                    expect(rest).not.toHaveBeenCalled();
+                });
+            });
+
+            describe('on move to top', function () {
+                var done;
+
+                beforeEach(inject(function (config, restServiceHandler) {
+                    rest = restServiceHandler;
+                    config.baseUri = 'http://host/context/';
+                    $ctrl.moveTop(partitions[2]).finally(function() {
+                        done = true;
+                    });
+                }));
+
+                it('update partition priority', function () {
+                    expect(rest.calls.mostRecent().args[0].params.url).toEqual('http://host/context/api/usecase');
+                    expect(rest.calls.mostRecent().args[0].params.method).toEqual('POST');
+                    expect(rest.calls.mostRecent().args[0].params.data).toEqual({
+                        headers: {usecase: 'catalog.partition.update.priority'},
+                        payload: {id: '/products/3', priority: 1}
+                    });
+                    expect(rest.calls.mostRecent().args[0].params.withCredentials).toEqual(true);
+                });
+
+                describe('on update success', function () {
+                    beforeEach(function () {
+                        rest.calls.mostRecent().args[0].success();
+                    });
+
+                    it('partitions are reprioritized and sorted', function () {
+                        expect(partitions).toEqual([
+                            {id: '/products/3', priority: 1},
+                            {id: '/products/1', priority: 2},
+                            {id: '/products/2', priority: 3}
+                        ]);
+                    });
+
+                    it('returned promise completes allowed the UI to update', function() {
+                        expect(done).toBeTruthy();
+                    });
+                });
+            });
+
+            describe('on move first partition to top', function () {
+                beforeEach(inject(function (restServiceHandler) {
+                    rest = restServiceHandler;
+                    $ctrl.moveTop(partitions[0]);
+                }));
+
+                it('partition is not updated', function () {
+                    expect(rest).not.toHaveBeenCalled();
+                });
+            });
+
+            describe('on move to bottom', function () {
+                var done;
+
+                beforeEach(inject(function (config, restServiceHandler) {
+                    rest = restServiceHandler;
+                    config.baseUri = 'http://host/context/';
+                    $ctrl.moveBottom(partitions[0]).finally(function() {
+                        done = true;
+                    });
+                }));
+
+                it('update partition priority', function () {
+                    expect(rest.calls.mostRecent().args[0].params.url).toEqual('http://host/context/api/usecase');
+                    expect(rest.calls.mostRecent().args[0].params.method).toEqual('POST');
+                    expect(rest.calls.mostRecent().args[0].params.data).toEqual({
+                        headers: {usecase: 'catalog.partition.update.priority'},
+                        payload: {id: '/products/1', priority: 3}
+                    });
+                    expect(rest.calls.mostRecent().args[0].params.withCredentials).toEqual(true);
+                });
+
+                describe('on update success', function () {
+                    beforeEach(function () {
+                        rest.calls.mostRecent().args[0].success();
+                    });
+
+                    it('partitions are reprioritized and sorted', function () {
+                        expect(partitions).toEqual([
+                            {id: '/products/2', priority: 1},
+                            {id: '/products/3', priority: 2},
+                            {id: '/products/1', priority: 3}
+                        ]);
+                    });
+
+                    it('returned promise completes allowed the UI to update', function() {
+                        expect(done).toBeTruthy();
+                    });
+                });
+            });
+
+            describe('on move last partition to bottom', function () {
+                beforeEach(inject(function (restServiceHandler) {
+                    rest = restServiceHandler;
+                    $ctrl.moveBottom(partitions[2]);
+                }));
+
+                it('partition is not updated', function () {
+                    expect(rest).not.toHaveBeenCalled();
                 });
             });
         });
