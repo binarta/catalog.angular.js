@@ -1,6 +1,16 @@
-<% if(shop) { %>
-<bin-basket mode="add-to-basket-button" item="$ctrl.item" ng-if="$ctrl.isPurchasable()"></bin-basket>
-<bin-catalog-item-request-info-button item="$ctrl.item" ng-if="!$ctrl.isPurchasable()"></bin-catalog-item-request-info-button>
-<% } else { %>
-<bin-catalog-item-request-info-button item="$ctrl.item"></bin-catalog-item-request-info-button>
-<% } %>
+<span ng-switch on="$ctrl.item.cta">
+    <span ng-switch-when="none"></span>
+    <span ng-switch-when="link">
+        <a bin-dhref="{{$ctrl.item.link}}" target="{{$ctrl.item.linkTarget}}" class="btn btn-success"
+           i18n code="{{::$ctrl.i18nCode}}" default="Info" read-only ng-bind="var">
+        </a>
+    </span>
+    <span ng-switch-default>
+        <% if(shop) { %>
+        <bin-basket mode="add-to-basket-button" item="$ctrl.item" ng-if="$ctrl.isPurchasable()"></bin-basket>
+        <bin-catalog-item-request-info-button item="$ctrl.item" ng-if="!$ctrl.isPurchasable()"></bin-catalog-item-request-info-button>
+        <% } else { %>
+        <bin-catalog-item-request-info-button item="$ctrl.item"></bin-catalog-item-request-info-button>
+        <% } %>
+    </span>
+</span>

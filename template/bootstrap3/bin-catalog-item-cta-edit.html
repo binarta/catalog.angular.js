@@ -1,0 +1,60 @@
+<form ng-submit="submit()" id="bin-catalog-item-cta-edit">
+    <div class="bin-menu-edit-body">
+        <table class="table table-bordered">
+            <tr>
+                <th colspan="2" i18n code="catalog.item.edit.cta.title" read-only ng-bind="::var"></th>
+            </tr>
+            <tr ng-class="{active: cta === 'default'}">
+                <td colspan="2">
+                    <input type="radio" name="catalogItemCtaRadios" id="catalogItemCtaDefault" ng-model="cta"
+                           value="default" ng-change="submit()">
+                    <label for="catalogItemCtaDefault">
+                        <span>
+                            <strong i18n code="catalog.item.edit.cta.option.default" read-only ng-bind="::var"></strong>
+                        </span>
+                    </label>
+                    <div class="help-block"
+                         i18n code="catalog.item.edit.cta.option.default.help" read-only ng-bind="::var"></div>
+                </td>
+            </tr>
+            <tr ng-class="{active: cta === 'link'}">
+                <td>
+                    <input type="radio" name="catalogItemCtaRadios" id="catalogItemCtaLink" ng-model="cta"
+                           value="link" ng-change="submit()">
+                    <label for="catalogItemCtaLink">
+                        <span>
+                            <strong i18n code="catalog.item.edit.cta.option.link" read-only ng-bind="::var"></strong>
+                        </span>
+                    </label>
+                    <div class="help-block"
+                         i18n code="catalog.item.edit.cta.option.link.help" read-only ng-bind="::var">
+                    </div>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-primary btn-xs" ng-click="configureLink()">
+                        <i class="fa fa-cog fa-fw"></i>
+                        <span i18n code="catalog.item.edit.cta.option.link.configure" read-only ng-bind="::var"></span>
+                    </button>
+                </td>
+            </tr>
+            <tr ng-class="{active: cta === 'none'}">
+                <td colspan="2">
+                    <input type="radio" name="catalogItemCtaRadios" id="catalogItemCtaNone" ng-model="cta"
+                           value="none" ng-change="submit()">
+                    <label for="catalogItemCtaNone">
+                        <span>
+                            <strong i18n code="catalog.item.edit.cta.option.none" read-only ng-bind="::var"></strong>
+                        </span>
+                    </label>
+                    <div class="help-block"
+                         i18n code="catalog.item.edit.cta.option.none.help" read-only ng-bind="::var">
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="bin-menu-edit-actions">
+        <button type="button" class="btn btn-default" ng-click="close()"
+                i18n code="clerk.menu.close.button" read-only ng-bind="::var" ng-disabled="working"></button>
+    </div>
+</form>

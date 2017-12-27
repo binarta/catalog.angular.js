@@ -1,6 +1,11 @@
 <div ng-class="$ctrl.item.uiStatus" ng-if="::$ctrl.item">
     <bin-edit>
         <bin-edit-actions>
+            <bin-edit-action ng-repeat="it in $ctrl.editActions"
+                             action="it.action()"
+                             icon-class="{{::it.iconClass}}"
+                             i18n-code="{{::it.i18nCode}}">
+            </bin-edit-action>
             <bin-edit-action action="$ctrl.link()"
                              icon-class="fa-link"
                              i18n-code="catalog.item.link"

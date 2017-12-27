@@ -2011,15 +2011,16 @@ function BinCatalogItemComponent() {
     };
 
     this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', 'findCatalogItemById',
-        'updateCatalogItemWriter', 'binLink', 'binCatalogItemPublisher', 'binImageCarousel', 'moment',
+        'updateCatalogItemWriter', 'binLink', 'binCatalogItemPublisher', 'binImageCarousel', 'moment', 'i18n',
         function (binarta, pinner, topics, removeCatalogItem, i18nLocation, findCatalogItemById,
-                  updateCatalogItem, binLink, publisher, binImageCarousel, moment) {
+                  updateCatalogItem, binLink, publisher, binImageCarousel, moment, i18n) {
             var $ctrl = this,
                 destroyHandlers = [],
                 draft = 'draft',
                 published = 'published';
             $ctrl.i18n = {};
             $ctrl.image = {};
+            $ctrl.editActions = [];
 
             $ctrl.$onInit = function () {
                 if ($ctrl.detailsCtrl) withDetailsController();
@@ -2082,6 +2083,10 @@ function BinCatalogItemComponent() {
                 };
                 $ctrl.isUnpublishAllowed = function () {
                     return $ctrl.item && $ctrl.item.status === published && isDisabledByDefault($ctrl.publishable) && hasCatalogItemUpdatePermission();
+                };
+
+                $ctrl.installEditAction = function (action) {
+                    $ctrl.editActions.push(action);
                 };
 
                 installPinActions();
@@ -2229,39 +2234,50 @@ function BinCatalogItemComponent() {
             }
 
             function installLinkAction() {
-                $ctrl.link = function () {
-                    binLink.open({
+                $ctrl.link = function (args) {
+                    var ctx = {
                         href: $ctrl.item.link,
                         target: $ctrl.item.linkTarget,
-                        onSubmit: onSubmit,
-                        onRemove: onRemove
-                    });
-                };
-
-                function onRemove(args) {
-                    onSubmit({href: '', target: '', success: args.success, error: args.error});
-                }
-
-                function onSubmit(args) {
-                    updateCatalogItem({
-                        data: {
-                            treatInputAsId: false,
-                            context: 'update',
-                            id: $ctrl.item.id,
-                            type: $ctrl.item.type,
-                            link: args.href,
-                            linkTarget: args.target
-                        },
-                        success: onSuccess,
-                        error: args.error
-                    });
-
-                    function onSuccess() {
-                        $ctrl.item.link = args.href;
-                        $ctrl.item.linkTarget = args.target;
-                        args.success();
+                        onSubmit: onSubmit
+                    };
+                    if (!args || args.allowRemove !== false) ctx.onRemove = onRemove;
+                    if (args && args.i18nCode) {
+                        i18n.resolve({code: args.i18nCode}).then(function (text) {
+                            ctx.text = text;
+                            ctx.allowText = true;
+                            binLink.open(ctx);
+                        });
+                    } else {
+                        binLink.open(ctx);
                     }
-                }
+
+                    function onRemove(removeArgs) {
+                        onSubmit({href: '', target: '', success: removeArgs.success, error: removeArgs.error});
+                    }
+
+                    function onSubmit(submitArgs) {
+                        if (args && args.i18nCode) i18n.translate({code: args.i18nCode, translation: submitArgs.text});
+
+                        updateCatalogItem({
+                            data: {
+                                treatInputAsId: false,
+                                context: 'update',
+                                id: $ctrl.item.id,
+                                type: $ctrl.item.type,
+                                link: submitArgs.href,
+                                linkTarget: submitArgs.target
+                            },
+                            success: onSuccess,
+                            error: submitArgs.error
+                        });
+
+                        function onSuccess() {
+                            $ctrl.item.link = submitArgs.href;
+                            $ctrl.item.linkTarget = submitArgs.target;
+                            submitArgs.success();
+                        }
+                    }
+                };
             }
 
             function installPublishAction() {
@@ -2311,39 +2327,64 @@ function BinCatalogPublicationTime() {
 }
 
 function BinCatalogItemCta() {
-    this.templateUrl = ['$attrs', function ($attrs) {
-        return $attrs.templateUrl || 'bin-catalog-item-cta.html';
-    }];
+    this.templateUrl = 'bin-catalog-item-cta.html';
 
     this.bindings = {
         item: '<',
         purchasable: '@'
     };
 
-    this.controller = ['$q', 'binSections', 'i18n', function ($q, sections, i18n) {
+    this.require = {
+        itemCtrl: '^^binCatalogItem'
+    };
+
+    this.controller = ['$scope', 'editModeRenderer', function ($scope, renderer) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
-            $ctrl.contactPath = '/contact';
-
-            $ctrl.isContactActive = function () {
-                return sections.isActive('contact');
-            };
-
-            $ctrl.hasPrice = function () {
-                return $ctrl.item.price && $ctrl.item.price > 0;
-            };
+            $ctrl.i18nCode = $ctrl.item.id + '.cta';
 
             $ctrl.isPurchasable = function () {
-                return isEnabledByDefault($ctrl.purchasable) && $ctrl.hasPrice();
+                return isEnabledByDefault($ctrl.purchasable) && hasPrice();
             };
 
-            if ($ctrl.isContactActive()) {
-                $q.all([
-                    i18n.resolve({code: 'catalog.item.more.info.about.button', default: 'More info about'}),
-                    i18n.resolve({code: $ctrl.item.id})
-                ]).then(function (result) {
-                    $ctrl.contactPath += '?subject=' + result[0] + ' ' + result[1];
+            $ctrl.itemCtrl.installEditAction({
+                action: edit,
+                iconClass: 'fa-bullhorn',
+                i18nCode: 'catalog.item.edit.cta'
+            });
+
+            function hasPrice() {
+                return $ctrl.item.price && $ctrl.item.price > 0;
+            }
+
+            function edit() {
+                var rendererScope = $scope.$new();
+
+                rendererScope.cta = $ctrl.item.cta || 'default';
+
+                rendererScope.configureLink = function () {
+                    $ctrl.itemCtrl.link({
+                        i18nCode: $ctrl.i18nCode,
+                        allowRemove: false
+                    });
+                };
+
+                rendererScope.submit = function () {
+                    $ctrl.itemCtrl.update({
+                        key: 'cta',
+                        value: rendererScope.cta
+                    }, {
+                        success: function () {},
+                        error: function () {}
+                    });
+                };
+
+                rendererScope.close = renderer.close;
+
+                renderer.open({
+                    templateUrl: 'bin-catalog-item-cta-edit.html',
+                    scope: rendererScope
                 });
             }
         };

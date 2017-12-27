@@ -10,4 +10,8 @@ angular.module('i18n', [])
                 return $location.path('/lang' + path);
             }
         };
+    })
+    .service('i18n', function () {
+        this.resolve = jasmine.createSpy('resolve');
+        this.translate = jasmine.createSpy('translate');
     });

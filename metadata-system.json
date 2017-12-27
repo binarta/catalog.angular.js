@@ -47,6 +47,7 @@
       "catalog.item.remove": "verwijderen",
       "catalog.item.remove.confirm": "item verwijderen?",
       "catalog.item.link": "link",
+      "catalog.item.edit.cta": "bewerk CTA",
       "catalog.item.publication.time.label": "Publicatietijd:",
       "catalog.item.publish": "publiceer",
       "catalog.item.unpublish": "verbergen",
@@ -54,7 +55,15 @@
       "catalog.item.scheduled": "GEPLAND",
       "catalog.partition.remove": "verwijderen",
       "catalog.partition.remove.confirm": "categorie verwijderen?",
-      "catalog.violation.partition.upperbound": "Het maximale aantal items is bereikt"
+      "catalog.violation.partition.upperbound": "Het maximale aantal items is bereikt",
+      "catalog.item.edit.cta.title": "Call-to-action knop instellingen",
+      "catalog.item.edit.cta.option.default": "Standaard",
+      "catalog.item.edit.cta.option.default.help": "Toon een \"meer info\"-knop die doorverwijst naar het contact formulier of een \"winkelmandje\"-knop indien van toepassing.",
+      "catalog.item.edit.cta.option.link": "Aanpasbaar",
+      "catalog.item.edit.cta.option.link.help": "Toon een knop met een zelf ingestelde tekst en link.",
+      "catalog.item.edit.cta.option.link.configure": "Configureer",
+      "catalog.item.edit.cta.option.none": "Verbergen",
+      "catalog.item.edit.cta.option.none.help": "Verberg de knop."
     },
     "en": {
       "catalog.item.removed": "Item removed",
@@ -103,6 +112,7 @@
       "catalog.item.remove": "delete",
       "catalog.item.remove.confirm": "delete item?",
       "catalog.item.link": "link",
+      "catalog.item.edit.cta": "edit CTA",
       "catalog.item.publication.time.label": "Publication time:",
       "catalog.item.publish": "publish",
       "catalog.item.unpublish": "unpublish",
@@ -110,7 +120,15 @@
       "catalog.item.scheduled": "SCHEDULED",
       "catalog.partition.remove": "delete",
       "catalog.partition.remove.confirm": "delete category?",
-      "catalog.violation.partition.upperbound": "The maximum number of items has been reached"
+      "catalog.violation.partition.upperbound": "The maximum number of items has been reached",
+      "catalog.item.edit.cta.title": "Setup call-to-action button",
+      "catalog.item.edit.cta.option.default": "Default",
+      "catalog.item.edit.cta.option.default.help": "Displays a \"more info\"-button that links to the contact form or an \"add to basket\"-button if applicable.",
+      "catalog.item.edit.cta.option.link": "Custom button",
+      "catalog.item.edit.cta.option.link.help": "Display your own button with a custom link.",
+      "catalog.item.edit.cta.option.link.configure": "Configure",
+      "catalog.item.edit.cta.option.none": "Hide",
+      "catalog.item.edit.cta.option.none.help": "Hide the button."
     },
     "fr": {
       "catalog.item.removed": "Article supprimé",
@@ -159,6 +177,7 @@
       "catalog.item.remove": "effacer",
       "catalog.item.remove.confirm": "effacer l'article?",
       "catalog.item.link": "lien",
+      "catalog.item.edit.cta": "modifier CTA",
       "catalog.item.publication.time.label": "Temps de publication:",
       "catalog.item.publish": "publier",
       "catalog.item.unpublish": "annuler la publication",
@@ -166,7 +185,15 @@
       "catalog.item.scheduled": "PROGRAMMÉ",
       "catalog.partition.remove": "effacer",
       "catalog.partition.remove.confirm": "effacer la catégorie?",
-      "catalog.violation.partition.upperbound": "Le nombre maximum d'articles a été atteint"
+      "catalog.violation.partition.upperbound": "Le nombre maximum d'articles a été atteint",
+      "catalog.item.edit.cta.title": "Configurer le bouton call-to-action",
+      "catalog.item.edit.cta.option.default": "Défaut",
+      "catalog.item.edit.cta.option.default.help": "Afficher un bouton \"plus d'info\" qui lien vers le formulaire de contact ou un bouton \"ajouter au panier\" si applicable.",
+      "catalog.item.edit.cta.option.link": "Personnalisable",
+      "catalog.item.edit.cta.option.link.help": "Afficher un bouton avec un lien personnalisé.",
+      "catalog.item.edit.cta.option.link.configure": "Configurer",
+      "catalog.item.edit.cta.option.none": "Cacher",
+      "catalog.item.edit.cta.option.none.help": "Cacher le bouton"
     },
     "de": {
       "catalog.item.removed": "Artikel gelöscht",
@@ -215,6 +242,7 @@
       "catalog.item.remove": "delete",
       "catalog.item.remove.confirm": "delete item?",
       "catalog.item.link": "link",
+      "catalog.item.edit.cta": "edit CTA",
       "catalog.item.publication.time.label": "Publication time:",
       "catalog.item.publish": "veröffentlichen",
       "catalog.item.unpublish": "verbergen",
@@ -222,7 +250,15 @@
       "catalog.item.scheduled": "SCHEDULED",
       "catalog.partition.remove": "delete",
       "catalog.partition.remove.confirm": "delete category?",
-      "catalog.violation.partition.upperbound": "The maximum number of items has been reached"
+      "catalog.violation.partition.upperbound": "The maximum number of items has been reached",
+      "catalog.item.edit.cta.title": "Setup call-to-action button",
+      "catalog.item.edit.cta.option.default": "Default",
+      "catalog.item.edit.cta.option.default.help": "Displays a \"more info\"-button that links to the contact form or an \"add to basket\"-button if applicable.",
+      "catalog.item.edit.cta.option.link": "Custom button",
+      "catalog.item.edit.cta.option.link.help": "Display your own button with a custom link.",
+      "catalog.item.edit.cta.option.link.configure": "Configure",
+      "catalog.item.edit.cta.option.none": "Hide",
+      "catalog.item.edit.cta.option.none.help": "Hide the button."
     }
   }
 }

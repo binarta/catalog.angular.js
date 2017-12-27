@@ -3085,7 +3085,7 @@ describe('catalog', function () {
                 beforeEach(inject(function (config, restServiceHandler) {
                     rest = restServiceHandler;
                     config.baseUri = 'http://host/context/';
-                    $ctrl.moveUp(partitions[2]).finally(function() {
+                    $ctrl.moveUp(partitions[2]).finally(function () {
                         done = true;
                     });
                 }));
@@ -3113,7 +3113,7 @@ describe('catalog', function () {
                         ]);
                     });
 
-                    it('returned promise completes allowed the UI to update', function() {
+                    it('returned promise completes allowed the UI to update', function () {
                         expect(done).toBeTruthy();
                     });
                 });
@@ -3136,7 +3136,7 @@ describe('catalog', function () {
                 beforeEach(inject(function (config, restServiceHandler) {
                     rest = restServiceHandler;
                     config.baseUri = 'http://host/context/';
-                    $ctrl.moveDown(partitions[0]).finally(function() {
+                    $ctrl.moveDown(partitions[0]).finally(function () {
                         done = true;
                     });
                 }));
@@ -3164,7 +3164,7 @@ describe('catalog', function () {
                         ]);
                     });
 
-                    it('returned promise completes allowed the UI to update', function() {
+                    it('returned promise completes allowed the UI to update', function () {
                         expect(done).toBeTruthy();
                     });
                 });
@@ -3187,7 +3187,7 @@ describe('catalog', function () {
                 beforeEach(inject(function (config, restServiceHandler) {
                     rest = restServiceHandler;
                     config.baseUri = 'http://host/context/';
-                    $ctrl.moveTop(partitions[2]).finally(function() {
+                    $ctrl.moveTop(partitions[2]).finally(function () {
                         done = true;
                     });
                 }));
@@ -3215,7 +3215,7 @@ describe('catalog', function () {
                         ]);
                     });
 
-                    it('returned promise completes allowed the UI to update', function() {
+                    it('returned promise completes allowed the UI to update', function () {
                         expect(done).toBeTruthy();
                     });
                 });
@@ -3238,7 +3238,7 @@ describe('catalog', function () {
                 beforeEach(inject(function (config, restServiceHandler) {
                     rest = restServiceHandler;
                     config.baseUri = 'http://host/context/';
-                    $ctrl.moveBottom(partitions[0]).finally(function() {
+                    $ctrl.moveBottom(partitions[0]).finally(function () {
                         done = true;
                     });
                 }));
@@ -3266,7 +3266,7 @@ describe('catalog', function () {
                         ]);
                     });
 
-                    it('returned promise completes allowed the UI to update', function() {
+                    it('returned promise completes allowed the UI to update', function () {
                         expect(done).toBeTruthy();
                     });
                 });
@@ -4694,10 +4694,10 @@ describe('catalog', function () {
     describe('binCatalogItem component', function () {
         var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
         var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock, imageCarousel,
-            moment;
+            moment, i18n, i18nResolveDeferred;
 
         beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, topicRegistryMock,
-                                    editModeRenderer, binLink, updateCatalogItemWriter, binImageCarousel, _moment_) {
+                                    editModeRenderer, binLink, updateCatalogItemWriter, binImageCarousel, _moment_, _i18n_) {
             binarta.checkpoint.gateway.permissions = [];
             binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p', email: 'e'});
             $rootScope = _$rootScope_;
@@ -4717,6 +4717,9 @@ describe('catalog', function () {
             removeMock.and.returnValue(removeDeferred.promise);
             findCatalogItemByIdMock = jasmine.createSpy('spy');
             publisherMock = jasmine.createSpyObj('spy', ['publish', 'unpublish']);
+            i18n = _i18n_;
+            i18nResolveDeferred = $q.defer();
+            i18n.resolve.and.returnValue(i18nResolveDeferred.promise);
             item = {
                 id: 'item-id'
             };
@@ -5502,7 +5505,7 @@ describe('catalog', function () {
                         });
                     });
 
-                    describe('on write success', function () {
+                    describe('on write error', function () {
                         beforeEach(function () {
                             writer.calls.mostRecent().args[0].error();
                         });
@@ -5580,6 +5583,95 @@ describe('catalog', function () {
                         target: $ctrl.item.linkTarget,
                         onSubmit: jasmine.any(Function),
                         onRemove: jasmine.any(Function)
+                    });
+                });
+            });
+
+            describe('on link with remove action disabled', function () {
+                beforeEach(function () {
+                    $ctrl.link({allowRemove: false});
+                });
+
+                it('binLink is opened without onRemove handler', function () {
+                    expect(binLinkMock.open).toHaveBeenCalledWith({
+                        href: $ctrl.item.link,
+                        target: $ctrl.item.linkTarget,
+                        onSubmit: jasmine.any(Function)
+                    });
+                });
+            });
+
+            describe('on link with i18nCode', function () {
+                beforeEach(function () {
+                    $ctrl.link({
+                        i18nCode: 'code'
+                    });
+                });
+
+                it('binLink is not opened yet', function () {
+                    expect(binLinkMock.open).not.toHaveBeenCalled();
+                });
+
+                it('i18n value is resolved', function () {
+                    expect(i18n.resolve).toHaveBeenCalledWith({code: 'code'});
+                });
+
+                describe('on i18n value resolved', function () {
+                    beforeEach(function () {
+                        i18nResolveDeferred.resolve('t');
+                        $rootScope.$digest();
+                    });
+
+                    it('binLink is opened with text params', function () {
+                        expect(binLinkMock.open).toHaveBeenCalledWith({
+                            text: 't',
+                            allowText: true,
+                            href: $ctrl.item.link,
+                            target: $ctrl.item.linkTarget,
+                            onSubmit: jasmine.any(Function),
+                            onRemove: jasmine.any(Function)
+                        });
+                    });
+
+                    describe('onSubmit callback', function () {
+                        var link, target, text, successSpy, errorSpy;
+
+                        beforeEach(function () {
+                            link = 'link';
+                            target = '_blank';
+                            text = 'text';
+                            successSpy = jasmine.createSpy('spy');
+                            errorSpy = jasmine.createSpy('spy');
+                            binLinkMock.open.calls.mostRecent().args[0].onSubmit({
+                                href: link,
+                                target: target,
+                                text: text,
+                                success: successSpy,
+                                error: errorSpy
+                            });
+                        });
+
+                        it('writer is called', function () {
+                            expect(writer).toHaveBeenCalledWith({
+                                data: {
+                                    treatInputAsId: false,
+                                    context: 'update',
+                                    id: $ctrl.item.id,
+                                    type: $ctrl.item.type,
+                                    link: link,
+                                    linkTarget: target
+                                },
+                                success: jasmine.any(Function),
+                                error: jasmine.any(Function)
+                            });
+                        });
+
+                        it('text is updated', function () {
+                            expect(i18n.translate).toHaveBeenCalledWith({
+                                code: 'code',
+                                translation: 'text'
+                            })
+                        });
                     });
                 });
             });
@@ -5734,34 +5826,34 @@ describe('catalog', function () {
     });
 
     describe('binCatalogItemCta', function () {
-        var $ctrl, i18n, i18nDeferred, item, binSections;
+        var $ctrl, $element, i18n, i18nDeferred, item, binSections, renderer;
 
-        beforeEach(inject(function ($q, $componentController, _binSections_) {
+        beforeEach(inject(function ($q, $componentController, _binSections_, editModeRenderer) {
             i18n = jasmine.createSpyObj('i18n', ['resolve']);
             i18nDeferred = $q.defer();
             i18n.resolve.and.returnValue(i18nDeferred.promise);
+            $element = {};
             binSections = _binSections_;
+            renderer = editModeRenderer;
             item = {id: 'itemId'};
-            $ctrl = $componentController('binCatalogItemCta', {i18n: i18n}, {item: item});
+            $ctrl = $componentController('binCatalogItemCta', {i18n: i18n, $element: $element}, {item: item});
+            $ctrl.itemCtrl = {
+                installEditAction: jasmine.createSpy('installAction'),
+                update: jasmine.createSpy('update'),
+                link: jasmine.createSpy('link')
+            };
             $ctrl.$onInit();
         }));
 
-        it('initial contact path', function () {
-            expect($ctrl.contactPath).toEqual('/contact');
-        });
+        describe('when item is purchasable but the price is zero', function () {
+            beforeEach(function () {
+                $ctrl.item.price = 0;
+                $ctrl.purchasable = 'true';
+            });
 
-        it('has no price', function () {
-            expect($ctrl.hasPrice()).toBeFalsy();
-        });
-
-        it('when price is zero', function () {
-            $ctrl.item.price = 0;
-            expect($ctrl.hasPrice()).toBeFalsy();
-        });
-
-        it('when price is greater than zero', function () {
-            $ctrl.item.price = 1;
-            expect($ctrl.hasPrice()).toBeTruthy();
+            it('item is not purchasable', function () {
+                expect($ctrl.isPurchasable()).toBeFalsy();
+            });
         });
 
         describe('with price', function () {
@@ -5780,39 +5872,93 @@ describe('catalog', function () {
             });
         });
 
-        it('when contact section is not active', function () {
-            binSections.isActive.and.returnValue(false);
-            var actual = $ctrl.isContactActive();
-            expect(binSections.isActive).toHaveBeenCalledWith('contact');
-            expect(actual).toBeFalsy();
+        it('i18n code is available', function () {
+            expect($ctrl.i18nCode).toEqual('itemId.cta');
         });
 
-        describe('when contact section is active', function () {
+        it('edit action is installed on item component', function () {
+            expect($ctrl.itemCtrl.installEditAction).toHaveBeenCalledWith({
+                action: jasmine.any(Function),
+                iconClass: 'fa-bullhorn',
+                i18nCode: 'catalog.item.edit.cta'
+            });
+        });
+
+        describe('on edit', function () {
             beforeEach(function () {
-                binSections.isActive.and.returnValue(true);
-                $ctrl.$onInit();
+                $ctrl.itemCtrl.installEditAction.calls.mostRecent().args[0].action();
             });
 
-            it('contact is active', function () {
-                expect($ctrl.isContactActive()).toBeTruthy();
-            });
-
-            it('catalog name and subject prefix are requested', function () {
-                expect(i18n.resolve).toHaveBeenCalledWith({code: item.id});
-                expect(i18n.resolve).toHaveBeenCalledWith({
-                    code: 'catalog.item.more.info.about.button',
-                    default: 'More info about'
+            it('edit-mode renderer is opened', function () {
+                expect(renderer.open).toHaveBeenCalledWith({
+                    templateUrl: 'bin-catalog-item-cta-edit.html',
+                    scope: jasmine.any(Object)
                 });
             });
 
-            describe('when i18n values are resolved', function () {
+            describe('with renderer scope', function () {
+                var scope;
+
                 beforeEach(function () {
-                    i18nDeferred.resolve('t');
-                    $rootScope.$digest();
+                    scope = renderer.open.calls.mostRecent().args[0].scope;
                 });
 
-                it('contact path is updated', function () {
-                    expect($ctrl.contactPath).toEqual('/contact?subject=t t');
+                it('cta is available and falls back to "default"', function () {
+                    expect(scope.cta).toEqual('default');
+                });
+
+                it('on close', function () {
+                    scope.close();
+                    expect(renderer.close).toHaveBeenCalled();
+                });
+
+                describe('on submit', function () {
+                    beforeEach(function () {
+                        scope.cta = 'none';
+                        scope.submit();
+                    });
+
+                    it('update is called', function () {
+                        expect($ctrl.itemCtrl.update).toHaveBeenCalledWith({
+                            key: 'cta',
+                            value: 'none'
+                        }, {
+                            success: jasmine.any(Function),
+                            error: jasmine.any(Function)
+                        });
+                    });
+                });
+
+                describe('on configureLink', function () {
+                    beforeEach(function () {
+                        scope.configureLink();
+                    });
+
+                    it('link is called', function () {
+                        expect($ctrl.itemCtrl.link).toHaveBeenCalledWith({
+                            i18nCode: 'itemId.cta',
+                            allowRemove: false
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('when cta is set to "link"', function () {
+            beforeEach(function () {
+                item.cta = 'link';
+            });
+
+            describe('on edit', function () {
+                var scope;
+
+                beforeEach(function () {
+                    $ctrl.itemCtrl.installEditAction.calls.mostRecent().args[0].action();
+                    scope = renderer.open.calls.mostRecent().args[0].scope;
+                });
+
+                it('cta is available', function () {
+                    expect(scope.cta).toEqual('link');
                 });
             });
         });
