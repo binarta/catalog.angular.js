@@ -979,6 +979,7 @@ function BinCatalogListComponent() {
         type: '@',
         partition: '@',
         recursivelyByPartition: '@',
+        oneLevelPartition: '@',
         count: '@'
     };
 
@@ -1021,6 +1022,7 @@ function BinCatalogListComponent() {
             var filters = {type: $ctrl.type};
             if ($ctrl.partition) {
                 if ($ctrl.recursivelyByPartition === 'true') filters.recursivelyByPartition = $ctrl.partition;
+                else if ($ctrl.oneLevelPartition === 'true') filters.oneLevelPartition = $ctrl.partition;
                 else filters.partition = $ctrl.partition;
             }
             var ctx = {
@@ -1028,6 +1030,7 @@ function BinCatalogListComponent() {
                 entity: 'catalog-item',
                 filters: filters,
                 sortings: [
+                    {on: 'partitionPriority', orientation: 'asc'},
                     {on: 'partition', orientation: 'asc'},
                     {on: 'priority', orientation: 'desc'}
                 ],

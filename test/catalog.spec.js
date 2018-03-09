@@ -2636,6 +2636,9 @@ describe('catalog', function () {
                         type: type
                     },
                     sortings: [{
+                        on: 'partitionPriority',
+                        orientation: 'asc'
+                    }, {
                         on: 'partition',
                         orientation: 'asc'
                     }, {
@@ -2791,6 +2794,9 @@ describe('catalog', function () {
                         partition: partition
                     },
                     sortings: [{
+                        on: 'partitionPriority',
+                        orientation: 'asc'
+                    }, {
                         on: 'partition',
                         orientation: 'asc'
                     }, {
@@ -2823,6 +2829,24 @@ describe('catalog', function () {
                 expect(search.calls.mostRecent().args[0].filters).toEqual({
                     type: type,
                     recursivelyByPartition: partition
+                });
+            });
+        });
+        
+        describe('when requesting partitions for one level', function () {
+            beforeEach(function () {
+                $ctrl = $componentController('binCatalogList', null, {
+                    type: type,
+                    partition: partition,
+                    oneLevelPartition: 'true'
+                });
+                $ctrl.$onInit();
+            });
+
+            it('items are requested', function () {
+                expect(search.calls.mostRecent().args[0].filters).toEqual({
+                    type: type,
+                    oneLevelPartition: partition
                 });
             });
         });
@@ -2864,6 +2888,9 @@ describe('catalog', function () {
                     },
                     q: searchParam,
                     sortings: [{
+                        on: 'partitionPriority',
+                        orientation: 'asc'
+                    }, {
                         on: 'partition',
                         orientation: 'asc'
                     }, {
