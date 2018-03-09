@@ -132,7 +132,7 @@ describe('catalog', function () {
             usecase({query: 'query-name', filters: {owner: 'owner-id'}, success: onSuccess});
             $httpBackend.flush();
             expect(receivedPayload).toEqual(payload);
-        })
+        });
     });
 
     describe('findCatalogItemById', function () {
@@ -296,7 +296,7 @@ describe('catalog', function () {
             it('items get added to items array', function () {
                 scope.decorator({id: 'I'});
                 expect(scope.items).toEqual([{id: 'I'}]);
-            })
+            });
         });
 
         describe('exposes filters customizer', function () {
@@ -306,7 +306,7 @@ describe('catalog', function () {
             var promiseWasResolved = false;
 
             beforeEach(function () {
-                promise = scope.filtersCustomizer({filters: filters, subset: subset})
+                promise = scope.filtersCustomizer({filters: filters, subset: subset});
             });
 
             it('subset is copied onto filters', function () {
@@ -317,7 +317,7 @@ describe('catalog', function () {
                 expect(filters.offset).toEqual(subset.offset);
                 expect(filters.count).toEqual(subset.count);
                 expect(promiseWasResolved).toBeTruthy();
-            })
+            });
         });
 
         it('does not subscribe to app.start notifications at construction time', function () {
@@ -620,7 +620,7 @@ describe('catalog', function () {
                                             name: 'name'
                                         };
                                         subscribers['catalog.partition.added'](partition);
-                                    }
+                                    };
                                 }
 
                                 beforeEach(function () {
@@ -687,7 +687,7 @@ describe('catalog', function () {
                 $scope: scope,
                 scopedRestServiceHandler: rest.service,
                 topicMessageDispatcher: dispatcher
-            })
+            });
         }));
 
         describe('on init', function () {
@@ -1134,7 +1134,7 @@ describe('catalog', function () {
         });
 
         it('on success then registered success handler gets executed', function () {
-            var successWasCalled = undefined;
+            var successWasCalled;
             var item = {};
             subscriptions['app.start']();
             itemTypesLoaded();
@@ -1195,7 +1195,7 @@ describe('catalog', function () {
             }));
 
             it('expose owner', function () {
-                scope.owner = 'owner'
+                scope.owner = 'owner';
             });
 
             it('flag redirect on submit', function () {
@@ -1567,7 +1567,7 @@ describe('catalog', function () {
                 scope.watches[expression] = callback;
                 return function () {
                     unbindWatchCalled = true;
-                }
+                };
             };
             scope.watches = [];
             ctrl = $controller(UpdateCatalogItemController, {
@@ -1608,7 +1608,7 @@ describe('catalog', function () {
             describe('and item change watch has triggered', function () {
                 describe('and item did not change', function () {
                     beforeEach(function () {
-                        scope.watches['item']();
+                        scope.watches.item();
                     });
 
                     it('changed state should be false', function () {
@@ -1618,7 +1618,7 @@ describe('catalog', function () {
 
                 describe('and item changed', function () {
                     beforeEach(function () {
-                        scope.watches['item'](item, {});
+                        scope.watches.item(item, {});
                     });
 
                     it('changed state should be true', function () {
@@ -1678,7 +1678,7 @@ describe('catalog', function () {
                         beforeEach(function () {
                             scope.init(item, {
                                 success: function (args) {
-                                    updatedItem = args
+                                    updatedItem = args;
                                 }
                             });
                             writer.success();
@@ -1831,7 +1831,7 @@ describe('catalog', function () {
             describe('with a registered decorator', function () {
                 it('test', function () {
                     expect(decorator({context: 'context'}).decorated).toBeTruthy();
-                })
+                });
             });
         });
     });
@@ -1894,7 +1894,7 @@ describe('catalog', function () {
                 args.data.id = {id: 'I'};
                 writer.success();
                 expect(dispatcher['catalog.item.updated']).toEqual({id: 'I'});
-            })
+            });
         });
 
         describe('when success notification is disabled', function () {
@@ -1942,7 +1942,7 @@ describe('catalog', function () {
                 success: function () {
                     isSuccess = true;
                 }
-            }
+            };
         }));
 
         function request() {
@@ -1980,7 +1980,7 @@ describe('catalog', function () {
                 it('catalog.item.pinned events are fired', inject(function (topicMessageDispatcherMock) {
                     expect(topicMessageDispatcherMock['catalog.item.pinned']).toEqual(ctx.item);
                     expect(topicMessageDispatcherMock['catalog.item.pinned.' + ctx.item.id]).toEqual(ctx.item);
-                }))
+                }));
             });
         });
 
@@ -2015,7 +2015,7 @@ describe('catalog', function () {
                 it('catalog.item.unpinned events are fired', inject(function (topicMessageDispatcherMock) {
                     expect(topicMessageDispatcherMock['catalog.item.unpinned']).toEqual(ctx.item);
                     expect(topicMessageDispatcherMock['catalog.item.unpinned.' + ctx.item.id]).toEqual(ctx.item);
-                }))
+                }));
             });
         });
     });
@@ -2063,7 +2063,7 @@ describe('catalog', function () {
 
                 it('then editing flag is updated', function () {
                     expect(component.editing).toBe(true);
-                })
+                });
             });
 
             describe('and scheduled action was executed', function () {
@@ -2244,7 +2244,7 @@ describe('catalog', function () {
 
                 it('then editing flag is updated', function () {
                     expect($ctrl.editing).toBe(true);
-                })
+                });
             });
 
             it('search is executed', function () {
@@ -2323,7 +2323,7 @@ describe('catalog', function () {
                 search.calls.argsFor(0)[0].success({
                     hasMore: true,
                     results: items
-                })
+                });
             });
 
             it('search for more is always true', function () {
@@ -2349,7 +2349,7 @@ describe('catalog', function () {
                 }));
 
                 it('item is added to the list', function () {
-                    expect($ctrl.results[2]).toEqual({id: 3, type: 'type'})
+                    expect($ctrl.results[2]).toEqual({id: 3, type: 'type'});
                 });
 
                 it('and increase item count by 1 on parent', function () {
@@ -4811,7 +4811,7 @@ describe('catalog', function () {
                     });
 
                     it('value on item is updated', function () {
-                        expect($ctrl.item['customKey']).toEqual('customValue');
+                        expect($ctrl.item.customKey).toEqual('customValue');
                     });
 
                     it('success handler is executed', function () {
@@ -5341,7 +5341,7 @@ describe('catalog', function () {
 
                     it('the item is flagged as pinned', function () {
                         expect($ctrl.item.pinned).toBeTruthy();
-                    })
+                    });
                 });
             });
 
@@ -5367,7 +5367,7 @@ describe('catalog', function () {
 
                     it('the item is flagged as not pinned', function () {
                         expect($ctrl.item.pinned).toBe(false);
-                    })
+                    });
                 });
             });
         });
@@ -5670,7 +5670,7 @@ describe('catalog', function () {
                             expect(i18n.translate).toHaveBeenCalledWith({
                                 code: 'code',
                                 translation: 'text'
-                            })
+                            });
                         });
                     });
                 });
@@ -6105,5 +6105,5 @@ angular.module('test.app', ['catalog']).config(['catalogItemUpdatedDecoratorProv
     catalogItemUpdatedDecoratorProvider.add('context', function (args) {
         args.decorated = true;
         return args;
-    })
+    });
 }]);

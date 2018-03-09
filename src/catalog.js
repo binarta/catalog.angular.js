@@ -49,7 +49,7 @@ angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular
     .config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {
         catalogItemUpdatedDecoratorProvider.add('updatePriority', function (args) {
             return args.id;
-        })
+        });
     }])
     .config(['$routeProvider', 'catalogPathLimit', function ($routeProvider, catalogPathLimit) {
         for (var i = 0; i <= catalogPathLimit; i++) {
@@ -84,7 +84,7 @@ function FindCatalogPartitionsFactory(config, $http) {
             if (args.subset) ctx.subset = args.subset;
             $http.post((config.baseUri || '') + 'api/query/catalog-partition/' + args.query, {args: ctx}).error(onError).success(onSuccess);
         }
-    }
+    };
 }
 
 function FindCatalogItemByIdFactory($q, config, restServiceHandler, binarta) {
@@ -103,13 +103,13 @@ function FindCatalogItemByIdFactory($q, config, restServiceHandler, binarta) {
                     withCredentials: true
                 },
                 error: function () {
-                    onSuccess([])
+                    onSuccess([]);
                 },
                 success: onSuccess
             }).then(deferred.resolve, deferred.reject);
         });
         return deferred.promise;
-    }
+    };
 }
 
 function FindCatalogItemsByPartitionFactory(config, restServiceHandler) {
@@ -124,11 +124,11 @@ function FindCatalogItemsByPartitionFactory(config, restServiceHandler) {
                 withCredentials: true
             },
             error: function () {
-                args.success([])
+                args.success([]);
             },
             success: args.success
         });
-    }
+    };
 }
 
 function CatalogPathProcessorFactory() {
@@ -175,7 +175,7 @@ function CatalogPathProcessorFactory() {
             breadcrumbs: toBreadcrumbs(parts, type),
             parent: toParent(parts)
         };
-    }
+    };
 }
 
 function CatalogPathParserFactory(catalogPathProcessor, catalogPathLimit) {
@@ -190,7 +190,7 @@ function CatalogPathParserFactory(catalogPathProcessor, catalogPathLimit) {
     return function (params, type) {
         var path = toPath(params);
         return catalogPathProcessor(path, type);
-    }
+    };
 }
 
 function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItemsByPartition, findCatalogItemById, topicMessageDispatcher, $q) {
@@ -255,7 +255,7 @@ function QueryCatalogController($scope, ngRegisterTopicHandler, findCatalogItems
             from.priority = evt.priority;
 
             $scope.items.sort(function (x, y) {
-                return x.priority - y.priority
+                return x.priority - y.priority;
             });
         });
     };
@@ -284,7 +284,7 @@ function ListCatalogPartitionsController($scope, findCatalogPartitions, ngRegist
         var args;
 
         if (query && partition) {
-            args = {query: query, owner: partition}
+            args = {query: query, owner: partition};
         } else {
             args = query;
         }
@@ -363,13 +363,13 @@ function RemoveCatalogPartitionController(config, $scope, $location, scopedRestS
                 if (redirectPath) $location.path(redirectPath);
             }
         });
-    }
+    };
 }
 
 function FindAllCatalogItemTypesFactory(config, $http) {
     return function (onSuccess) {
         $http.post((config.baseUri || '') + 'api/query/catalog-item-type').success(onSuccess);
-    }
+    };
 }
 
 function AddCatalogItemFactory($location, config, localeResolver, restServiceHandler, topicMessageDispatcher, i18nLocation, editMode) {
@@ -393,7 +393,7 @@ function AddCatalogItemFactory($location, config, localeResolver, restServiceHan
             },
             rejected: args.rejected
         });
-    }
+    };
 }
 
 function RemoveCatalogItemFactory(config, restServiceHandler) {
@@ -428,7 +428,7 @@ function AddCatalogPartitionFactory(config, restServiceHandler) {
                 if (args.rejected) args.rejected(violations);
             }
         });
-    }
+    };
 }
 
 function RemoveCatalogPartitionFactory(config, restServiceHandler) {
@@ -509,7 +509,7 @@ function AddToCatalogController($scope, $routeParams, topicRegistry, findAllCata
     }
 
     function executeSuccessHandler(item) {
-        $scope.config.success(item)
+        $scope.config.success(item);
     }
 
     topicRegistry.subscribe('app.start', function () {
@@ -578,7 +578,7 @@ function RemoveItemFromCatalogController(config, $scope, i18nLocation, catalogPa
     }
 
     function executeSuccessHandler() {
-        self.config.success()
+        self.config.success();
     }
 
     function toParent(current) {
@@ -606,7 +606,7 @@ function RemoveItemFromCatalogController(config, $scope, i18nLocation, catalogPa
                 if (isSuccessHandlerPresent()) executeSuccessHandler();
             }
         });
-    }
+    };
 }
 
 function UpdateCatalogItemController(config, $scope, updateCatalogItem, usecaseAdapterFactory, topicMessageDispatcher, findCatalogItemById) {
@@ -686,9 +686,9 @@ function CatalogItemUpdatedDecoratorsFactory() {
         $get: function () {
             return function (args) {
                 return decorators[args.context] ? decorators[args.context](args) : defaultDecorator(args);
-            }
+            };
         }
-    }
+    };
 }
 
 function UpdateCatalogItemFactory(updateCatalogItemWriter, topicMessageDispatcher, catalogItemUpdatedDecorator) {
@@ -722,7 +722,7 @@ function ItemPinnerFactory(topics, rest, config) {
                 headers: {usecase: usecase},
                 payload: {id: ctx.item.id}
             }
-        }
+        };
     }
 
     function sucessAndFireTopic(topic, ctx) {
@@ -730,7 +730,7 @@ function ItemPinnerFactory(topics, rest, config) {
             topics.fire(topic, ctx.item);
             topics.fire(topic + '.' + ctx.item.id, ctx.item);
             if (ctx.success) ctx.success(payload);
-        }
+        };
     }
 
     return {
@@ -746,7 +746,7 @@ function ItemPinnerFactory(topics, rest, config) {
                 success: sucessAndFireTopic('catalog.item.unpinned', ctx)
             });
         }
-    }
+    };
 }
 
 function BinSpotlightComponent() {
@@ -1411,7 +1411,7 @@ function BinCatalogPartitionDescriptionComponent() {
             topicRegistry.subscribe('edit.mode', editModeListener);
             $ctrl.$onDestroy = function () {
                 topicRegistry.unsubscribe('edit.mode', editModeListener);
-            }
+            };
         };
 
         function editModeListener(e) {
@@ -1704,7 +1704,7 @@ function BinCatalogItemsComponent() {
 
             $ctrl.$onDestroy = function () {
                 topicRegistry.unsubscribe('edit.mode', editModeListener);
-            }
+            };
         };
 
         function editModeListener(e) {
@@ -1845,10 +1845,11 @@ function BinCatalogItemAddComponent() {
 
                 function onRejected(violations) {
                     for (var key in violations) {
-                        angular.forEach(violations[key], function (v) {
+                        for (var i = 0; i < violations[key].length; i++) {
+                            var v = violations[key][i];
                             var code = 'catalog.violation.' + key + '.' + v;
                             topicMessageDispatcher.fire('system.warning', {code: code, default: v});
-                        });
+                        }
                     }
                 }
             };

@@ -2,6 +2,15 @@ module.exports = function(config) {
     config.set({
         basePath:'../',
         frameworks:['jasmine'],
+        plugins: [
+            require('karma-jasmine'),
+            require('karma-phantomjs-launcher'),
+            require('karma-jasmine-html-reporter'),
+            require('karma-spec-reporter')
+        ],
+        client:{
+            clearContext: false // leave Jasmine Spec Runner output visible in browser
+        },
         files:[
             {pattern:'bower_components/moment/moment.js'},
             {pattern:'bower_components/angular/angular.js'},
@@ -25,6 +34,16 @@ module.exports = function(config) {
             {pattern:'src/**/*.js'},
             {pattern:'test/**/*.js'}
         ],
-        browsers:['PhantomJS']
+        reporters: ['kjhtml', 'spec'],
+        specReporter: {
+            suppressPassed: true,      // do not print information about passed tests
+            suppressSkipped: true      // do not print information about skipped tests
+        },
+        port: 9876,
+        colors: true,
+        logLevel: config.LOG_INFO,
+        autoWatch: true,
+        browsers:['PhantomJS'],
+        singleRun: false
     });
 };
