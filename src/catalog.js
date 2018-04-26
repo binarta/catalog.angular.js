@@ -1020,20 +1020,22 @@ function BinCatalogListComponent() {
             if (working) return;
             working = true;
             var filters = {type: $ctrl.type};
+            var sortings = [
+                {on: 'partition', orientation: 'asc'},
+                {on: 'priority', orientation: 'desc'}
+            ];
             if ($ctrl.partition) {
                 if ($ctrl.recursivelyByPartition === 'true') filters.recursivelyByPartition = $ctrl.partition;
-                else if ($ctrl.oneLevelPartition === 'true') filters.oneLevelPartition = $ctrl.partition;
-                else filters.partition = $ctrl.partition;
+                else if ($ctrl.oneLevelPartition === 'true') {
+                    filters.oneLevelPartition = $ctrl.partition;
+                    sortings.unshift({on: 'partitionPriority', orientation: 'asc'});
+                } else filters.partition = $ctrl.partition;
             }
             var ctx = {
                 action: 'search',
                 entity: 'catalog-item',
                 filters: filters,
-                sortings: [
-                    {on: 'partitionPriority', orientation: 'asc'},
-                    {on: 'partition', orientation: 'asc'},
-                    {on: 'priority', orientation: 'desc'}
-                ],
+                sortings: sortings,
                 subset: {count: count, offset: offset},
                 includeCarouselItems: true,
                 complexResult: true,
@@ -2379,8 +2381,10 @@ function BinCatalogItemCta() {
                         key: 'cta',
                         value: rendererScope.cta
                     }, {
-                        success: function () {},
-                        error: function () {}
+                        success: function () {
+                        },
+                        error: function () {
+                        }
                     });
                 };
 

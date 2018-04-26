@@ -2636,9 +2636,6 @@ describe('catalog', function () {
                         type: type
                     },
                     sortings: [{
-                        on: 'partitionPriority',
-                        orientation: 'asc'
-                    }, {
                         on: 'partition',
                         orientation: 'asc'
                     }, {
@@ -2794,9 +2791,6 @@ describe('catalog', function () {
                         partition: partition
                     },
                     sortings: [{
-                        on: 'partitionPriority',
-                        orientation: 'asc'
-                    }, {
                         on: 'partition',
                         orientation: 'asc'
                     }, {
@@ -2843,11 +2837,24 @@ describe('catalog', function () {
                 $ctrl.$onInit();
             });
 
-            it('items are requested', function () {
+            it('oneLevelPartition filter is applied', function () {
                 expect(search.calls.mostRecent().args[0].filters).toEqual({
                     type: type,
                     oneLevelPartition: partition
                 });
+            });
+
+            it('partitionPriority sorting is used', function () {
+                expect(search.calls.mostRecent().args[0].sortings).toEqual([{
+                    on: 'partitionPriority',
+                    orientation: 'asc'
+                }, {
+                    on: 'partition',
+                    orientation: 'asc'
+                }, {
+                    on: 'priority',
+                    orientation: 'desc'
+                }]);
             });
         });
 
@@ -2888,9 +2895,6 @@ describe('catalog', function () {
                     },
                     q: searchParam,
                     sortings: [{
-                        on: 'partitionPriority',
-                        orientation: 'asc'
-                    }, {
                         on: 'partition',
                         orientation: 'asc'
                     }, {
