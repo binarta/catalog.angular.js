@@ -1528,7 +1528,8 @@ function BinCatalogSearchComponent() {
     }];
 
     this.bindings = {
-        type: '@'
+        type: '@',
+        static: '@',
     };
 
     this.require = {
@@ -1540,6 +1541,7 @@ function BinCatalogSearchComponent() {
         var $ctrl = this, isFocused, fadeDuration = 150, input;
 
         $ctrl.$onInit = function () {
+            $ctrl.static = $ctrl.static === 'true';
             $ctrl.q = $location.search().q;
             if (!$ctrl.type && $ctrl.listCtrl) $ctrl.type = $ctrl.listCtrl.type;
             if (!$ctrl.type && $ctrl.detailsCtrl) $ctrl.type = $ctrl.detailsCtrl.type;
@@ -1559,7 +1561,7 @@ function BinCatalogSearchComponent() {
 
         $ctrl.$postLink = function () {
             input = $element.find('input');
-            if (input) bindInputEvents();
+            if (input && !$ctrl.static) bindInputEvents();
         };
 
         function focus() {
