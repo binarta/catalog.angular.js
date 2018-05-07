@@ -3988,6 +3988,27 @@ describe('catalog', function () {
                 });
             });
         });
+
+        describe('with static property', function () {
+            beforeEach(function () {
+                $ctrl.static = 'true';
+                elementSpy.find.and.returnValue(inputSpy);
+                $ctrl.$onInit();
+                $ctrl.$postLink();
+            });
+
+            it('should have boolean value of true on $ctrl when element has a string property of true', function() {
+                expect($ctrl.static).toBe(true);
+            });
+
+            it('should not bind focus event', function () {
+                expect(inputSpy.bind).not.toHaveBeenCalledWith('focus', jasmine.any(Function));
+            });
+
+            it('should not bind blur event', function () {
+                expect(inputSpy.bind).not.toHaveBeenCalledWith('blur', jasmine.any(Function));
+            });
+        });
     });
 
     describe('binCatalogItemGroups component', function () {
