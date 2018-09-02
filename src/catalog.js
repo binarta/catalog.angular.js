@@ -2504,7 +2504,7 @@ function BinCatalogItemRequestInfoButton() {
 
         $ctrl.$onInit = function () {
             $ctrl.contactPath = '/contact';
-            $ctrl.buttonClass = $ctrl.buttonClass || 'btn btn-success';
+            $ctrl.buttonClass = $ctrl.buttonClass || 'btn btn-primary';
 
             $ctrl.isContactActive = function () {
                 return sections.isActive('contact');

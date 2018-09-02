@@ -6128,7 +6128,7 @@ describe('catalog', function () {
         }));
 
         it('check default button class', function () {
-            expect($ctrl.buttonClass).toEqual('btn btn-success');
+            expect($ctrl.buttonClass).toEqual('btn btn-primary');
         });
 
         it('check if contact section is active', function () {

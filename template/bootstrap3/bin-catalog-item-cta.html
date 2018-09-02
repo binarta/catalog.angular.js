@@ -1,7 +1,7 @@
 <span ng-switch on="$ctrl.item.cta">
     <span ng-switch-when="none"></span>
     <span ng-switch-when="link">
-        <a ng-href="{{$ctrl.item.link}}" target="{{$ctrl.item.linkTarget}}" class="btn btn-success"
+        <a ng-href="{{$ctrl.item.link}}" target="{{$ctrl.item.linkTarget}}" class="btn btn-primary"
            i18n code="{{::$ctrl.i18nCode}}" default="Info" read-only ng-bind="var">
         </a>
     </span>
