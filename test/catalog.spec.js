@@ -2447,6 +2447,7 @@ describe('catalog', function () {
             var scope;
 
             beforeEach(function () {
+                moment.freeze();
                 currentTime = moment();
                 sut.publish(item);
                 scope = editModeRendererMock.open.calls.mostRecent().args[0].scope;
@@ -2469,6 +2470,7 @@ describe('catalog', function () {
                 var newTime = 'May 31, 2016 10:00 AM', newTimeFormatted;
 
                 beforeEach(function () {
+                    moment.unfreeze();
                     newTimeFormatted = moment(newTime, 'lll').format();
                     scope.publicationTime = newTime;
                     scope.submit();
