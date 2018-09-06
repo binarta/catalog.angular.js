@@ -2496,7 +2496,7 @@ function BinCatalogItemRequestInfoButton() {
     };
 
     this.require = {
-        detailsCtrl: '^^binCatalogDetails'
+        detailsCtrl: '?^^binCatalogDetails'
     };
 
     this.controller = ['$q', 'i18n', 'binSections', 'binScrollTo', function ($q, i18n, sections, scrollTo) {
@@ -2511,7 +2511,7 @@ function BinCatalogItemRequestInfoButton() {
             };
 
             $ctrl.isRequestInfoFormRegistered = function () {
-                return $ctrl.detailsCtrl.isComponentRegistered('requestInfoForm');
+                return $ctrl.detailsCtrl && $ctrl.detailsCtrl.isComponentRegistered('requestInfoForm');
             };
 
             $ctrl.scrollToForm = function () {

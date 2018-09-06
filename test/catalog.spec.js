@@ -6152,6 +6152,17 @@ describe('catalog', function () {
             $ctrl.scrollToForm();
             expect(scrollTo).toHaveBeenCalledWith('bin-catalog-item-request-info-form');
         });
+
+        describe('when detailsCtrl is not given', function () {
+            beforeEach(function () {
+                $ctrl.detailsCtrl = undefined;
+                $ctrl.$onInit();
+            });
+
+            it('check if request info form is registered', function () {
+                expect($ctrl.isRequestInfoFormRegistered()).toBeFalsy();
+            });
+        });
     });
 });
 
