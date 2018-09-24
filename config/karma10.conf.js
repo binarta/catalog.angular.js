@@ -31,6 +31,7 @@ module.exports = function(config) {
             {pattern:'bower_components/thk-config-mock/src/config.mock.js'},
             {pattern:'bower_components/thk-notifications-mock/src/notifications.mock.js'},
             {pattern:'bower_components/thk-web-storage-mock/src/web.storage.mock.js'},
+            {pattern:'bower_components/binartajs-angular1/src/binarta-all-tpls-bootstrap3-angular1.js'},
             {pattern:'src/**/*.js'},
             {pattern:'test/**/*.js'}
         ],
