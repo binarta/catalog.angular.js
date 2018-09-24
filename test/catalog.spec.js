@@ -3791,6 +3791,46 @@ describe('catalog', function () {
                 ]);
             });
         });
+
+        describe('when home should be included', function () {
+            beforeEach(function () {
+                $ctrl.includeHome = 'true';
+                $ctrl.partition = '/p/';
+                $ctrl.item = '/p/item';
+                $ctrl.$onChanges();
+            });
+
+            it('back link is available', function () {
+                expect($ctrl.back).toEqual({id: 'navigation.label.p', path: '/browse/p/'});
+            });
+
+            it('breadcrumb is available', function () {
+                expect($ctrl.breadcrumb).toEqual([
+                    {id: 'navigation.label.home', path: '/'},
+                    {id: 'navigation.label.p', path: '/browse/p/'},
+                    {id: '/p/item'}
+                ]);
+            });
+
+            describe('when on parent', function () {
+                beforeEach(function () {
+                    $ctrl.partition = '/';
+                    $ctrl.item = '/p/';
+                    $ctrl.$onChanges();
+                });
+
+                it('back link is available', function () {
+                    expect($ctrl.back).toEqual({id: 'navigation.label.home', path: '/'});
+                });
+
+                it('breadcrumb is updated', function () {
+                    expect($ctrl.breadcrumb).toEqual([
+                        {id: 'navigation.label.home', path: '/'},
+                        {id: 'navigation.label.p'}
+                    ]);
+                });
+            });
+        });
     });
 
     describe('binCatalogSearch component', function () {

@@ -1,16 +1,20 @@
 {
   "msgs": {
     "nl": {
-      "catalog.spotlight.most.recent.title": "Meest recente"
+      "catalog.spotlight.most.recent.title": "Meest recente",
+      "navigation.label.home":"Home"
     },
     "en": {
-      "catalog.spotlight.most.recent.title": "Most recent"
+      "catalog.spotlight.most.recent.title": "Most recent",
+      "navigation.label.home":"Home"
     },
     "fr": {
-      "catalog.spotlight.most.recent.title": "Le plus récent"
+      "catalog.spotlight.most.recent.title": "Le plus récent",
+      "navigation.label.home":"Accueil"
     },
     "de": {
-      "catalog.spotlight.most.recent.title": "Neueste"
+      "catalog.spotlight.most.recent.title": "Neueste",
+      "navigation.label.home":"Home"
     }
   }
 }

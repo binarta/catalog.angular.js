@@ -1432,7 +1432,8 @@ function BinCatalogBreadcrumbComponent() {
 
     this.bindings = {
         partition: '<',
-        item: '<'
+        item: '<',
+        includeHome: '@'
     };
 
     this.require = {
@@ -1472,6 +1473,8 @@ function BinCatalogBreadcrumbComponent() {
             breadcrumb.push({id: breadcrumb.length === 0 ? toFirstItemId($ctrl.item) : $ctrl.item});
             if (isSingleItemAndNotOnBrowsePath()) setBrowsePathOnFirstItem();
             if (isBlogPath()) updateBlogPathForFirstItem();
+            if ($ctrl.includeHome === 'true') breadcrumb.unshift({id: 'navigation.label.home', path: '/'});
+            
             $ctrl.breadcrumb = breadcrumb;
         }
 
