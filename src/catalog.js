@@ -1471,7 +1471,7 @@ function BinCatalogBreadcrumbComponent() {
             partition = $ctrl.partition || '/';
             partition.split('/').reduce(transform);
             breadcrumb.push({id: breadcrumb.length === 0 ? toFirstItemId($ctrl.item) : $ctrl.item});
-            if (isSingleItemAndNotOnBrowsePath()) setBrowsePathOnFirstItem();
+            if (isSingleItemAndNotOnBrowseOrBlogPath()) setBrowsePathOnFirstItem();
             if (isBlogPath()) updateBlogPathForFirstItem();
             if ($ctrl.includeHome === 'true') breadcrumb.unshift({id: 'navigation.label.home', path: '/'});
             
@@ -1491,12 +1491,16 @@ function BinCatalogBreadcrumbComponent() {
             return 'navigation.label.' + stripSlashes(item);
         }
 
-        function isSingleItemAndNotOnBrowsePath() {
-            return breadcrumb.length === 1 && isNotOnBrowsePath();
+        function isSingleItemAndNotOnBrowseOrBlogPath() {
+            return breadcrumb.length === 1 && isNotOnBrowsePath() && isNotOnBlogPath();
         }
 
         function isNotOnBrowsePath() {
             return $location.path().indexOf(browse + '/') === -1;
+        }
+
+        function isNotOnBlogPath() {
+            return $location.path().indexOf('/blog') === -1;
         }
 
         function setBrowsePathOnFirstItem() {
@@ -1508,7 +1512,7 @@ function BinCatalogBreadcrumbComponent() {
         }
 
         function setBackItem() {
-            $ctrl.back = isSingleItemAndNotOnBrowsePath() ? breadcrumb[0] : breadcrumb[breadcrumb.length - 2];
+            $ctrl.back = isSingleItemAndNotOnBrowseOrBlogPath() ? breadcrumb[0] : breadcrumb[breadcrumb.length - 2];
         }
 
         function stripSlashes(item) {
