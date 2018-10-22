@@ -5936,6 +5936,23 @@ describe('catalog', function () {
                 expect($ctrl.isScheduled()).toBeTruthy();
             });
         });
+
+        it('default icon is set', function () {
+            $ctrl.$onChanges();
+            expect($ctrl.icon).toEqual('fa-clock-o');
+        });
+
+        it('do not use an icon when icon attribute is set to "false"', function () {
+            $ctrl.icon = "false";
+            $ctrl.$onChanges();
+            expect($ctrl.icon).toBeUndefined();
+        });
+
+        it('when specific icon is set', function () {
+            $ctrl.icon = 'fa-test';
+            $ctrl.$onChanges();
+            expect($ctrl.icon).toEqual('fa-test');
+        });
     });
 
     describe('binCatalogItemCta', function () {

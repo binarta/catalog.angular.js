@@ -2313,7 +2313,8 @@ function BinCatalogPublicationTime() {
     this.bindings = {
         time: '<',
         status: '<',
-        format: '@'
+        format: '@',
+        icon: '@'
     };
 
     this.controller = ['moment', function (moment) {
@@ -2329,7 +2330,13 @@ function BinCatalogPublicationTime() {
 
         $ctrl.$onChanges = function () {
             $ctrl.publicationTime = isDraft() ? '' : moment($ctrl.time).format(getFormat());
+            setIcon();
         };
+
+        function setIcon() {
+            if (!$ctrl.icon) $ctrl.icon = 'fa-clock-o';
+            if ($ctrl.icon === 'false') $ctrl.icon = undefined;
+        }
 
         function isDraft() {
             return $ctrl.status === 'draft';
