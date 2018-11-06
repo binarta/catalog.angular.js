@@ -1,16 +1,20 @@
 <bin-edit>
-    <bin-edit-actions>
-        <bin-edit-action action="$ctrl.toggleRecentItems()"
-                         icon-class="fa-eye"
-                         i18n-code="catalog.show.recent"
-                         ng-if="!$ctrl.recentItems">
-        </bin-edit-action>
-        <bin-edit-action action="$ctrl.toggleRecentItems()"
-                         icon-class="fa-eye-slash"
-                         i18n-code="catalog.hide.recent"
-                         ng-if="$ctrl.recentItems">
-        </bin-edit-action>
-    </bin-edit-actions>
+    <bin-actions>
+        <bin-action-group>
+            <bin-action bin-action-type="expression"
+                        bin-action-expression="$ctrl.toggleRecentItems()"
+                        bin-action-icon-class="fa-eye"
+                        bin-action-i18n-code="catalog.show.recent"
+                        ng-if="!$ctrl.recentItems">
+            </bin-action>
+            <bin-action bin-action-type="expression"
+                        bin-action-expression="$ctrl.toggleRecentItems()"
+                        bin-action-icon-class="fa-eye-slash"
+                        bin-action-i18n-code="catalog.hide.recent"
+                        ng-if="$ctrl.recentItems">
+            </bin-action>
+        </bin-action-group>
+    </bin-actions>
     <bin-edit-body>
         <div ng-transclude="header"></div>
         <div class="alert alert-info" ng-if="$ctrl.editing && $ctrl.totalItemCount == 0">

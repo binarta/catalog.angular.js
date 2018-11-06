@@ -1,75 +1,92 @@
 <div ng-class="$ctrl.item.uiStatus" ng-if="::$ctrl.item">
     <bin-edit>
-        <bin-edit-actions>
-            <bin-edit-action ng-repeat="it in $ctrl.editActions"
-                             action="it.action()"
-                             icon-class="{{::it.iconClass}}"
-                             i18n-code="{{::it.i18nCode}}">
-            </bin-edit-action>
-            <bin-edit-action action="$ctrl.link()"
-                             icon-class="fa-link"
-                             i18n-code="catalog.item.link"
-                             ng-if="$ctrl.isLinkAllowed()">
-            </bin-edit-action>
-            <bin-edit-actions-selector for="move"
-                                       icon-class="fa-arrows"
-                                       i18n-code="catalog.item.move"
-                                       ng-if="$ctrl.isMoveAllowed()">
-            </bin-edit-actions-selector>
-            <bin-edit-action action="$ctrl.pin()"
-                             icon-class="fa-thumb-tack"
-                             i18n-code="catalog.item.pin.button"
-                             ng-if="$ctrl.isPinAllowed()">
-            </bin-edit-action>
-            <bin-edit-action action="$ctrl.unpin()"
-                             icon-class="fa-thumb-tack fa-rotate-90"
-                             i18n-code="catalog.item.unpin.button"
-                             ng-if="$ctrl.isUnpinAllowed()">
-            </bin-edit-action>
-            <bin-edit-action action="$ctrl.publish()"
-                             icon-class="fa-eye"
-                             i18n-code="catalog.item.publish"
-                             ng-if="$ctrl.isPublishAllowed()">
-            </bin-edit-action>
-            <bin-edit-action action="$ctrl.unpublish()"
-                             icon-class="fa-eye-slash"
-                             i18n-code="catalog.item.unpublish"
-                             ng-if="$ctrl.isUnpublishAllowed()">
-            </bin-edit-action>
-            <bin-edit-actions-selector for="delete" danger
-                                       icon-class="fa-trash"
-                                       i18n-code="catalog.item.remove"
-                                       ng-if="$ctrl.isRemoveAllowed()">
-            </bin-edit-actions-selector>
-        </bin-edit-actions>
-        <bin-edit-actions for="move" button-i18n-code="catalog.item.move">
-            <bin-edit-action action="$ctrl.moveUp()"
-                             icon-class="fa-angle-up"
-                             i18n-code="catalog.item.move.up"
-                             disabled="$ctrl.isFirst()">
-            </bin-edit-action>
-            <bin-edit-action action="$ctrl.moveDown()"
-                             icon-class="fa-angle-down"
-                             i18n-code="catalog.item.move.down"
-                             disabled="$ctrl.isLast()">
-            </bin-edit-action>
-            <bin-edit-action action="$ctrl.moveTop()"
-                             icon-class="fa-angle-double-up"
-                             i18n-code="catalog.item.move.top"
-                             disabled="$ctrl.isFirst()">
-            </bin-edit-action>
-            <bin-edit-action action="$ctrl.moveBottom()"
-                             icon-class="fa-angle-double-down"
-                             i18n-code="catalog.item.move.bottom"
-                             disabled="$ctrl.isLast()">
-            </bin-edit-action>
-        </bin-edit-actions>
-        <bin-edit-actions for="delete">
-            <bin-edit-action action="$ctrl.remove()" danger
-                             icon-class="fa-trash"
-                             i18n-code="catalog.item.remove.confirm">
-            </bin-edit-action>
-        </bin-edit-actions>
+        <bin-actions>
+            <bin-action-group>
+                <bin-action ng-repeat="it in $ctrl.editActions"
+                            bin-action-type="expression"
+                            bin-action-expression="it.action()"
+                            bin-action-icon-class="{{::it.iconClass}}"
+                            bin-action-i18n-code="{{::it.i18nCode}}">
+                </bin-action>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.link()"
+                            bin-action-icon-class="fa-link"
+                            bin-action-i18n-code="catalog.item.link"
+                            ng-if="$ctrl.isLinkAllowed()">
+                </bin-action>
+                <bin-action bin-action-type="selector"
+                            bin-action-selector="move"
+                            bin-action-icon-class="fa-arrows"
+                            bin-action-i18n-code="catalog.item.move"
+                            ng-if="$ctrl.isMoveAllowed()">
+                </bin-action>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.pin()"
+                            bin-action-icon-class="fa-thumb-tack"
+                            bin-action-i18n-code="catalog.item.pin.button"
+                            ng-if="$ctrl.isPinAllowed()">
+                </bin-action>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.unpin()"
+                            bin-action-icon-class="fa-thumb-tack fa-rotate-90"
+                            bin-action-i18n-code="catalog.item.unpin.button"
+                            ng-if="$ctrl.isUnpinAllowed()">
+                </bin-action>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.publish()"
+                            bin-action-icon-class="fa-eye"
+                            bin-action-i18n-code="catalog.item.publish"
+                            ng-if="$ctrl.isPublishAllowed()">
+                </bin-action>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.unpublish()"
+                            bin-action-icon-class="fa-eye-slash"
+                            bin-action-i18n-code="catalog.item.unpublish"
+                            ng-if="$ctrl.isUnpublishAllowed()">
+                </bin-action>
+                <bin-action bin-action-type="selector"
+                            bin-action-selector="delete"
+                            bin-action-danger
+                            bin-action-icon-class="fa-trash"
+                            bin-action-i18n-code="catalog.item.remove"
+                            ng-if="$ctrl.isRemoveAllowed()">
+                </bin-action>
+            </bin-action-group>
+            <bin-action-group bin-action-group-for="move" bin-action-group-button-i18n-code="catalog.item.move">
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.moveUp()"
+                            bin-action-icon-class="fa-angle-up"
+                            bin-action-i18n-code="catalog.item.move.up"
+                            bin-action-disabled="$ctrl.isFirst()">
+                </bin-action>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.moveDown()"
+                            bin-action-icon-class="fa-angle-down"
+                            bin-action-i18n-code="catalog.item.move.down"
+                            bin-action-disabled="$ctrl.isLast()">
+                </bin-action>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.moveTop()"
+                            bin-action-icon-class="fa-angle-double-up"
+                            bin-action-i18n-code="catalog.item.move.top"
+                            bin-action-disabled="$ctrl.isFirst()">
+                </bin-action>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.moveBottom()"
+                            bin-action-icon-class="fa-angle-double-down"
+                            bin-action-i18n-code="catalog.item.move.bottom"
+                            bin-action-disabled="$ctrl.isLast()">
+                </bin-action>
+            </bin-action-group>
+            <bin-action-group bin-action-group-for="delete">
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.remove()"
+                            bin-action-danger
+                            bin-action-icon-class="fa-trash"
+                            bin-action-i18n-code="catalog.item.remove.confirm">
+                </bin-action>
+            </bin-action-group>
+        </bin-actions>
         <bin-edit-body>
             <div class="alert alert-info" ng-if="$ctrl.isPublishAllowed() && $ctrl.item.status === 'draft'">
                 <i class="fa fa-eye-slash fa-fw"></i>
