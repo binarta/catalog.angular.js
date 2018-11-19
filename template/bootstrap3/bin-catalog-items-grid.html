@@ -1,0 +1,6 @@
+<bin-catalog-item-add ng-if="$ctrl.isAddAllowed()"></bin-catalog-item-add>
+<web-grid>
+    <web-grid-item colspan="item.size.colspan" rowspan="item.size.rowspan" ng-repeat="item in $ctrl.items track by item.id">
+        <bin-catalog-item item="item" ng-class="item.size.cssClass" resizable="true"></bin-catalog-item>
+    </web-grid-item>
+</web-grid>

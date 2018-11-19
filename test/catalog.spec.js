@@ -2073,15 +2073,21 @@ describe('catalog', function () {
 
                 it('public config was consulted', function () {
                     expect(binarta.application.config.findPublic.calls.argsFor(0)[0]).toEqual('catalog.type.recent.items');
+                    expect(binarta.application.config.findPublic.calls.argsFor(1)[0]).toEqual('catalog.type.spotlight.view.switch.allowed');
+                    expect(binarta.application.config.findPublic.calls.argsFor(2)[0]).toEqual('catalog.type.spotlight.view');
                 });
 
                 describe('and public config results are triggered', function () {
                     beforeEach(function () {
                         binarta.application.config.findPublic.calls.argsFor(0)[1]('true');
+                        binarta.application.config.findPublic.calls.argsFor(1)[1]('');
+                        binarta.application.config.findPublic.calls.argsFor(2)[1]('');
                     });
 
-                    it('then flags are set', function () {
+                    it('then variables are set', function () {
                         expect(component.recentItems).toBe(true);
+                        expect(component.allowViewSwitch).toBeFalsy();
+                        expect(component.view).toBe('default');
                     });
 
                     describe('and recent items are toggled', function () {
@@ -2097,6 +2103,42 @@ describe('catalog', function () {
                             expect(configWriter.calls.argsFor(0)[0]).toEqual({
                                 key: 'catalog.type.recent.items',
                                 value: component.recentItems,
+                                scope: 'public'
+                            });
+                        });
+                    });
+
+                    describe('and switch to grid view', function () {
+                        beforeEach(function () {
+                            component.switchToGridView();
+                        });
+
+                        it('then the view is updated', function () {
+                            expect(component.view).toBe('grid');
+                        });
+
+                        it('and config is written', function () {
+                            expect(configWriter.calls.argsFor(0)[0]).toEqual({
+                                key: 'catalog.type.spotlight.view',
+                                value: component.view,
+                                scope: 'public'
+                            });
+                        });
+                    });
+                    
+                    describe('and switch to default view', function () {
+                        beforeEach(function () {
+                            component.switchToDefaultView();
+                        });
+
+                        it('then the view is updated', function () {
+                            expect(component.view).toBe('default');
+                        });
+
+                        it('and config is written', function () {
+                            expect(configWriter.calls.argsFor(0)[0]).toEqual({
+                                key: 'catalog.type.spotlight.view',
+                                value: component.view,
                                 scope: 'public'
                             });
                         });
@@ -2230,7 +2272,7 @@ describe('catalog', function () {
             });
 
             it('default template is set', function () {
-                expect($ctrl.templateUrl).toEqual('bin-catalog-item-list-default.html');
+                expect($ctrl.itemTemplateUrl).toEqual('bin-catalog-item-list-default.html');
             });
 
             it('results are initialized to empty list', function () {
@@ -2401,7 +2443,7 @@ describe('catalog', function () {
             });
 
             it('custom template is set', function () {
-                expect($ctrl.templateUrl).toEqual('custom.html');
+                expect($ctrl.itemTemplateUrl).toEqual('custom.html');
             });
         });
 
@@ -4896,12 +4938,12 @@ describe('catalog', function () {
             });
 
             describe('exposes update function', function () {
-                var successSpy, errorSpy;
+                var successSpy, errorSpy, promise;
 
                 beforeEach(function () {
                     successSpy = jasmine.createSpy('success');
                     errorSpy = jasmine.createSpy('error');
-                    $ctrl.update({key: 'customKey', value: 'customValue'}, {success: successSpy, error: errorSpy});
+                    promise = $ctrl.update({key: 'customKey', value: 'customValue'}, {success: successSpy, error: errorSpy});
                 });
 
                 it('item is updated', function () {
@@ -4914,8 +4956,18 @@ describe('catalog', function () {
                             customKey: 'customValue'
                         },
                         success: jasmine.any(Function),
-                        error: errorSpy
+                        error: jasmine.any(Function)
                     });
+                });
+
+                it('update return a promise', function () {
+                    var actual;
+                    promise.then(function () {
+                        actual = true;
+                    });
+                    writer.calls.mostRecent().args[0].success();
+                    $rootScope.$digest();
+                    expect(actual).toBeTruthy();
                 });
 
                 describe('on success', function () {
@@ -5426,6 +5478,39 @@ describe('catalog', function () {
             });
         });
 
+        describe('check if resize action is allowed', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.$onInit();
+            });
+
+            it('when resizable but no permission', function () {
+                $ctrl.resizable = 'true';
+                expect($ctrl.isResizeAllowed()).toBeFalsy();
+            });
+
+            describe('when user has permission', function () {
+                beforeEach(function () {
+                    binarta.checkpoint.gateway.addPermission('catalog.item.update');
+                    binarta.checkpoint.profile.refresh();
+                });
+
+                it('and is resizable', function () {
+                    $ctrl.resizable = 'true';
+                    expect($ctrl.isResizeAllowed()).toBeTruthy();
+                });
+
+                it('and is not resizable', function () {
+                    $ctrl.resizable = 'false';
+                    expect($ctrl.isResizeAllowed()).toBeFalsy();
+                });
+
+                it('is disabled by default', function () {
+                    expect($ctrl.isResizeAllowed()).toBeFalsy();
+                });
+            });
+        });
+
         describe('when items are pinnable', function () {
             beforeEach(function () {
                 $ctrl.item = item;
@@ -5815,6 +5900,90 @@ describe('catalog', function () {
 
                 it('propagates promise', function () {
                     expect(returned).toEqual('promise');
+                });
+            });
+        });
+
+        describe('and item is resizable', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.$onInit();
+                $ctrl.update = jasmine.createSpy().and.returnValue('promise');
+            });
+
+            describe('on makeLarge', function () {
+                var returnValue;
+
+                beforeEach(function () {
+                    returnValue = $ctrl.makeLarge();
+                });
+
+                it('item is updated', function () {
+                    expect($ctrl.update).toHaveBeenCalledWith({
+                        key: 'size',
+                        value: {colspan: 2, rowspan: 2, cssClass: 'large'}
+                    });
+                });
+
+                it('returns promise', function () {
+                    expect(returnValue).toEqual('promise');
+                });
+            });
+
+            describe('on makeWide', function () {
+                var returnValue;
+
+                beforeEach(function () {
+                    returnValue = $ctrl.makeWide();
+                });
+
+                it('item is updated', function () {
+                    expect($ctrl.update).toHaveBeenCalledWith({
+                        key: 'size',
+                        value: {colspan: 2, rowspan: 1, cssClass: 'wide'}
+                    });
+                });
+
+                it('returns promise', function () {
+                    expect(returnValue).toEqual('promise');
+                });
+            });
+           
+            describe('on makeTall', function () {
+                var returnValue;
+
+                beforeEach(function () {
+                    returnValue = $ctrl.makeTall();
+                });
+
+                it('item is updated', function () {
+                    expect($ctrl.update).toHaveBeenCalledWith({
+                        key: 'size',
+                        value: {colspan: 1, rowspan: 2, cssClass: 'tall'}
+                    });
+                });
+
+                it('returns promise', function () {
+                    expect(returnValue).toEqual('promise');
+                });
+            });
+           
+            describe('on resetSize', function () {
+                var returnValue;
+
+                beforeEach(function () {
+                    returnValue = $ctrl.resetSize();
+                });
+
+                it('item is updated', function () {
+                    expect($ctrl.update).toHaveBeenCalledWith({
+                        key: 'size',
+                        value: {colspan: 1, rowspan: 1, cssClass: ''}
+                    });
+                });
+
+                it('returns promise', function () {
+                    expect(returnValue).toEqual('promise');
                 });
             });
         });

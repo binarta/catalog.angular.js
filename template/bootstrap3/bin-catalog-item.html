@@ -20,6 +20,12 @@
                             bin-action-i18n-code="catalog.item.move"
                             ng-if="$ctrl.isMoveAllowed()">
                 </bin-action>
+                <bin-action bin-action-type="selector"
+                            bin-action-selector="resize"
+                            bin-action-icon-class="fa-arrows-alt"
+                            bin-action-i18n-code="catalog.item.resize"
+                            ng-if="$ctrl.isResizeAllowed()">
+                </bin-action>
                 <bin-action bin-action-type="expression"
                             bin-action-expression="$ctrl.pin()"
                             bin-action-icon-class="fa-thumb-tack"
@@ -76,6 +82,28 @@
                             bin-action-icon-class="fa-angle-double-down"
                             bin-action-i18n-code="catalog.item.move.bottom"
                             bin-action-disabled="$ctrl.isLast()">
+                </bin-action>
+            </bin-action-group>
+            <bin-action-group bin-action-group-for="resize" bin-action-group-button-i18n-code="catalog.item.resize">
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.makeLarge()"
+                            bin-action-icon-class="fa-arrows"
+                            bin-action-i18n-code="catalog.item.resize.large">
+                </bin-action>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.makeWide()"
+                            bin-action-icon-class="fa-arrows-h"
+                            bin-action-i18n-code="catalog.item.resize.wide">
+                </bin-action>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.makeTall()"
+                            bin-action-icon-class="fa-arrows-v"
+                            bin-action-i18n-code="catalog.item.resize.tall">
+                </bin-action>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.resetSize()"
+                            bin-action-icon-class="fa-times"
+                            bin-action-i18n-code="catalog.item.resize.reset">
                 </bin-action>
             </bin-action-group>
             <bin-action-group bin-action-group-for="delete">

@@ -1,8 +1,19 @@
-<bin-catalog-items items="$ctrl.results"
+<bin-catalog-items ng-if="$ctrl.spotlightCtrl.view == 'default'" 
+                   items="$ctrl.results"
                    movable="false"
                    addable="false"
                    pinnable="true"
                    cols="{{::$ctrl.cols}}"
                    center="{{::$ctrl.center}}"
-                   item-template-url="{{::$ctrl.templateUrl}}">
+                   item-template-url="{{::$ctrl.itemTemplateUrl}}">
+</bin-catalog-items>
+<bin-catalog-items ng-if="$ctrl.spotlightCtrl.view == 'grid'" 
+                   items="$ctrl.results"
+                   movable="false"
+                   addable="false"
+                   pinnable="true"
+                   cols="{{::$ctrl.cols}}"
+                   center="{{::$ctrl.center}}"
+                   template-url="bin-catalog-items-grid.html"
+                   item-template-url="{{::$ctrl.itemTemplateUrl}}">
 </bin-catalog-items>

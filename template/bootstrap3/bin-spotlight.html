@@ -13,6 +13,18 @@
                         bin-action-i18n-code="catalog.hide.recent"
                         ng-if="$ctrl.recentItems">
             </bin-action>
+            <bin-action bin-action-type="expression"
+                        bin-action-expression="$ctrl.switchToDefaultView()"
+                        bin-action-icon-class="fa-th"
+                        bin-action-i18n-code="catalog.switch.to.default.view"
+                        ng-if="$ctrl.allowViewSwitch && $ctrl.view != 'default'">
+            </bin-action>
+            <bin-action bin-action-type="expression"
+                        bin-action-expression="$ctrl.switchToGridView()"
+                        bin-action-icon-class="fa-th"
+                        bin-action-i18n-code="catalog.switch.to.grid.view"
+                        ng-if="$ctrl.allowViewSwitch && $ctrl.view != 'grid'">
+            </bin-action>
         </bin-action-group>
     </bin-actions>
     <bin-edit-body>

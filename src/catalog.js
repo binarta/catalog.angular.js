@@ -1,4 +1,4 @@
-angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular1', 'binarta-checkpointjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price', 'momentx', 'application.pages', 'image.carousel'])
+angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular1', 'binarta-checkpointjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price', 'momentx', 'application.pages', 'image.carousel', 'grid.layout'])
     .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
     .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
     .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])
@@ -778,6 +778,14 @@ function BinSpotlightController(topics, binarta, configWriter, location) {
             binarta.application.config.findPublic('catalog.' + $ctrl.type + '.recent.items', function (value) {
                 $ctrl.recentItems = (value == 'true' || value === true);
             });
+            
+            binarta.application.config.findPublic('catalog.' + $ctrl.type + '.spotlight.view.switch.allowed', function (value) {
+                $ctrl.allowViewSwitch = (value == 'true' || value === true);
+            });
+            
+            binarta.application.config.findPublic('catalog.' + $ctrl.type + '.spotlight.view', function (value) {
+                $ctrl.view = value || 'default';
+            });
         });
 
         $ctrl.goToOverview = function () {
@@ -800,6 +808,16 @@ function BinSpotlightController(topics, binarta, configWriter, location) {
     this.toggleRecentItems = function () {
         $ctrl.recentItems = !$ctrl.recentItems;
         configWriter({key: 'catalog.' + $ctrl.type + '.recent.items', value: $ctrl.recentItems, scope: 'public'});
+    };
+
+    this.switchToDefaultView = function () {
+        $ctrl.view = 'default';
+        configWriter({key: 'catalog.' + $ctrl.type + '.spotlight.view', value: $ctrl.view, scope: 'public'});
+    };
+
+    this.switchToGridView = function () {
+        $ctrl.view = 'grid';
+        configWriter({key: 'catalog.' + $ctrl.type + '.spotlight.view', value: $ctrl.view, scope: 'public'});
     };
 
     function onEditMode(editing) {
@@ -831,7 +849,7 @@ function BinSpotlightItemsController(topics, search, viewport) {
     this.$onInit = function () {
         $ctrl.cols = $ctrl.spotlightCtrl.cols;
         $ctrl.center = $ctrl.spotlightCtrl.center;
-        $ctrl.templateUrl = $ctrl.spotlightCtrl.itemTemplateUrl || 'bin-catalog-item-list-default.html';
+        $ctrl.itemTemplateUrl = $ctrl.spotlightCtrl.itemTemplateUrl || 'bin-catalog-item-list-default.html';
         isPinned = $ctrl.pinned == 'true';
         $ctrl.results = [];
         if (isPinned) initPinnedConfiguration();
@@ -2017,7 +2035,8 @@ function BinCatalogItemComponent() {
         pinnable: '@',
         removable: '@',
         linkable: '@',
-        publishable: '@'
+        publishable: '@',
+        resizable: '@'
     };
 
     this.require = {
@@ -2025,9 +2044,9 @@ function BinCatalogItemComponent() {
         detailsCtrl: '?^^binCatalogDetails'
     };
 
-    this.controller = ['binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', 'findCatalogItemById',
+    this.controller = ['$q', 'binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', 'findCatalogItemById',
         'updateCatalogItemWriter', 'binLink', 'binCatalogItemPublisher', 'binImageCarousel', 'moment', 'i18n',
-        function (binarta, pinner, topics, removeCatalogItem, i18nLocation, findCatalogItemById,
+        function ($q, binarta, pinner, topics, removeCatalogItem, i18nLocation, findCatalogItemById,
                   updateCatalogItem, binLink, publisher, binImageCarousel, moment, i18n) {
             var $ctrl = this,
                 destroyHandlers = [],
@@ -2046,6 +2065,7 @@ function BinCatalogItemComponent() {
                 };
 
                 $ctrl.update = function (request, response) {
+                    var deferred = $q.defer();
                     var data = {
                         treatInputAsId: false,
                         context: 'update',
@@ -2057,13 +2077,21 @@ function BinCatalogItemComponent() {
                     updateCatalogItem({
                         data: data,
                         success: onSuccess,
-                        error: response.error
+                        error: onError
                     });
 
                     function onSuccess() {
                         $ctrl.item[request.key] = request.value;
-                        response.success();
+                        if (response && response.success) response.success();
+                        deferred.resolve();
                     }
+
+                    function onError(body, status) {
+                        if (response && response.error) response.error(body, status);
+                        deferred.reject();
+                    }
+
+                    return deferred.promise;
                 };
 
                 $ctrl.isDraft = function () {
@@ -2099,6 +2127,9 @@ function BinCatalogItemComponent() {
                 $ctrl.isUnpublishAllowed = function () {
                     return $ctrl.item && $ctrl.item.status === published && isDisabledByDefault($ctrl.publishable) && hasCatalogItemUpdatePermission();
                 };
+                $ctrl.isResizeAllowed = function () {
+                    return $ctrl.item && isDisabledByDefault($ctrl.resizable) && hasCatalogItemUpdatePermission();
+                };
 
                 $ctrl.installEditAction = function (action) {
                     $ctrl.editActions.push(action);
@@ -2108,6 +2139,7 @@ function BinCatalogItemComponent() {
                 installRemoveAction();
                 installLinkAction();
                 installPublishAction();
+                installResizeActions();
 
                 topics.subscribe('edit.mode', editModeListener);
                 destroyHandlers.push(function () {
@@ -2211,6 +2243,35 @@ function BinCatalogItemComponent() {
                 };
                 $ctrl.isLast = function () {
                     return $ctrl.itemsCtrl.items[$ctrl.itemsCtrl.items.length - 1] === $ctrl.item;
+                };
+            }
+
+            function installResizeActions() {
+                var key = 'size';
+
+                $ctrl.makeLarge = function () {
+                    return $ctrl.update({
+                        key: key,
+                        value: {colspan: 2, rowspan: 2, cssClass: 'large'}
+                    });
+                };
+                $ctrl.makeWide = function () {
+                    return $ctrl.update({
+                        key: key,
+                        value: {colspan: 2, rowspan: 1, cssClass: 'wide'}
+                    });
+                };
+                $ctrl.makeTall = function () {
+                    return $ctrl.update({
+                        key: key,
+                        value: {colspan: 1, rowspan: 2, cssClass: 'tall'}
+                    });
+                };
+                $ctrl.resetSize = function () {
+                    return $ctrl.update({
+                        key: key,
+                        value: {colspan: 1, rowspan: 1, cssClass: ''}
+                    });
                 };
             }
 
