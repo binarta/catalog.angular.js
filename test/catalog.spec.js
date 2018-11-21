@@ -2321,6 +2321,13 @@ describe('catalog', function () {
                 expect(args().subset.count).toEqual(6);
             });
 
+            it('when items are pinned items, return a max of 50 items', function () {
+                $ctrl.pinned = 'true';
+                search.calls.reset();
+                $ctrl.$onInit();
+                expect(args().subset.count).toEqual(50);
+            });
+
             describe('with success', function () {
                 var items;
 

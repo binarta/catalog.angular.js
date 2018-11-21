@@ -864,7 +864,7 @@ function BinSpotlightItemsController(topics, search, viewport) {
             action: 'search',
             subset: {
                 offset: 0,
-                count: viewport.visibleXs() ? 6 : 8
+                count: getSubsetCount()
             },
             includeCarouselItems: true,
             sortings: [
@@ -878,6 +878,10 @@ function BinSpotlightItemsController(topics, search, viewport) {
         };
         if (isPinned) args.filters.pinned = true;
         search(args);
+
+        function getSubsetCount() {
+            return isPinned ? 50 : viewport.visibleXs() ? 6 : 8;
+        }
 
         function render(data) {
             $ctrl.results = data.results;
