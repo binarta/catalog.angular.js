@@ -1,7 +1,8 @@
 {
   "default": {
     "catalog": "bower_components/binarta.catalog.angular/src/catalog.js",
-    "catalog.templates": "bower_components/binarta.catalog.angular/src/catalog-unavailable-tpls-bootstrap3.js"
+    "catalog.templates": "bower_components/binarta.catalog.angular/src/catalog-unavailable-tpls-bootstrap3.js",
+    "websters.grid.layout": "bower_components/binarta.catalog.angular/src/grid.layout.dummy.js"
   },
   "catalog": {
     "catalog.templates": "bower_components/binarta.catalog.angular/src/catalog-tpls-bootstrap3.js",
