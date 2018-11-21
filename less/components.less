@@ -155,3 +155,43 @@ bin-catalog-item, bin-catalog-partition {
     }
   }
 }
+
+bin-spotlight {
+  web-grid {
+    width: 100vw;         ////////////////////////////////
+    position: relative;   //                            //
+    left: 50%;            //  Hack to make the grid use //
+    right: 50%;           //  the full viewport width   //
+    margin-left: -50vw;   //                            //
+    margin-right: -50vw;  ////////////////////////////////
+    web-grid-item {
+      .bin-catalog-item-body-wrapper {
+        display: block;
+        position: relative;
+        &:before {
+          content: '';
+          display: block;
+          padding-bottom: 100%;
+        }
+        .bin-catalog-item-body {
+          display: block;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+        }
+      }
+      &.wide {
+        .bin-catalog-item-body-wrapper:before {
+          padding-bottom: 50%;
+        }
+      }
+      &.tall {
+        .bin-catalog-item-body-wrapper:before {
+          padding-bottom: 200%;
+        }
+      }
+    }
+  }
+}

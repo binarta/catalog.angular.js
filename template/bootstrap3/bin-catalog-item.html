@@ -115,12 +115,12 @@
                 </bin-action>
             </bin-action-group>
         </bin-actions>
-        <bin-edit-body>
+        <bin-edit-body class="bin-catalog-item-body-wrapper">
             <div class="alert alert-info" ng-if="$ctrl.isPublishAllowed() && $ctrl.item.status === 'draft'">
                 <i class="fa fa-eye-slash fa-fw"></i>
                 <span i18n code="catalog.item.draft" read-only ng-bind="::var"></span>
             </div>
-            <ng-include src="$ctrl.templateUrl"></ng-include>
+            <ng-include class="bin-catalog-item-body" src="$ctrl.templateUrl"></ng-include>
         </bin-edit-body>
     </bin-edit>
 </div>
