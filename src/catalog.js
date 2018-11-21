@@ -799,6 +799,10 @@ function BinSpotlightController(topics, binarta, configWriter, location) {
         executeCallbacks();
     };
 
+    this.areRecentItemsAllowed = function () {
+        return $ctrl.view === 'default';
+    };
+
     this.plus = function (args) {
         $ctrl.totalItemCount += args.size;
         executeCallbacks();

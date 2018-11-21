@@ -5,13 +5,13 @@
                         bin-action-expression="$ctrl.toggleRecentItems()"
                         bin-action-icon-class="fa-eye"
                         bin-action-i18n-code="catalog.show.recent"
-                        ng-if="!$ctrl.recentItems">
+                        ng-if="$ctrl.areRecentItemsAllowed() && !$ctrl.recentItems">
             </bin-action>
             <bin-action bin-action-type="expression"
                         bin-action-expression="$ctrl.toggleRecentItems()"
                         bin-action-icon-class="fa-eye-slash"
                         bin-action-i18n-code="catalog.hide.recent"
-                        ng-if="$ctrl.recentItems">
+                        ng-if="$ctrl.areRecentItemsAllowed() && $ctrl.recentItems">
             </bin-action>
             <bin-action bin-action-type="expression"
                         bin-action-expression="$ctrl.switchToDefaultView()"
@@ -34,7 +34,7 @@
             <span i18n code="catalog.item.pin.spotlight.info" read-only ng-bind="::var"></span>
         </div>
         <bin-spotlight-items pinned="true"></bin-spotlight-items>
-        <div ng-if="$ctrl.recentItems">
+        <div ng-if="$ctrl.areRecentItemsAllowed() && $ctrl.recentItems">
             <h4 ng-if="$ctrl.pinnedItemCount > 0">
                 <span i18n code="catalog.spotlight.most.recent.title" ng-bind="var"></span>
             </h4>

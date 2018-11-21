@@ -2124,6 +2124,10 @@ describe('catalog', function () {
                                 scope: 'public'
                             });
                         });
+
+                        it('recent items are not allowed / should not be visible', function () {
+                            expect(component.areRecentItemsAllowed()).toBeFalsy();
+                        });
                     });
                     
                     describe('and switch to default view', function () {
@@ -2141,6 +2145,10 @@ describe('catalog', function () {
                                 value: component.view,
                                 scope: 'public'
                             });
+                        });
+
+                        it('recent items are allowed / should be visible', function () {
+                            expect(component.areRecentItemsAllowed()).toBeTruthy();
                         });
                     });
                 });
