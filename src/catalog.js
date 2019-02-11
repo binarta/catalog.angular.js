@@ -13,6 +13,7 @@ angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular
     .factory('catalogPathParser', ['catalogPathProcessor', 'catalogPathLimit', CatalogPathParserFactory])
     .factory('itemPinner', ['topicMessageDispatcher', 'restServiceHandler', 'config', ItemPinnerFactory])
     .service('binCatalogItemPublisher', ['$rootScope', 'moment', 'updateCatalogItemWriter', 'editModeRenderer', BinCatalogItemPublisherService])
+    .service('binWidgetSettings', ['$rootScope', 'binarta', 'updateCatalogItemWriter', 'editModeRenderer', BinWidgetSettingsService])
     .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
     .controller('AddToCatalogController', ['$scope', '$routeParams', 'topicRegistry', 'findAllCatalogItemTypes', 'addCatalogItem', 'usecaseAdapterFactory', AddToCatalogController])
     .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
@@ -778,11 +779,11 @@ function BinSpotlightController(topics, binarta, configWriter, location) {
             binarta.application.config.findPublic('catalog.' + $ctrl.type + '.recent.items', function (value) {
                 $ctrl.recentItems = (value == 'true' || value === true);
             });
-            
+
             binarta.application.config.findPublic('catalog.' + $ctrl.type + '.spotlight.view.switch.allowed', function (value) {
                 $ctrl.allowViewSwitch = (value == 'true' || value === true);
             });
-            
+
             binarta.application.config.findPublic('catalog.' + $ctrl.type + '.spotlight.view', function (value) {
                 $ctrl.view = value || 'default';
             });
@@ -995,6 +996,91 @@ function BinCatalogItemPublisherService($rootScope, moment, updateCatalogItem, e
     };
 }
 
+function BinWidgetSettingsService($rootScope, binarta, updateCatalogItem, editModeRenderer) {
+    this.configure = function (args) {
+        var ui = args.ui;
+        var item = args.item;
+        var widget = args.widget;
+        var component = args.component;
+        var overrideAttribute = args.overrideAttribute;
+        var settings = binarta.application.display.settings.component(component).widget(widget);
+
+        var scope = $rootScope.$new();
+        scope.item = item;
+        scope.fittingRuleAttribute = overrideAttribute;
+        scope.status = 'defaults-mode';
+        scope.cancel = editModeRenderer.close;
+        scope.$on('$destroy', settings.observe({
+            attributes: function (it) {
+                scope.working = false;
+                scope.defaultAttributes = it;
+            },
+            working: function () {
+                scope.working = true;
+            },
+            rejected: function (report) {
+                scope.working = false;
+                scope.violations = report;
+            },
+            saved: function () {
+                editModeRenderer.close();
+                if (ui && ui.updated)
+                    ui.updated();
+            }
+        }).disconnect);
+
+        scope.switchToItemMode = function () {
+            scope.status = 'item-mode';
+        };
+
+        scope.switchToDefaultsMode = function () {
+            scope.status = 'defaults-mode';
+        };
+
+        scope.submit = function () {
+            scope.violations = {};
+
+            if (scope.status == 'defaults-mode')
+                settings.save(scope.defaultAttributes);
+            else if (scope.status == 'item-mode') {
+                scope.working = true;
+
+                var data = {
+                    treatInputAsId: false,
+                    context: 'update',
+                    id: item.id,
+                    type: item.type
+                };
+                data[overrideAttribute] = item[overrideAttribute];
+                updateCatalogItem({
+                    data: data,
+                    success: onSuccess,
+                    error: onError,
+                    rejected: function (report) {
+                        scope.violations = report;
+                    }
+                });
+
+                function onSuccess() {
+                    scope.working = false;
+                    editModeRenderer.close();
+                    if (ui && ui.updated)
+                        ui.updated();
+                }
+
+                function onError() {
+                    scope.working = false;
+                }
+            }
+        };
+
+        editModeRenderer.open({
+            templateUrl: 'bin-widget-settings.html',
+            scope: scope
+        });
+    };
+}
+
 function BinCatalogListComponent() {
     this.templateUrl = ['$attrs', function ($attrs) {
         return $attrs.templateUrl || 'bin-catalog-transclude.html';
@@ -1018,6 +1104,7 @@ function BinCatalogListComponent() {
             if (!$ctrl.type) parsePropertiesFromRoute();
             if ($ctrl.count) count = parseInt($ctrl.count);
             $ctrl.search = search;
+            $ctrl.refresh = search;
             $ctrl.searchMore = searchItems;
             $ctrl.hasMore = hasMore;
             $ctrl.isWorking = isWorking;
@@ -1500,7 +1587,7 @@ function BinCatalogBreadcrumbComponent() {
             if (isSingleItemAndNotOnBrowseOrBlogPath()) setBrowsePathOnFirstItem();
             if (isBlogPath()) updateBlogPathForFirstItem();
             if ($ctrl.includeHome === 'true') breadcrumb.unshift({id: 'navigation.label.home', path: '/'});
-            
+
             $ctrl.breadcrumb = breadcrumb;
         }
 
@@ -1630,6 +1717,8 @@ function BinCatalogItemGroupsComponent() {
         addable: '@',
         linkable: '@',
         publishable: '@',
+        configurableComponent: '@',
+        configurableWidget: '@',
         redirectOnAdd: '@',
         itemTemplateUrl: '@',
         cols: '@',
@@ -1646,6 +1735,8 @@ function BinCatalogItemGroupsComponent() {
             if ($ctrl.listCtrl) {
                 if (!$ctrl.items) $ctrl.items = $ctrl.listCtrl.items;
                 if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.partition;
+                if ($ctrl.listCtrl)
+                    $ctrl.refresh = $ctrl.listCtrl.refresh;
             }
 
             $ctrl.noItemsInMainPartition = function () {
@@ -1674,6 +1765,8 @@ function BinCatalogItemsComponent() {
         addable: '@',
         linkable: '@',
         publishable: '@',
+        configurableComponent: '@',
+        configurableWidget: '@',
         redirectOnAdd: '@',
         itemTemplateUrl: '@',
         cols: '@',
@@ -1701,15 +1794,19 @@ function BinCatalogItemsComponent() {
                 if (!$ctrl.addable) $ctrl.addable = $ctrl.groupsCtrl.addable;
                 if (!$ctrl.linkable) $ctrl.linkable = $ctrl.groupsCtrl.linkable;
                 if (!$ctrl.publishable) $ctrl.publishable = $ctrl.groupsCtrl.publishable;
+                if (!$ctrl.configurableComponent) $ctrl.configurableComponent = $ctrl.groupsCtrl.configurableComponent;
+                if (!$ctrl.configurableWidget) $ctrl.configurableWidget = $ctrl.groupsCtrl.configurableWidget;
                 if (!$ctrl.redirectOnAdd) $ctrl.redirectOnAdd = $ctrl.groupsCtrl.redirectOnAdd;
                 if (!$ctrl.itemTemplateUrl) $ctrl.itemTemplateUrl = $ctrl.groupsCtrl.itemTemplateUrl;
                 if (!$ctrl.cols) $ctrl.cols = $ctrl.groupsCtrl.cols;
                 if (!$ctrl.center) $ctrl.center = $ctrl.groupsCtrl.center;
+                $ctrl.refresh = $ctrl.groupsCtrl.refresh;
             }
             if ($ctrl.listCtrl) {
                 if (!$ctrl.items) $ctrl.items = $ctrl.listCtrl.items;
                 if (!$ctrl.type) $ctrl.type = $ctrl.listCtrl.type;
                 if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.partition;
+                $ctrl.refresh = $ctrl.listCtrl.refresh;
             }
             installMoveActions();
 
@@ -2044,7 +2141,10 @@ function BinCatalogItemComponent() {
         removable: '@',
         linkable: '@',
         publishable: '@',
-        resizable: '@'
+        resizable: '@',
+        configurableComponent: '@',
+        configurableWidget: '@',
+        fittingRuleAttribute: '@'
     };
 
     this.require = {
@@ -2053,9 +2153,9 @@ function BinCatalogItemComponent() {
     };
 
     this.controller = ['$q', 'binarta', 'itemPinner', 'topicRegistry', 'removeCatalogItem', 'i18nLocation', 'findCatalogItemById',
-        'updateCatalogItemWriter', 'binLink', 'binCatalogItemPublisher', 'binImageCarousel', 'moment', 'i18n',
+        'updateCatalogItemWriter', 'binLink', 'binCatalogItemPublisher', 'binImageCarousel', 'binWidgetSettings', 'moment', 'i18n',
         function ($q, binarta, pinner, topics, removeCatalogItem, i18nLocation, findCatalogItemById,
-                  updateCatalogItem, binLink, publisher, binImageCarousel, moment, i18n) {
+                  updateCatalogItem, binLink, publisher, binImageCarousel, widget, moment, i18n) {
             var $ctrl = this,
                 destroyHandlers = [],
                 draft = 'draft',
@@ -2069,7 +2169,8 @@ function BinCatalogItemComponent() {
                 else if ($ctrl.itemsCtrl) withItemsController();
 
                 $ctrl.refresh = function () {
-                    if ($ctrl.item) return findCatalogItemById($ctrl.item.id, applyItem);
+                    if($ctrl.itemsCtrl) $ctrl.itemsCtrl.refresh();
+                    else return findCatalogItemById($ctrl.item.id, applyItem);
                 };
 
                 $ctrl.update = function (request, response) {
@@ -2138,6 +2239,9 @@ function BinCatalogItemComponent() {
                 $ctrl.isResizeAllowed = function () {
                     return $ctrl.item && isDisabledByDefault($ctrl.resizable) && hasCatalogItemUpdatePermission();
                 };
+                $ctrl.isConfigureWidgetAllowed = function () {
+                    return $ctrl.item && $ctrl.configurableComponent && $ctrl.configurableWidget && hasConfigureWidgetPermission();
+                };
 
                 $ctrl.installEditAction = function (action) {
                     $ctrl.editActions.push(action);
@@ -2148,6 +2252,7 @@ function BinCatalogItemComponent() {
                 installLinkAction();
                 installPublishAction();
                 installResizeActions();
+                installConfigureWidgetActions();
 
                 topics.subscribe('edit.mode', editModeListener);
                 destroyHandlers.push(function () {
@@ -2203,6 +2308,8 @@ function BinCatalogItemComponent() {
                 if (!$ctrl.removable) $ctrl.removable = $ctrl.itemsCtrl.removable;
                 if (!$ctrl.linkable) $ctrl.linkable = $ctrl.itemsCtrl.linkable;
                 if (!$ctrl.publishable) $ctrl.publishable = $ctrl.itemsCtrl.publishable;
+                if (!$ctrl.configurableComponent) $ctrl.configurableComponent = $ctrl.itemsCtrl.configurableComponent;
+                if (!$ctrl.configurableWidget) $ctrl.configurableWidget = $ctrl.itemsCtrl.configurableWidget;
                 installMoveActions();
 
                 var pinnedTopic = 'catalog.item.pinned.' + $ctrl.item.id;
@@ -2219,6 +2326,10 @@ function BinCatalogItemComponent() {
 
             function hasCatalogItemUpdatePermission() {
                 return binarta.checkpoint.profile.hasPermission('catalog.item.update');
+            }
+
+            function hasConfigureWidgetPermission() {
+                return binarta.checkpoint.profile.hasPermission('save.widget.attributes');
             }
 
             function hasCatalogItemPinPermission() {
@@ -2372,6 +2483,20 @@ function BinCatalogItemComponent() {
                 $ctrl.unpublish = function () {
                     return publisher.unpublish($ctrl.item);
                 };
+            }
+
+            function installConfigureWidgetActions() {
+                $ctrl.configureWidget = function () {
+                    widget.configure({
+                        component: $ctrl.configurableComponent,
+                        widget: $ctrl.configurableWidget,
+                        item: $ctrl.item,
+                        overrideAttribute: $ctrl.fittingRuleAttribute,
+                        ui: {
+                            updated: $ctrl.refresh
+                        }
+                    });
+                }
             }
         }];
 }

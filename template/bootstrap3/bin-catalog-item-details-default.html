@@ -1,7 +1,12 @@
 <div class="row">
     <div class="col-xs-12 col-sm-4">
         <div class="item-line item-image">
-            <div bin-image-carousel="$ctrl.item.id" items="$ctrl.item.carousel"></div>
+            <bin-image-carousel
+                    item-id="$ctrl.item.id"
+                    items="$ctrl.item.carousel"
+                    aspect-ratio="$ctrl.item.imageAspectRatio"
+                    fitting-rule="$ctrl.item.imageFittingRule"
+            >
         </div>
     </div>
     <div class="col-xs-12 col-sm-8">

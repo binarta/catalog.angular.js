@@ -50,6 +50,12 @@
                             bin-action-i18n-code="catalog.item.unpublish"
                             ng-if="$ctrl.isUnpublishAllowed()">
                 </bin-action>
+                <bin-action bin-action-type="expression"
+                            bin-action-expression="$ctrl.configureWidget()"
+                            bin-action-icon-class="fa-cog"
+                            bin-action-i18n-code="catalog.item.configure.widget"
+                            ng-if="$ctrl.isConfigureWidgetAllowed()">
+                </bin-action>
                 <bin-action bin-action-type="selector"
                             bin-action-selector="delete"
                             bin-action-danger

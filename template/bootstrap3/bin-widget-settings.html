@@ -1,0 +1,49 @@
+<form ng-submit="submit()">
+    <div class="bin-menu-edit-body" ng-if="status == 'defaults-mode'">
+        <div class="form-group" ng-class="{'has-error': violations.attributes.aspectRatio}">
+            <label i18n code="catalog.item.image.aspect.ratio" read-only ng-bind="::var"></label>
+            <input type="number" class="form-control" ng-model="defaultAttributes.aspectRatio.width" required>
+            x
+            <input type="number" class="form-control" ng-model="defaultAttributes.aspectRatio.height" required>
+            <p class="help-block" ng-repeat="v in violations.attributes.aspectRatio.width"
+               i18n code="widget.aspect.ratio.{{::v}}" default="Width: {{::v}}" read-only>
+                {{::var}}
+            </p>
+            <p class="help-block" ng-repeat="v in violations.attributes.aspectRatio.height"
+               i18n code="widget.aspect.ratio..{{::v}}" default="Height: {{::v}}" read-only>
+                {{::var}}
+            </p>
+        </div>
+        <div class="form-group" ng-class="{'has-error': violations.attributes.fittingRule}">
+            <label i18n code="catalog.item.image.fitting.rule" read-only ng-bind="::var"></label>
+            <input class="form-control" ng-model="defaultAttributes.fittingRule" required>
+            <p class="help-block" ng-repeat="v in violations.attributes.fittingRule"
+               i18n code="widget.fitting.rule.{{::v}}" default="{{::v}}" read-only>
+                {{::var}}
+            </p>
+        </div>
+    </div>
+    <div class="bin-menu-edit-body" ng-if="status == 'item-mode'">
+        <div class="form-group" ng-class="{'has-error': violations[fittingRuleAttribute]}">
+            <label i18n code="catalog.item.image.fitting.rule" read-only ng-bind="::var"></label>
+            <input class="form-control" ng-model="item[fittingRuleAttribute]">
+            <p class="help-block" ng-repeat="v in violations[fittingRuleAttribute]"
+               i18n code="widget.fitting.rule.{{::v}}" default="{{::v}}" read-only>
+                {{::var}}
+            </p>
+        </div>
+    </div>
+    <div class="bin-menu-edit-actions">
+        <button type="submit" class="btn btn-primary"
+                i18n code="clerk.menu.save.button" read-only ng-disabled="working">
+            <span ng-show="working"><i class="fa fa-spinner fa-spin fa-fw"></i></span>
+            <span ng-bind="::var"></span>
+        </button>
+        <button type="button" class="btn btn-default" ng-click="cancel()"
+                i18n code="clerk.menu.cancel.button" read-only ng-bind="::var" ng-disabled="working"></button>
+        <button type="button" class="btn btn-default" ng-click="switchToItemMode()" ng-if="status == 'defaults-mode'"
+                i18n code="widget.settings.menu.to.item.mode.button" read-only ng-bind="::var" ng-disabled="working"></button>
+        <button type="button" class="btn btn-default" ng-click="switchToDefaultsMode()" ng-if="status == 'item-mode'"
+                i18n code="widget.settings.menu.to.defaults.mode.button" read-only ng-bind="::var" ng-disabled="working"></button>
+    </div>
+</form>

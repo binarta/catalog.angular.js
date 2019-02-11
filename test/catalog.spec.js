@@ -2129,7 +2129,7 @@ describe('catalog', function () {
                             expect(component.areRecentItemsAllowed()).toBeFalsy();
                         });
                     });
-                    
+
                     describe('and switch to default view', function () {
                         beforeEach(function () {
                             component.switchToDefaultView();
@@ -2631,6 +2631,176 @@ describe('catalog', function () {
         });
     });
 
+    describe('binWidgetSettings service', function () {
+        var sut, item, editModeRendererMock, updater;
+
+        beforeEach(inject(function (binWidgetSettings, editModeRenderer, updateCatalogItemWriter) {
+            sut = binWidgetSettings;
+            editModeRendererMock = editModeRenderer;
+            updater = updateCatalogItemWriter;
+            updater.and.returnValue('promise');
+            item = {
+                id: 'id',
+                type: 'product',
+                aspectRatio: 'aspect-ratio',
+                fittingRule: 'fitting-rule'
+            };
+        }));
+
+        describe('on configure', function () {
+            var scope, settings, ui;
+
+            beforeEach(function () {
+                ui = jasmine.createSpyObj('ui', ['updated']);
+                settings = binarta.application.display.settings.component('catalog.item.search').widget('preview.image');
+                sut.configure({
+                    component: 'catalog.item.search',
+                    widget: 'preview.image',
+                    item: item,
+                    overrideAttribute: 'overrideAttribute',
+                    ui: ui
+                });
+                scope = editModeRendererMock.open.calls.mostRecent().args[0].scope;
+            });
+
+            afterEach(function () {
+                settings.save({});
+            });
+
+            it('edit-mode renderer is opened', function () {
+                expect(editModeRendererMock.open).toHaveBeenCalled();
+            });
+
+            it('expose default attributes on the scope when they exist', function () {
+                settings.save({
+                    aspectRatio: {width: 3, height: 2},
+                    fittingRule: 'contain'
+                });
+                expect(scope.defaultAttributes).toEqual({
+                    aspectRatio: {width: 3, height: 2},
+                    fittingRule: 'contain'
+                });
+            });
+
+            it('expose item on the scope', function () {
+                expect(scope.item).toEqual(item);
+            });
+
+            it('expose fitting rule attribute name on the scope', function () {
+                expect(scope.fittingRuleAttribute).toEqual('overrideAttribute');
+            });
+
+            it('on cancel dialog is closed', function () {
+                scope.cancel();
+                expect(editModeRendererMock.close).toHaveBeenCalled();
+            });
+
+            it('widget settings observer is closed when scope is destroyed', function () {
+                scope.defaultAttributes = undefined;
+                scope.$destroy();
+                settings.refresh();
+                expect(scope.defaultAttributes).toBeUndefined();
+            });
+
+            describe('on submit', function () {
+                beforeEach(function () {
+                    scope.defaultAttributes = {
+                        aspectRatio: {width: 3, height: 2},
+                        fittingRule: 'contain'
+                    };
+                    scope.submit();
+                });
+
+                it('defaults are saved', function () {
+                    var attributes = {};
+                    settings.observe({
+                        attributes: function (it) {
+                            attributes = it;
+                        }
+                    }).disconnect();
+                    expect(attributes).toEqual({
+                        aspectRatio: {width: 3, height: 2},
+                        fittingRule: 'contain'
+                    });
+                });
+
+                it('dialog is closed', function () {
+                    expect(editModeRendererMock.close).toHaveBeenCalled();
+                });
+
+                it('update listener is triggered', function () {
+                    expect(ui.updated).toHaveBeenCalled();
+                });
+            });
+
+            describe('when switchin to item mode', function () {
+                beforeEach(function () {
+                    scope.switchToItemMode();
+                });
+
+                it('then status is exposed on scope', function () {
+                    expect(scope.status).toEqual('item-mode');
+                });
+
+                describe('when switchin back to defaults mode', function () {
+                    beforeEach(function () {
+                        scope.switchToDefaultsMode();
+                    });
+
+                    it('then status is exposed on scope', function () {
+                        expect(scope.status).toEqual('defaults-mode');
+                    });
+                });
+
+                describe('on submit', function () {
+                    beforeEach(function () {
+                        scope.item.overrideAttribute = 'item-cover';
+                        scope.submit();
+                    });
+
+                    it('item update is requested', function () {
+                        expect(updater).toHaveBeenCalledWith({
+                            data: {
+                                treatInputAsId: false,
+                                context: 'update',
+                                id: item.id,
+                                type: 'product',
+                                overrideAttribute: 'item-cover'
+                            },
+                            success: jasmine.any(Function),
+                            error: jasmine.any(Function),
+                            rejected: jasmine.any(Function)
+                        });
+                    });
+
+                    describe('on error', function () {
+                        beforeEach(function () {
+                            updater.calls.mostRecent().args[0].error();
+                        });
+
+                        it('not working', function () {
+                            expect(scope.working).toBeFalsy();
+                        });
+                    });
+
+                    describe('on success', function () {
+                        beforeEach(function () {
+                            updater.calls.mostRecent().args[0].success();
+                        });
+
+                        it('edit-mode renderer is closed', function () {
+                            expect(editModeRendererMock.close).toHaveBeenCalled();
+                        });
+
+                        it('update listener is triggered', function () {
+                            expect(ui.updated).toHaveBeenCalled();
+                        });
+                    });
+                });
+            });
+        });
+    });
+
     describe('binCatalogList component', function () {
         var $ctrl, $componentController, $routeParams, search;
         var type = 'type';
@@ -2885,7 +3055,7 @@ describe('catalog', function () {
                 });
             });
         });
-        
+
         describe('when requesting partitions for one level', function () {
             beforeEach(function () {
                 $ctrl = $componentController('binCatalogList', null, {
@@ -4115,7 +4285,7 @@ describe('catalog', function () {
                 $ctrl.$postLink();
             });
 
-            it('should have boolean value of true on $ctrl when element has a string property of true', function() {
+            it('should have boolean value of true on $ctrl when element has a string property of true', function () {
                 expect($ctrl.static).toBe(true);
             });
 
@@ -4864,7 +5034,7 @@ describe('catalog', function () {
     describe('binCatalogItem component', function () {
         var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
         var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock, imageCarousel,
-            moment, i18n, i18nResolveDeferred;
+            moment, i18n, i18nResolveDeferred, widgetMock;
 
         beforeEach(inject(function ($q, _$rootScope_, _$componentController_, _$location_, topicRegistryMock,
                                     editModeRenderer, binLink, updateCatalogItemWriter, binImageCarousel, _moment_, _i18n_) {
@@ -4887,6 +5057,7 @@ describe('catalog', function () {
             removeMock.and.returnValue(removeDeferred.promise);
             findCatalogItemByIdMock = jasmine.createSpy('spy');
             publisherMock = jasmine.createSpyObj('spy', ['publish', 'unpublish']);
+            widgetMock = jasmine.createSpyObj('spy', ['configure']);
             i18n = _i18n_;
             i18nResolveDeferred = $q.defer();
             i18n.resolve.and.returnValue(i18nResolveDeferred.promise);
@@ -4897,7 +5068,8 @@ describe('catalog', function () {
                 itemPinner: pinnerMock,
                 removeCatalogItem: removeMock,
                 findCatalogItemById: findCatalogItemByIdMock,
-                binCatalogItemPublisher: publisherMock
+                binCatalogItemPublisher: publisherMock,
+                binWidgetSettings: widgetMock
             }, {});
         }));
 
@@ -4958,7 +5130,10 @@ describe('catalog', function () {
                 beforeEach(function () {
                     successSpy = jasmine.createSpy('success');
                     errorSpy = jasmine.createSpy('error');
-                    promise = $ctrl.update({key: 'customKey', value: 'customValue'}, {success: successSpy, error: errorSpy});
+                    promise = $ctrl.update({key: 'customKey', value: 'customValue'}, {
+                        success: successSpy,
+                        error: errorSpy
+                    });
                 });
 
                 it('item is updated', function () {
@@ -5526,6 +5701,45 @@ describe('catalog', function () {
             });
         });
 
+        describe('check if configure widget is allowed', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.$onInit();
+            });
+
+            it('when configurable but no permission', function () {
+                $ctrl.configurable = 'true';
+                expect($ctrl.isConfigureWidgetAllowed()).toBeFalsy();
+            });
+
+            describe('when user has permission', function () {
+                beforeEach(function () {
+                    binarta.checkpoint.gateway.addPermission('save.widget.attributes');
+                    binarta.checkpoint.profile.refresh();
+                });
+
+                it('and is configurable', function () {
+                    $ctrl.configurableComponent = 'component';
+                    $ctrl.configurableWidget = 'widget';
+                    expect($ctrl.isConfigureWidgetAllowed()).toBeTruthy();
+                });
+
+                it('and is not configurable when widget not specified', function () {
+                    $ctrl.configurableComponent = 'component';
+                    expect($ctrl.isConfigureWidgetAllowed()).toBeFalsy();
+                });
+
+                it('and is not configurable when component not specified', function () {
+                    $ctrl.configurableWidget = 'widget';
+                    expect($ctrl.isConfigureWidgetAllowed()).toBeFalsy();
+                });
+
+                it('is disabled by default', function () {
+                    expect($ctrl.isConfigureWidgetAllowed()).toBeFalsy();
+                });
+            });
+        });
+
         describe('when items are pinnable', function () {
             beforeEach(function () {
                 $ctrl.item = item;
@@ -5963,7 +6177,7 @@ describe('catalog', function () {
                     expect(returnValue).toEqual('promise');
                 });
             });
-           
+
             describe('on makeTall', function () {
                 var returnValue;
 
@@ -5982,7 +6196,7 @@ describe('catalog', function () {
                     expect(returnValue).toEqual('promise');
                 });
             });
-           
+
             describe('on resetSize', function () {
                 var returnValue;
 
@@ -5999,6 +6213,27 @@ describe('catalog', function () {
 
                 it('returns promise', function () {
                     expect(returnValue).toEqual('promise');
+                });
+            });
+        });
+
+        describe('and item is configurable', function () {
+            beforeEach(function () {
+                $ctrl.item = item;
+                $ctrl.configurableComponent = 'component';
+                $ctrl.configurableWidget = 'widget';
+                $ctrl.fittingRuleAttribute = 'fittingRule';
+                $ctrl.$onInit();
+            });
+
+            it('on configure widget', function () {
+                $ctrl.configureWidget();
+                expect(widgetMock.configure).toHaveBeenCalledWith({
+                    component: 'component',
+                    widget: 'widget',
+                    item: item,
+                    overrideAttribute: 'fittingRule',
+                    ui: jasmine.any(Object)
                 });
             });
         });

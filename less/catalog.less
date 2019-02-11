@@ -1,5 +1,33 @@
 @bin-catalog-item-min-height: 80px;
 
+.maintain-aspect-ratio {
+  display: block;
+  position: relative;
+  height: 0;
+
+  > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  > [bin-image] {
+    &.cover {
+      height: 100%;
+      max-height: unset;
+    }
+
+    &.contain {
+      object-fit: contain;
+      background-size: contain;
+      height: 100%;
+      max-height: unset;
+    }
+  }
+}
+
 .bin-catalog {
   padding-bottom: 20px;
 

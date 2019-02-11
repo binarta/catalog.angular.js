@@ -12,6 +12,6 @@
               length="$ctrl.items.length + ($ctrl.isAddAllowed() ? 1 : 0)"
               center="{{::$ctrl.center}}"
               ng-repeat="item in $ctrl.items track by item.id">
-        <bin-catalog-item item="item"></bin-catalog-item>
+        <bin-catalog-item item="item" fitting-rule-attribute="fittingRuleOverrideForPreview"></bin-catalog-item>
     </bin-cols>
 </div>

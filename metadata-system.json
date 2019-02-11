@@ -2,6 +2,11 @@
   "msgs": {
     "nl": {
       "catalog.item.removed": "Artikel verwijderd",
+      "catalog.item.configure.widget": "Configuratie",
+      "catalog.item.image.aspect.ratio": "Aspect Ratio",
+      "widget.settings.menu.to.defaults.mode.button":"Defaults",
+      "widget.settings.menu.to.item.mode.button":"Per Item",
+      "catalog.item.image.fitting.rule": "Fitting Rule",
       "catalog.item.updated": "Artikel bijgewerkt",
       "catalog.partition.name.label": "Geef een naam voor de category",
       "catalog.partition.name.unique": "Deze categorie bestaat reeds",
@@ -74,6 +79,11 @@
     },
     "en": {
       "catalog.item.removed": "Item removed",
+      "catalog.item.configure.widget": "Configuration",
+      "catalog.item.image.aspect.ratio": "Aspect Ratio",
+      "catalog.item.image.fitting.rule": "Fitting Rule",
+      "widget.settings.menu.to.defaults.mode.button":"Defaults",
+      "widget.settings.menu.to.item.mode.button":"Per Item",
       "catalog.item.updated": "Item updated",
       "catalog.partition.name.label": "Enter a category name",
       "catalog.partition.name.unique": "This category already exist",
@@ -146,6 +156,11 @@
     },
     "fr": {
       "catalog.item.removed": "Article supprimé",
+      "catalog.item.configure.widget": "Configuration",
+      "catalog.item.image.aspect.ratio": "Aspect Ratio",
+      "catalog.item.image.fitting.rule": "Fitting Rule",
+      "widget.settings.menu.to.defaults.mode.button":"Defaults",
+      "widget.settings.menu.to.item.mode.button":"Per Item",
       "catalog.item.updated": "Article actualisé",
       "catalog.partition.name.label": "Entrez un nom de catégorie",
       "catalog.partition.name.unique": "Cette catégorie existe déjà",
@@ -218,6 +233,11 @@
     },
     "de": {
       "catalog.item.removed": "Artikel gelöscht",
+      "catalog.item.configure.widget": "Konfiguration",
+      "catalog.item.image.aspect.ratio": "Aspect Ratio",
+      "catalog.item.image.fitting.rule": "Fitting Rule",
+      "widget.settings.menu.to.defaults.mode.button":"Defaults",
+      "widget.settings.menu.to.item.mode.button":"Per Item",
       "catalog.item.updated": "Artikel überarbeitet",
       "catalog.partition.name.label": "Enter a category name",
       "catalog.partition.name.unique": "This category already exist",
