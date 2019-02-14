@@ -5031,7 +5031,7 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogItem component', function () {
+    fdescribe('binCatalogItem component', function () {
         var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
         var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock, imageCarousel,
             moment, i18n, i18nResolveDeferred, widgetMock;

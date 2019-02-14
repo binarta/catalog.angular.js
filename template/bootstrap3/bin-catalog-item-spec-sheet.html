@@ -1,0 +1,13 @@
+<h1 class="item-line item-title" i18n code="{{::$ctrl.parent.i18n.title}}" ng-bind="var"></h1>
+
+<div class="item-line item-price">
+    <bin-price catalog-item="$ctrl.parent.item" on-update="$ctrl.parent.refresh()"></bin-price>
+</div>
+
+<div class="item-line item-cta">
+    <bin-catalog-item-cta item="$ctrl.parent.item"></bin-catalog-item-cta>
+</div>
+
+<div class="item-line item-body" i18n code="{{::$ctrl.parent.i18n.body}}" editor="full"
+     ng-bind-html="var|trust" ng-show="var || $ctrl.parent.editing">
+</div>
