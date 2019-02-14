@@ -1,13 +1,16 @@
 <div class="bin-catalog-item thumbnail">
     <a bin-href="{{::$ctrl.itemPath}}">
-        <div class="item-image"
-             ng-class="::{'item-image-not-found': !$ctrl.image.hero, 'maintain-aspect-ratio': $ctrl.item.imageAspectRatio}"
-             ng-style="{'padding-bottom': 'calc((100% * ' + $ctrl.item.imageAspectRatio.height + ')/'+$ctrl.item.imageAspectRatio.width+')'}">
-            <img
-                    bin-image="{{::$ctrl.image.hero}}"
-                    ng-class="{'cover':$ctrl.item.imageFittingRule == 'cover', 'contain':$ctrl.item.imageFittingRule == 'contain'}"
-                    read-only
-                    ng-if="::$ctrl.image.hero">
+        <div class="item-image-mobile-wrapper">
+            <div class="item-image maintain-aspect-ratio"
+                 ng-class="::{'item-image-not-found': !$ctrl.image.hero"
+                 ng-style="{'padding-bottom': 'calc((100% * ' + $ctrl.item.imageAspectRatio.height + ')/'+$ctrl.item.imageAspectRatio.width+')'}"
+            >
+                <img
+                        bin-image="{{::$ctrl.image.hero}}"
+                        ng-class="{'cover':$ctrl.item.imageFittingRule == 'cover', 'contain':$ctrl.item.imageFittingRule != 'cover'}"
+                        read-only
+                        ng-if="::$ctrl.image.hero">
+            </div>
         </div>
     </a>
     <div class="caption">
