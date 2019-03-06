@@ -35,4 +35,12 @@ gulp.task('catalog-shop-bootstrap3', function () {
         .pipe(gulp.dest('src'));
 });
 
+gulp.task('templates:all', ['catalog-bootstrap3', 'catalog-unavailable-bootstrap3', 'catalog-shop-bootstrap3']);
+
+gulp.task('templates:watch', ['templates:all'], function() {
+    gulp.watch('template/**/*.html', function () {
+        gulp.start('templates:all');
+    });
+});
+
 gulp.task('default', ['catalog-bootstrap3', 'catalog-unavailable-bootstrap3', 'catalog-shop-bootstrap3']);

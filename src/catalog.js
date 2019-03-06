@@ -1,5 +1,26 @@
 (function () {
-    angular.module('catalog', ['ngRoute', 'angularx', 'binarta-applicationjs-angular1', 'binarta-checkpointjs-angular1', 'catalogx.gateway', 'notifications', 'config', 'rest.client', 'i18n', 'web.storage', 'angular.usecase.adapter', 'toggle.edit.mode', 'checkpoint', 'application', 'bin.price', 'momentx', 'application.pages', 'image.carousel', 'grid.layout'])
+    angular.module('catalog', [
+        'angular.usecase.adapter',
+        'angularx',
+        'application',
+        'application.pages',
+        'bin.price',
+        'binarta-applicationjs-angular1',
+        'binarta-checkpointjs-angular1',
+        'carousel',
+        'catalogx.gateway',
+        'checkpoint',
+        'config',
+        'grid.layout',
+        'i18n',
+        'image.carousel',
+        'momentx',
+        'ngRoute',
+        'notifications',
+        'rest.client',
+        'toggle.edit.mode',
+        'web.storage'
+    ])
         .provider('catalogItemUpdatedDecorator', CatalogItemUpdatedDecoratorsFactory)
         .factory('updateCatalogItem', ['updateCatalogItemWriter', 'topicMessageDispatcher', 'catalogItemUpdatedDecorator', UpdateCatalogItemFactory])
         .factory('addCatalogItem', ['$location', 'config', 'localeResolver', 'restServiceHandler', 'topicMessageDispatcher', 'i18nLocation', 'editMode', AddCatalogItemFactory])

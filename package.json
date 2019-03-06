@@ -16,7 +16,9 @@
     "phantomjs": "^2.1.1"
   },
   "scripts": {
+    "postinstall": "bower update",
     "templates": "gulp",
+    "templates:watch":"gulp templates:watch",
     "test": "karma start config/karma10.conf.js --single-run",
     "test:watch": "karma start config/karma10.conf.js",
     "ci": "karma start config/karma10.conf.js --single-run --browsers PhantomJS"

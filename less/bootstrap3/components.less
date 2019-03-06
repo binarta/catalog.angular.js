@@ -1,3 +1,5 @@
+@import '../../bower_components/websters.carousel.angular/less/mixins';
+
 .bin-catalog-partition-description {
   margin-bottom: @line-height-computed * 2;
 }
@@ -10,4 +12,8 @@ bin-catalog-item {
   .item-price {
     font-size: @font-size-large;
   }
+}
+
+bin-catalog-item-image-gallery {
+  #content-carousel.controls();
 }

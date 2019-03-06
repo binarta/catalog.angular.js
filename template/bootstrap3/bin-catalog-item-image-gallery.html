@@ -4,5 +4,35 @@
             items="$ctrl.parent.item.carousel"
             aspect-ratio="$ctrl.parent.item.imageAspectRatio"
             fitting-rule="$ctrl.parent.item.imageFittingRule"
-    ></bin-image-carousel>
+            template-url="partials/bin-catalog-item-image-gallery-carousel.html">
+    </bin-image-carousel>
 </div>
+
+<script type="text/ng-template" id="partials/bin-catalog-item-image-gallery-carousel.html">
+    <content-carousel items="$ctrl.images"
+                      dots="true"
+                      auto-play="false"
+                      item-template-url="partials/bin-catalog-item-image-gallery-carousel-item.html"
+                      aspect-ratio="$ctrl.aspectRatio"
+                      fitting-rule="$ctrl.fittingRule"
+                      ng-class="{'controls-visible': $ctrl.images.length > 1}">
+    </content-carousel>
+</script>
+
+<script type="text/ng-template" id="partials/bin-catalog-item-image-gallery-carousel-item.html">
+    <div>
+        <bin-image-enlarged code="{{::item.path}}"
+                            read-only
+                            seo-image
+                            ng-if="::$index == 0"
+                            aspect-ratio="item.aspectRatio"
+                            fitting-rule="item.fittingRule"
+        ></bin-image-enlarged>
+        <bin-image-enlarged code="{{::item.path}}"
+                            read-only
+                            ng-if="::$index != 0"
+                            aspect-ratio="item.aspectRatio"
+                            fitting-rule="item.fittingRule"
+        ></bin-image-enlarged>
+    </div>
+</script>

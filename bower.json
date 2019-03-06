@@ -18,6 +18,7 @@
     "binarta.momentx.angular": "0.*.*",
     "binarta.application.pages.angular": "0.*.*",
     "binarta.image.carousel.angular": "1.*.*",
+    "websters.carousel.angular": "0.*.*",
     "websters.grid.layout.angular": "0.*.*"
   },
   "devDependencies": {
