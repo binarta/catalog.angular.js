@@ -284,7 +284,7 @@ describe('catalog', function () {
                 entity: jasmine.createSpy('entity')
             };
             scope = $rootScope.$new();
-            ctrl = $controller(QueryCatalogController, {
+            ctrl = $controller('QueryCatalogController', {
                 $scope: scope,
                 findCatalogItemsByPartition: fixture.query,
                 findCatalogItemById: fixture.entity,
@@ -498,7 +498,7 @@ describe('catalog', function () {
             };
             scope = $rootScope.$new();
             subscribers = topicRegistryMock;
-            ctrl = $controller(ListCatalogPartitionsController, {
+            ctrl = $controller('ListCatalogPartitionsController', {
                 $scope: scope,
                 findCatalogPartitions: fixture.query
             });
@@ -683,7 +683,7 @@ describe('catalog', function () {
     describe('RemoveCatalogPartitionController', function () {
         beforeEach(inject(function ($controller, config) {
             config.namespace = 'namespace';
-            ctrl = $controller(RemoveCatalogPartitionController, {
+            ctrl = $controller('RemoveCatalogPartitionController', {
                 $scope: scope,
                 scopedRestServiceHandler: rest.service,
                 topicMessageDispatcher: dispatcher
@@ -781,7 +781,7 @@ describe('catalog', function () {
             subscriptions = topicRegistryMock;
             config.namespace = 'namespace';
             itemTypesLoaded = undefined;
-            ctrl = $controller(AddToCatalogController, {
+            ctrl = $controller('AddToCatalogController', {
                 $scope: scope,
                 $routeParams: params,
                 findAllCatalogItemTypes: findAllCatalogItemTypes
@@ -1176,10 +1176,10 @@ describe('catalog', function () {
         beforeEach(inject(function ($controller, config) {
             config.namespace = 'namespace';
             ctx = {};
-            ctrl = $controller(AddPartitionToCatalogController, {
+            ctrl = $controller('AddPartitionToCatalogController', {
                 $scope: scope,
                 $routeParams: params,
-                restServiceHandler: handler
+                scopedRestServiceHandler: handler
             });
         }));
 
@@ -1187,7 +1187,7 @@ describe('catalog', function () {
             beforeEach(inject(function ($controller) {
                 params = {owner: 'owner'};
                 location.search(params);
-                ctrl = $controller(AddPartitionToCatalogController, {
+                ctrl = $controller('AddPartitionToCatalogController', {
                     $scope: scope,
                     $routeParams: params,
                     restServiceHandler: handler
@@ -1437,7 +1437,7 @@ describe('catalog', function () {
 
     describe('RemoveItemFromCatalogController', function () {
         beforeEach(inject(function ($controller) {
-            ctrl = $controller(RemoveItemFromCatalogController, {
+            ctrl = $controller('RemoveItemFromCatalogController', {
                 $scope: scope,
                 $location: location,
                 topicMessageDispatcher: dispatcher,
@@ -1570,7 +1570,7 @@ describe('catalog', function () {
                 };
             };
             scope.watches = [];
-            ctrl = $controller(UpdateCatalogItemController, {
+            ctrl = $controller('UpdateCatalogItemController', {
                 $scope: scope,
                 findCatalogItemById: fixture.entity
             });
@@ -5031,7 +5031,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('binCatalogItem component', function () {
+    describe('binCatalogItem component', function () {
         var $ctrl, $rootScope, $componentController, $location, topicsMock, pinnerMock, removeMock, removeDeferred;
         var item, findCatalogItemByIdMock, editModeRendererMock, binLinkMock, writer, publisherMock, imageCarousel,
             moment, i18n, i18nResolveDeferred, widgetMock;
