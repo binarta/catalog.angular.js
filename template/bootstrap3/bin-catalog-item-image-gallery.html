@@ -10,11 +10,10 @@
 
 <script type="text/ng-template" id="partials/bin-catalog-item-image-gallery-carousel.html">
     <content-carousel items="$ctrl.images"
-                      dots="true"
+                      dots="false"
+                      arrows="true"
                       auto-play="false"
                       item-template-url="partials/bin-catalog-item-image-gallery-carousel-item.html"
-                      aspect-ratio="$ctrl.aspectRatio"
-                      fitting-rule="$ctrl.fittingRule"
                       ng-class="{'controls-visible': $ctrl.images.length > 1}">
     </content-carousel>
 </script>
