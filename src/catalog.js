@@ -63,6 +63,7 @@
         .component('binCatalogEmpty', new BinCatalogEmptyComponent())
         .component('binCatalogDetails', new BinCatalogDetailsComponent())
         .component('binCatalogItem', new BinCatalogItemComponent())
+        .component('binCatalogItemImage', new BinCatalogItemImageComponent())
         .component('binCatalogItemImageGallery', new BinCatalogItemImageGalleryComponent())
         .component('binCatalogItemSpecSheet', new BinCatalogItemSpecSheetComponent())
         .component('binCatalogPublicationTime', new BinCatalogPublicationTime())
@@ -2526,6 +2527,27 @@
                     }
                 }
             }];
+    }
+
+    function BinCatalogItemImageComponent() {
+        this.templateUrl = 'bin-catalog-item-image-component.html';
+        this.bindings = {
+            bottomTemplateUrl: '@'
+        };
+        this.require = {
+            parent: '^^binCatalogItem'
+        };
+        this.controller = function () {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                if (!$ctrl.bottomTemplateUrl)
+                    $ctrl.bottomTemplateUrl = 'bin-catalog-item-image-component-bottom.html';
+                $ctrl.src = $ctrl.parent.image.hero;
+                $ctrl.aspectRatio = $ctrl.parent.item.imageAspectRatio;
+                $ctrl.fittingRule = $ctrl.parent.item.imageFittingRule;
+            }
+        }
     }
 
     function BinCatalogItemImageGalleryComponent() {
