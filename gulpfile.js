@@ -11,7 +11,7 @@ var minifyHtmlOpts = {
     quotes: true
 };
 
-gulp.task('catalog-unavailable-bootstrap3', function () {
+gulp.task('catalog-unavailable-bootstrap3', function () { // TODO - is there a difference here with catalog-bootstrap3?
     gulp.src(['template/bootstrap3/*.html'])
         .pipe(template({shop: false}))
         .pipe(minifyHtml(minifyHtmlOpts))
@@ -37,7 +37,7 @@ gulp.task('catalog-shop-bootstrap3', function () {
 
 gulp.task('templates:all', ['catalog-bootstrap3', 'catalog-unavailable-bootstrap3', 'catalog-shop-bootstrap3']);
 
-gulp.task('templates:watch', ['templates:all'], function() {
+gulp.task('templates:watch', ['templates:all'], function () {
     gulp.watch('template/**/*.html', function () {
         gulp.start('templates:all');
     });

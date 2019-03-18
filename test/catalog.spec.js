@@ -1,5 +1,5 @@
 describe('catalog', function () {
-    var usecase, ctrl, scope, params, $httpBackend, dispatcher, location, i18nLocation, payload, notifications;
+    var usecase, $ctrl, ctrl, scope, params, $httpBackend, dispatcher, location, i18nLocation, payload, notifications;
     var onSuccess, receivedPayload, rest, i18n, $q, binarta, $rootScope;
 
     beforeEach(module('catalog'));
@@ -2797,6 +2797,70 @@ describe('catalog', function () {
                         });
                     });
                 });
+            });
+        });
+    });
+
+    describe('BinBrowseCatalogPage controller', function () {
+        it('expects user provided template for backwards compatibility', inject(function ($controller) {
+            $ctrl = $controller('BinBrowseCatalogPage', {});
+            expect($ctrl.templateUrl).toEqual('partials/catalog/browse.html');
+        }));
+
+        describe('when using library template', function() {
+            beforeEach(inject(function(config) {
+                config.BinBrowseCatalogPage = {useLibraryTemplate: true};
+            }));
+
+            it('expose library template', inject(function (config, $controller) {
+                $ctrl = $controller('BinBrowseCatalogPage', {});
+                expect($ctrl.templateUrl).toEqual('bin-catalog-browse-page-default.html');
+            }));
+
+            it('sandbox', inject(function(config, $controller) {
+                config.BinBrowseCatalogPage.templateUrl = 't';
+                $ctrl = $controller('BinBrowseCatalogPage', {});
+                expect($ctrl.templateUrl).toEqual('t');
+            }));
+        });
+    });
+
+    fdescribe('<bin-catalog-browse/>', function() {
+        describe('with controller', function() {
+            beforeEach(inject(function($componentController) {
+                $ctrl = $componentController('binCatalogBrowse', undefined, {});
+            }));
+
+            describe('$onInit', function() {
+                beforeEach(function() {
+                    $ctrl.$onInit();
+                });
+
+                it('expose partitions template url', function() {
+                    expect($ctrl.partitionsTemplateUrl).toEqual('bin-catalog-browse-component-partitions-default.html');
+                });
+            });
+
+            describe('$onInit with overrides', function() {
+                beforeEach(function() {
+                    $ctrl.partitionsTemplateUrl = 'pt';
+                    $ctrl.$onInit();
+                });
+
+                it('expose partitions template url', function() {
+                    expect($ctrl.partitionsTemplateUrl).toEqual('pt');
+                });
+            });
+        });
+    });
+
+    describe('<bin-catalog-browse-partitions/>', function() {
+        describe('with controller', function() {
+            beforeEach(inject(function($componentController) {
+                $ctrl = $componentController('binCatalogBrowsePartitions', undefined, {});
+            }));
+
+            it('exists', function() {
             });
         });
     });

@@ -1,0 +1,8 @@
+<div class="bin-catalog">
+    <bin-catalog-list one-level-partition="true">
+        <bin-catalog-search></bin-catalog-search>
+        <bin-catalog-partition-title template-url="{{$ctrl.partitionTitleTemplateUrl}}"></bin-catalog-partition-title>
+        <bin-catalog-breadcrumb></bin-catalog-breadcrumb>
+        <ng-include src="$ctrl.partitionsTemplateUrl"></ng-include>
+    </bin-catalog-list>
+</div>

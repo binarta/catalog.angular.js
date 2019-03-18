@@ -36,6 +36,7 @@
         .factory('itemPinner', ['topicMessageDispatcher', 'restServiceHandler', 'config', ItemPinnerFactory])
         .service('binCatalogItemPublisher', ['$rootScope', 'moment', 'updateCatalogItemWriter', 'editModeRenderer', BinCatalogItemPublisherService])
         .service('binWidgetSettings', ['$rootScope', 'binarta', 'updateCatalogItemWriter', 'editModeRenderer', BinWidgetSettingsService])
+        .controller('BinBrowseCatalogPage', ['config', BinBrowseCatalogPage])
         .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
         .controller('AddToCatalogController', ['$scope', '$routeParams', 'topicRegistry', 'findAllCatalogItemTypes', 'addCatalogItem', 'usecaseAdapterFactory', AddToCatalogController])
         .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
@@ -47,6 +48,8 @@
         .controller('binSpotlightItemsController', ['topicRegistry', 'binartaSearch', 'viewport', BinSpotlightItemsController])
         .component('binSpotlight', new BinSpotlightComponent())
         .component('binSpotlightItems', new BinSpotlightItemsComponent())
+        .component('binCatalogBrowse', new BinCatalogBrowseComponent())
+        .component('binCatalogBrowsePartitions', new BinCatalogBrowsePartitionsComponent())
         .component('binCatalogList', new BinCatalogListComponent())
         .component('binCatalogPartitions', new BinCatalogPartitionsComponent())
         .component('binCatalogPartitionAdd', new BinCatalogPartitionAddComponent())
@@ -81,9 +84,15 @@
         .config(['$routeProvider', 'catalogPathLimit', function ($routeProvider, catalogPathLimit) {
             for (var i = 0; i <= catalogPathLimit; i++) {
                 var path = generatePath(i);
-                $routeProvider.when('/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html'});
+                $routeProvider.when('/browse' + path + '/', {
+                    templateUrl: 'bin-catalog-browse-page.html',
+                    controller: 'BinBrowseCatalogPage as $ctrl'
+                });
                 $routeProvider.when('/view' + path, {templateUrl: 'partials/catalog/item.html'});
-                $routeProvider.when('/:locale/browse' + path + '/', {templateUrl: 'partials/catalog/browse.html'});
+                $routeProvider.when('/:locale/browse' + path + '/', {
+                    templateUrl: 'bin-catalog-browse-page.html',
+                    controller: 'BinBrowseCatalogPage as $ctrl'
+                });
                 $routeProvider.when('/:locale/view' + path, {templateUrl: 'partials/catalog/item.html'});
             }
 
@@ -286,6 +295,20 @@
                 });
             });
         };
+    }
+
+    function BinBrowseCatalogPage(config) {
+        var $ctrl = this;
+
+        $ctrl.templateUrl = 'bin-catalog-browse-page-default.html';
+        if (!config.BinBrowseCatalogPage || !config.BinBrowseCatalogPage.useLibraryTemplate) {
+            $ctrl.templateUrl = 'partials/catalog/browse.html';
+            console.log('@Deprecated - BinBrowseCatalogPage.templateUrl = \"' + $ctrl.templateUrl + '\"! Set config.BinBrowseCatalogPage.useDefaultTemplate = true to remedy!');
+        }
+        if (config.BinBrowseCatalogPage) {
+            if (config.BinBrowseCatalogPage.templateUrl)
+                $ctrl.templateUrl = config.BinBrowseCatalogPage.templateUrl;
+        }
     }
 
     function ListCatalogPartitionsController($scope, findCatalogPartitions, ngRegisterTopicHandler) {
@@ -1105,6 +1128,26 @@
                 scope: scope
             });
         };
+    }
+
+    function BinCatalogBrowseComponent() {
+        this.templateUrl = 'bin-catalog-browse-component.html';
+        this.bindings = {
+            partitionsTemplateUrl: '@',
+            partitionTitleTemplateUrl: '@'
+        };
+        this.controller = function () {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.partitionsTemplateUrl = $ctrl.partitionsTemplateUrl || 'bin-catalog-browse-component-partitions-default.html';
+            }
+        }
+    }
+
+    function BinCatalogBrowsePartitionsComponent() {
+        this.templateUrl = 'bin-catalog-browse-partitions-component.html';
+        this.require = {parent: '^^binCatalogBrowse'};
     }
 
     function BinCatalogListComponent() {
