@@ -52,6 +52,7 @@
         .component('binCatalogPartitionAdd', new BinCatalogPartitionAddComponent())
         .component('binCatalogPartition', new BinCatalogPartitionComponent())
         .component('binCatalogPartitionTitle', new BinCatalogPartitionTitleComponent())
+        .component('binCatalogRawPartitionTitle', new BinCatalogRawPartitionTitleComponent())
         .component('binCatalogPartitionDescription', new BinCatalogPartitionDescriptionComponent())
         .component('binCatalogBreadcrumb', new BinCatalogBreadcrumbComponent())
         .component('binCatalogSearch', new BinCatalogSearchComponent())
@@ -1504,14 +1505,13 @@
     }
 
     function BinCatalogPartitionTitleComponent() {
-        this.templateUrl = ['$attrs', function ($attrs) {
-            return $attrs.templateUrl || 'bin-catalog-partition-title.html';
-        }];
+        this.templateUrl = 'bin-catalog-partition-title.html';
 
         this.bindings = {
             type: '@',
             partition: '@',
-            parent: '@'
+            parent: '@',
+            templateUrl: '@'
         };
 
         this.require = {
@@ -1523,6 +1523,7 @@
             $ctrl.i18n = {};
 
             $ctrl.$onInit = function () {
+                $ctrl.templateUrl = $ctrl.templateUrl || 'bin-catalog-partition-title-default.html';
                 if ($ctrl.listCtrl) {
                     if (!$ctrl.type) $ctrl.type = $ctrl.listCtrl.type;
                     if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.partition;
@@ -1531,6 +1532,19 @@
                 $ctrl.i18n.title = $ctrl.parent === '/' ? 'navigation.label.' + $ctrl.type : $ctrl.partition;
             };
         };
+    }
+
+    function BinCatalogRawPartitionTitleComponent() {
+        this.templateUrl = 'bin-catalog-raw-partition-title.html';
+        this.require = {parent: '^^binCatalogPartitionTitle'};
+        this.controller = function () {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.code = $ctrl.parent.i18n.title;
+                $ctrl.default = $ctrl.parent.type;
+            }
+        }
     }
 
     function BinCatalogPartitionDescriptionComponent() {
