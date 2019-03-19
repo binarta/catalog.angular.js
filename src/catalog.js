@@ -60,6 +60,7 @@
         .component('binCatalogBreadcrumb', new BinCatalogBreadcrumbComponent())
         .component('binCatalogRawBreadcrumb', new BinCatalogRawBreadcrumbComponent())
         .component('binCatalogSearch', new BinCatalogSearchComponent())
+        .component('binCatalogRawSearch', new BinCatalogRawSearchComponent())
         .component('binCatalogItemGroups', new BinCatalogItemGroupsComponent())
         .component('binCatalogItems', new BinCatalogItemsComponent())
         .component('binCatalogItemAdd', new BinCatalogItemAddComponent())
@@ -1623,7 +1624,7 @@
 
     function BinCatalogRawBreadcrumbComponent() {
         this.templateUrl = 'bin-catalog-raw-breadcrumb.html';
-        this.require = {parent:'^^binCatalogBreadcrumb'};
+        this.require = {parent: '^^binCatalogBreadcrumb'};
     }
 
     function BinCatalogBreadcrumbComponent() {
@@ -1647,8 +1648,8 @@
             $ctrl.renderingMode = 'legacy';
 
             $ctrl.$onInit = function () {
-                if(config.binCatalogBreadcrumbComponent) {
-                    if(config.binCatalogBreadcrumbComponent.disableLegacyRendering)
+                if (config.binCatalogBreadcrumbComponent) {
+                    if (config.binCatalogBreadcrumbComponent.disableLegacyRendering)
                         $ctrl.renderingMode = 'latest';
                 }
                 if ($ctrl.listCtrl) {
@@ -1735,6 +1736,11 @@
         }];
     }
 
+    function BinCatalogRawSearchComponent() {
+        this.templateUrl = 'bin-catalog-raw-search.html';
+        this.require = {parent: '^^binCatalogSearch'};
+    }
+
     function BinCatalogSearchComponent() {
         this.templateUrl = ['$attrs', function ($attrs) {
             return $attrs.templateUrl || 'bin-catalog-search.html';
@@ -1750,10 +1756,16 @@
             detailsCtrl: '?^^binCatalogDetails'
         };
 
-        this.controller = ['$element', '$location', '$timeout', 'i18nLocation', function ($element, $location, $timeout, i18nLocation) {
+        this.controller = ['$element', '$location', '$timeout', 'i18nLocation', 'config', function ($element, $location, $timeout, i18nLocation, config) {
             var $ctrl = this, isFocused, fadeDuration = 150, input;
+            $ctrl.renderingMode = 'legacy';
 
             $ctrl.$onInit = function () {
+                if (config.binCatalogSearchComponent) {
+                    if (config.binCatalogSearchComponent.disableLegacyRendering)
+                        $ctrl.renderingMode = 'latest';
+                }
+
                 $ctrl.static = $ctrl.static === 'true';
                 $ctrl.q = $location.search().q;
                 if (!$ctrl.type && $ctrl.listCtrl) $ctrl.type = $ctrl.listCtrl.type;

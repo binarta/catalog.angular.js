@@ -1,0 +1,16 @@
+<section id="search">
+    <i18n code="catalog.search.all.prefix" read-only var="searchAll"></i18n>
+
+    <form ng-submit="$ctrl.parent.submit()">
+        <div class="input-group input-group-lg">
+            <input type="text" class="form-control" ng-model="$ctrl.parent.q"
+                   i18n code="navigation.label.{{::$ctrl.parent.type}}" read-only
+                   placeholder="{{::searchAll}} {{var|lowercase}}">
+            <div class="input-group-btn">
+                <button class="btn btn-primary" type="submit">
+                    <i class="fa fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+</section>

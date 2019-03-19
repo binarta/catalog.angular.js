@@ -4170,7 +4170,7 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogSearch component', function () {
+    describe('<bin-catalog-search/>', function () {
         var $componentController, $ctrl, $timeout, elementSpy, inputSpy, searchParam, type, fadeDuration = 150;
 
         beforeEach(inject(function (_$componentController_, _$timeout_) {
@@ -4202,6 +4202,22 @@ describe('catalog', function () {
                 expect(location.path()).not.toEqual('/lang/search/' + type);
             });
         }
+
+        it('starts out in legacy rendering mode', function () {
+            expect($ctrl.renderingMode).toEqual('legacy');
+        });
+
+        it('legacy rendering mode remains enabled when not configured', inject(function (config) {
+            config.binCatalogSearchComponent = {};
+            $ctrl.$onInit();
+            expect($ctrl.renderingMode).toEqual('legacy');
+        }));
+
+        it('legacy rendering mode can be disabled', inject(function (config) {
+            config.binCatalogSearchComponent = {disableLegacyRendering: true};
+            $ctrl.$onInit();
+            expect($ctrl.renderingMode).toEqual('latest');
+        }));
 
         describe('when search param is defined', function () {
             beforeEach(function () {
@@ -4386,6 +4402,17 @@ describe('catalog', function () {
 
             it('should not bind blur event', function () {
                 expect(inputSpy.bind).not.toHaveBeenCalledWith('blur', jasmine.any(Function));
+            });
+        });
+    });
+
+    describe('<bin-catalog-raw-search/>', function () {
+        describe('with controller', function () {
+            beforeEach(inject(function ($componentController) {
+                $ctrl = $componentController('binCatalogRawSearch', undefined, {});
+            }));
+
+            it('exists', function () {
             });
         });
     });
