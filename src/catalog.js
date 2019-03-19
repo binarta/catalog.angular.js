@@ -36,7 +36,7 @@
         .factory('itemPinner', ['topicMessageDispatcher', 'restServiceHandler', 'config', ItemPinnerFactory])
         .service('binCatalogItemPublisher', ['$rootScope', 'moment', 'updateCatalogItemWriter', 'editModeRenderer', BinCatalogItemPublisherService])
         .service('binWidgetSettings', ['$rootScope', 'binarta', 'updateCatalogItemWriter', 'editModeRenderer', BinWidgetSettingsService])
-        .controller('BinBrowseCatalogPage', ['config', BinBrowseCatalogPage])
+        .controller('BinBrowseCatalogPage', ['config', '$log', BinBrowseCatalogPage])
         .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
         .controller('AddToCatalogController', ['$scope', '$routeParams', 'topicRegistry', 'findAllCatalogItemTypes', 'addCatalogItem', 'usecaseAdapterFactory', AddToCatalogController])
         .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
@@ -299,13 +299,13 @@
         };
     }
 
-    function BinBrowseCatalogPage(config) {
+    function BinBrowseCatalogPage(config, $log) {
         var $ctrl = this;
 
         $ctrl.templateUrl = 'bin-catalog-browse-page-default.html';
         if (!config.BinBrowseCatalogPage || !config.BinBrowseCatalogPage.useLibraryTemplate) {
             $ctrl.templateUrl = 'partials/catalog/browse.html';
-            console.log('@Deprecated - BinBrowseCatalogPage.templateUrl = \"' + $ctrl.templateUrl + '\"! Set config.BinBrowseCatalogPage.useDefaultTemplate = true to remedy!');
+            $log.warn('@Deprecated - BinBrowseCatalogPage.templateUrl = \"' + $ctrl.templateUrl + '\"! Set config.BinBrowseCatalogPage.useDefaultTemplate = true to remedy!');
         }
         if (config.BinBrowseCatalogPage) {
             if (config.BinBrowseCatalogPage.templateUrl)
@@ -1569,14 +1569,18 @@
             $ctrl.i18n = {};
 
             $ctrl.$onInit = function () {
-                $ctrl.templateUrl = $ctrl.templateUrl || 'bin-catalog-partition-title-default.html';
                 if ($ctrl.listCtrl) {
                     if (!$ctrl.type) $ctrl.type = $ctrl.listCtrl.type;
                     if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.partition;
                     if (!$ctrl.parent) $ctrl.parent = $ctrl.listCtrl.parent;
                 }
                 $ctrl.i18n.title = $ctrl.parent === '/' ? 'navigation.label.' + $ctrl.type : $ctrl.partition;
+                $ctrl.$onChanges();
             };
+
+            $ctrl.$onChanges = function () {
+                $ctrl.templateUrl = $ctrl.templateUrl || 'bin-catalog-partition-title-default.html';
+            }
         };
     }
 
@@ -1773,15 +1777,15 @@
                 if (!$ctrl.type && $ctrl.listCtrl) $ctrl.type = $ctrl.listCtrl.type;
                 if (!$ctrl.type && $ctrl.detailsCtrl) $ctrl.type = $ctrl.detailsCtrl.type;
 
-                $ctrl.submit = withInput(function () {
+                $ctrl.submit = function () {
                     if ($ctrl.searchMode == 'on-focus')
                         $ctrl.submitWhenFocussed();
                     else executeSearch();
-                });
+                };
 
                 function withInput(f) {
-                    return function() {
-                        if(!input) {
+                    return function () {
+                        if (!input) {
                             input = $element.find('input');
                             if (input && !$ctrl.static) bindInputEvents();
                         }

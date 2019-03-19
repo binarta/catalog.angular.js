@@ -2817,7 +2817,7 @@ describe('catalog', function () {
                 expect($ctrl.templateUrl).toEqual('bin-catalog-browse-page-default.html');
             }));
 
-            it('sandbox', inject(function (config, $controller) {
+            it('override library template', inject(function (config, $controller) {
                 config.BinBrowseCatalogPage.templateUrl = 't';
                 $ctrl = $controller('BinBrowseCatalogPage', {});
                 expect($ctrl.templateUrl).toEqual('t');
@@ -3857,6 +3857,30 @@ describe('catalog', function () {
         });
     });
 
+    describe('<bin-catalog-partition-title/>', function() {
+        beforeEach(inject(function($componentController) {
+            $ctrl = $componentController('binCatalogPartitionTitle', undefined, {});
+        }));
+
+        it('exposes default template on init', function() {
+            $ctrl.$onInit();
+            expect($ctrl.templateUrl).toEqual('bin-catalog-partition-title-default.html');
+        });
+
+        it('overriding the default template on init', function() {
+            $ctrl.templateUrl = 'override';
+            $ctrl.$onInit();
+            expect($ctrl.templateUrl).toEqual('override');
+        });
+
+        it('overriding the default template post init', function() {
+            $ctrl.$onInit();
+            $ctrl.templateUrl = 'override';
+            $ctrl.$onChanges();
+            expect($ctrl.templateUrl).toEqual('override');
+        });
+    });
+
     describe('<bin-catalog-breadcrumb/>', function () {
         var $ctrl, $location;
 
@@ -4170,7 +4194,7 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('<bin-catalog-search/>', function () {
+    describe('<bin-catalog-search/>', function () {
         var $componentController, $ctrl, $timeout, elementSpy, inputSpy, searchParam, type, fadeDuration = 150;
 
         beforeEach(inject(function (_$componentController_, _$timeout_) {
