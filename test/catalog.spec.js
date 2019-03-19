@@ -2807,8 +2807,8 @@ describe('catalog', function () {
             expect($ctrl.templateUrl).toEqual('partials/catalog/browse.html');
         }));
 
-        describe('when using library template', function() {
-            beforeEach(inject(function(config) {
+        describe('when using library template', function () {
+            beforeEach(inject(function (config) {
                 config.BinBrowseCatalogPage = {useLibraryTemplate: true};
             }));
 
@@ -2817,7 +2817,7 @@ describe('catalog', function () {
                 expect($ctrl.templateUrl).toEqual('bin-catalog-browse-page-default.html');
             }));
 
-            it('sandbox', inject(function(config, $controller) {
+            it('sandbox', inject(function (config, $controller) {
                 config.BinBrowseCatalogPage.templateUrl = 't';
                 $ctrl = $controller('BinBrowseCatalogPage', {});
                 expect($ctrl.templateUrl).toEqual('t');
@@ -2825,42 +2825,42 @@ describe('catalog', function () {
         });
     });
 
-    fdescribe('<bin-catalog-browse/>', function() {
-        describe('with controller', function() {
-            beforeEach(inject(function($componentController) {
+    describe('<bin-catalog-browse/>', function () {
+        describe('with controller', function () {
+            beforeEach(inject(function ($componentController) {
                 $ctrl = $componentController('binCatalogBrowse', undefined, {});
             }));
 
-            describe('$onInit', function() {
-                beforeEach(function() {
+            describe('$onInit', function () {
+                beforeEach(function () {
                     $ctrl.$onInit();
                 });
 
-                it('expose partitions template url', function() {
+                it('expose partitions template url', function () {
                     expect($ctrl.partitionsTemplateUrl).toEqual('bin-catalog-browse-component-partitions-default.html');
                 });
             });
 
-            describe('$onInit with overrides', function() {
-                beforeEach(function() {
+            describe('$onInit with overrides', function () {
+                beforeEach(function () {
                     $ctrl.partitionsTemplateUrl = 'pt';
                     $ctrl.$onInit();
                 });
 
-                it('expose partitions template url', function() {
+                it('expose partitions template url', function () {
                     expect($ctrl.partitionsTemplateUrl).toEqual('pt');
                 });
             });
         });
     });
 
-    describe('<bin-catalog-browse-partitions/>', function() {
-        describe('with controller', function() {
-            beforeEach(inject(function($componentController) {
+    describe('<bin-catalog-browse-partitions/>', function () {
+        describe('with controller', function () {
+            beforeEach(inject(function ($componentController) {
                 $ctrl = $componentController('binCatalogBrowsePartitions', undefined, {});
             }));
 
-            it('exists', function() {
+            it('exists', function () {
             });
         });
     });
@@ -3857,13 +3857,29 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogBreadcrumb component', function () {
+    describe('<bin-catalog-breadcrumb/>', function () {
         var $ctrl, $location;
 
         beforeEach(inject(function ($componentController, _$location_) {
             $location = _$location_;
             $location.path('/browse/p');
             $ctrl = $componentController('binCatalogBreadcrumb');
+        }));
+
+        it('starts out in legacy rendering mode', function () {
+            expect($ctrl.renderingMode).toEqual('legacy');
+        });
+
+        it('legacy rendering mode remains enabled when not configured', inject(function (config) {
+            config.binCatalogBreadcrumbComponent = {};
+            $ctrl.$onInit();
+            expect($ctrl.renderingMode).toEqual('legacy');
+        }));
+
+        it('legacy rendering mode can be disabled', inject(function (config) {
+            config.binCatalogBreadcrumbComponent = {disableLegacyRendering: true};
+            $ctrl.$onInit();
+            expect($ctrl.renderingMode).toEqual('latest');
         }));
 
         describe('with listCtrl and parent', function () {
@@ -4139,6 +4155,17 @@ describe('catalog', function () {
                         {id: 'navigation.label.p'}
                     ]);
                 });
+            });
+        });
+    });
+
+    describe('<bin-catalog-raw-breadcrumb/>', function () {
+        describe('with controller', function () {
+            beforeEach(inject(function ($componentController) {
+                $ctrl = $componentController('binCatalogRawBreadcrumb', undefined, {});
+            }));
+
+            it('exists', function () {
             });
         });
     });

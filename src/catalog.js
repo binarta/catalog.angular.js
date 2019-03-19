@@ -58,6 +58,7 @@
         .component('binCatalogRawPartitionTitle', new BinCatalogRawPartitionTitleComponent())
         .component('binCatalogPartitionDescription', new BinCatalogPartitionDescriptionComponent())
         .component('binCatalogBreadcrumb', new BinCatalogBreadcrumbComponent())
+        .component('binCatalogRawBreadcrumb', new BinCatalogRawBreadcrumbComponent())
         .component('binCatalogSearch', new BinCatalogSearchComponent())
         .component('binCatalogItemGroups', new BinCatalogItemGroupsComponent())
         .component('binCatalogItems', new BinCatalogItemsComponent())
@@ -1620,6 +1621,11 @@
         }];
     }
 
+    function BinCatalogRawBreadcrumbComponent() {
+        this.templateUrl = 'bin-catalog-raw-breadcrumb.html';
+        this.require = {parent:'^^binCatalogBreadcrumb'};
+    }
+
     function BinCatalogBreadcrumbComponent() {
         this.templateUrl = ['$attrs', function ($attrs) {
             return $attrs.templateUrl || 'bin-catalog-breadcrumb.html';
@@ -1636,10 +1642,15 @@
             detailsCtrl: '?^^binCatalogDetails'
         };
 
-        this.controller = ['$location', function ($location) {
+        this.controller = ['$location', 'config', function ($location, config) {
             var $ctrl = this, breadcrumb, partition, browse = '/browse';
+            $ctrl.renderingMode = 'legacy';
 
             $ctrl.$onInit = function () {
+                if(config.binCatalogBreadcrumbComponent) {
+                    if(config.binCatalogBreadcrumbComponent.disableLegacyRendering)
+                        $ctrl.renderingMode = 'latest';
+                }
                 if ($ctrl.listCtrl) {
                     if (!$ctrl.partition) $ctrl.partition = $ctrl.listCtrl.parent;
                     if (!$ctrl.item) $ctrl.item = $ctrl.listCtrl.parent ? $ctrl.listCtrl.partition : $ctrl.listCtrl.type;

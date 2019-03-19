@@ -1,0 +1,16 @@
+<section id="breadcrumb">
+    <ol class="breadcrumb visible-xs" ng-if="$ctrl.parent.back">
+        <li>
+            <a bin-href="{{$ctrl.parent.back.path}}">
+                <span><i class="fa fa-angle-left fa-fw"></i></span>
+                <span i18n code="{{$ctrl.parent.back.id}}" read-only ng-bind="var"></span>
+            </a>
+        </li>
+    </ol>
+    <ol class="breadcrumb hidden-xs">
+        <li ng-class="::{active: !it.path}" ng-repeat="it in $ctrl.parent.breadcrumb track by it.id">
+            <a ng-if="::it.path" bin-href="{{::it.path}}" i18n code="{{::it.id}}" read-only ng-bind="var"></a>
+            <span ng-if="::!it.path" i18n code="{{::it.id}}" read-only ng-bind="var"></span>
+        </li>
+    </ol>
+</section>

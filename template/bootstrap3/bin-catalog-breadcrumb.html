@@ -1,20 +1,6 @@
-<section id="breadcrumb">
-    <div class="container">
-        <div class="row">
-            <ol class="breadcrumb visible-xs" ng-if="$ctrl.back">
-                <li>
-                    <a bin-href="{{$ctrl.back.path}}">
-                        <span><i class="fa fa-angle-left fa-fw"></i></span>
-                        <span i18n code="{{$ctrl.back.id}}" read-only ng-bind="var"></span>
-                    </a>
-                </li>
-            </ol>
-            <ol class="breadcrumb hidden-xs">
-                <li ng-class="::{active: !it.path}" ng-repeat="it in $ctrl.breadcrumb track by it.id">
-                    <a ng-if="::it.path" bin-href="{{::it.path}}" i18n code="{{::it.id}}" read-only ng-bind="var"></a>
-                    <span ng-if="::!it.path" i18n code="{{::it.id}}" read-only ng-bind="var"></span>
-                </li>
-            </ol>
-        </div>
+<div ng-if="$ctrl.renderingMode == 'legacy'" class="container">
+    <div class="row">
+        <bin-catalog-raw-breadcrumb></bin-catalog-raw-breadcrumb>
     </div>
-</section>
+</div>
+<bin-catalog-raw-breadcrumb ng-if="$ctrl.renderingMode == 'latest'"></bin-catalog-raw-breadcrumb>
