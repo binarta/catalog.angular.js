@@ -1135,6 +1135,7 @@
     function BinCatalogBrowseComponent() {
         this.templateUrl = 'bin-catalog-browse-component.html';
         this.bindings = {
+            searchMode: '@',
             partitionsTemplateUrl: '@',
             partitionTitleTemplateUrl: '@'
         };
@@ -1749,6 +1750,7 @@
         this.bindings = {
             type: '@',
             static: '@',
+            searchMode: '@'
         };
 
         this.require = {
@@ -1771,22 +1773,33 @@
                 if (!$ctrl.type && $ctrl.listCtrl) $ctrl.type = $ctrl.listCtrl.type;
                 if (!$ctrl.type && $ctrl.detailsCtrl) $ctrl.type = $ctrl.detailsCtrl.type;
 
-                $ctrl.submit = function () {
+                $ctrl.submit = withInput(function () {
+                    if ($ctrl.searchMode == 'on-focus')
+                        $ctrl.submitWhenFocussed();
+                    else executeSearch();
+                });
+
+                function withInput(f) {
+                    return function() {
+                        if(!input) {
+                            input = $element.find('input');
+                            if (input && !$ctrl.static) bindInputEvents();
+                        }
+                        f();
+                    };
+                }
+
+                function executeSearch() {
                     $location.search('q', $ctrl.q);
                     i18nLocation.path('/search/' + $ctrl.type);
                     if ($ctrl.listCtrl) $ctrl.listCtrl.search();
-                };
+                }
 
-                $ctrl.submitWhenFocussed = function () {
+                $ctrl.submitWhenFocussed = withInput(function () {
                     if (isFocused || !input) {
-                        if ($ctrl.q) $ctrl.submit();
+                        if ($ctrl.q) executeSearch();
                     } else focus();
-                };
-            };
-
-            $ctrl.$postLink = function () {
-                input = $element.find('input');
-                if (input && !$ctrl.static) bindInputEvents();
+                });
             };
 
             function focus() {

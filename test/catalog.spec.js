@@ -4170,7 +4170,7 @@ describe('catalog', function () {
         });
     });
 
-    describe('<bin-catalog-search/>', function () {
+    fdescribe('<bin-catalog-search/>', function () {
         var $componentController, $ctrl, $timeout, elementSpy, inputSpy, searchParam, type, fadeDuration = 150;
 
         beforeEach(inject(function (_$componentController_, _$timeout_) {
@@ -4298,7 +4298,6 @@ describe('catalog', function () {
         describe('when no input element is present', function () {
             beforeEach(function () {
                 $ctrl.$onInit();
-                $ctrl.$postLink();
                 $ctrl.type = 'type';
                 $ctrl.q = searchParam;
             });
@@ -4316,9 +4315,30 @@ describe('catalog', function () {
             beforeEach(function () {
                 elementSpy.find.and.returnValue(inputSpy);
                 $ctrl.$onInit();
-                $ctrl.$postLink();
                 $ctrl.type = 'type';
                 $ctrl.q = searchParam;
+            });
+
+            describe('and search mode is set to on focus', function() {
+                beforeEach(function() {
+                    $ctrl.searchMode = 'on-focus';
+                    $ctrl.submit();
+                });
+
+                it('set focus on input element', function () {
+                    expect(inputSpy.focus).toHaveBeenCalled();
+                });
+
+                assertNoSearch();
+
+                describe('on focus and search is executed again', function () {
+                    beforeEach(function () {
+                        inputSpy.bind.calls.first().args[1]();
+                        $ctrl.submit();
+                    });
+
+                    assertSearch();
+                });
             });
 
             describe('on searchOnFocus', function () {
@@ -4389,7 +4409,6 @@ describe('catalog', function () {
                 $ctrl.static = 'true';
                 elementSpy.find.and.returnValue(inputSpy);
                 $ctrl.$onInit();
-                $ctrl.$postLink();
             });
 
             it('should have boolean value of true on $ctrl when element has a string property of true', function () {
