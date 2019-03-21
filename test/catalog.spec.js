@@ -2801,11 +2801,24 @@ describe('catalog', function () {
         });
     });
 
-    describe('BinBrowseCatalogPage controller', function () {
-        it('expects user provided template for backwards compatibility', inject(function ($controller) {
+    describe('/browse', function () {
+        var observer, ui, $controller, $routeParams;
+
+        beforeEach(inject(function (_$controller_, _$routeParams_) {
+            $controller = _$controller_;
+            $routeParams = _$routeParams_;
+            ui = jasmine.createSpyObj('ui', ['type', 'path', 'parentPath']);
+            observer = binarta.catalog.browser.observe(ui);
+        }));
+
+        afterEach(function () {
+            observer.disconnect();
+        });
+
+        it('expects user provided template for backwards compatibility', function () {
             $ctrl = $controller('BinBrowseCatalogPage', {});
             expect($ctrl.templateUrl).toEqual('partials/catalog/browse.html');
-        }));
+        });
 
         describe('when using library template', function () {
             beforeEach(inject(function (config) {
@@ -2823,6 +2836,56 @@ describe('catalog', function () {
                 expect($ctrl.templateUrl).toEqual('t');
             }));
         });
+
+        describe('when type is not given', function () {
+            describe('with catalog route params', function () {
+                beforeEach(function () {
+                    $routeParams.d0 = 'type';
+                    $routeParams.d1 = 'p1';
+                    $routeParams.d2 = 'p2';
+                    $ctrl = $controller('BinBrowseCatalogPage', {});
+                });
+
+                it('expose type', function() {
+                    expect($ctrl.type).toEqual('type');
+                });
+
+                it('notify browser of discovered type', function () {
+                    expect(ui.type).toHaveBeenCalledWith('type');
+                });
+
+                it('notify browser of discovered path', function () {
+                    expect(ui.path).toHaveBeenCalledWith('/type/p1/p2/');
+                });
+
+                it('notify browser of discovered parent path', function () {
+                    expect(ui.parentPath).toHaveBeenCalledWith('/type/p1/');
+                });
+            });
+
+            describe('with type route param', function () {
+                beforeEach(function () {
+                    $routeParams.type = 'type';
+                    $ctrl = $controller('BinBrowseCatalogPage', {});
+                });
+
+                it('expose type', function() {
+                    expect($ctrl.type).toEqual('type');
+                });
+
+                it('notify browser of discovered type', function () {
+                    expect(ui.type).toHaveBeenCalledWith('type');
+                });
+
+                it('notify browser of discovered path', function () {
+                    expect(ui.path).toHaveBeenCalledWith('/');
+                });
+
+                it('notify browser of discovered parent path', function () {
+                    expect(ui.parentPath).not.toHaveBeenCalled();
+                });
+            });
+        })
     });
 
     describe('<bin-catalog-browse/>', function () {
@@ -2838,6 +2901,16 @@ describe('catalog', function () {
 
                 it('expose partitions template url', function () {
                     expect($ctrl.partitionsTemplateUrl).toEqual('bin-catalog-browse-component-partitions-default.html');
+                });
+
+                describe('observes binarta browser', function () {
+                    beforeEach(function () {
+                        binarta.catalog.browser.type('type');
+                    });
+
+                    it('and exposes type', function () {
+                        expect($ctrl.type).toEqual('type');
+                    });
                 });
             });
 
@@ -2865,7 +2938,7 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogList component', function () {
+    describe('<bin-catalog-list/>', function () {
         var $ctrl, $componentController, $routeParams, search;
         var type = 'type';
         var partition = 'partition';
@@ -2877,33 +2950,17 @@ describe('catalog', function () {
             search = binartaSearch;
         }));
 
-        describe('when type is not given', function () {
-            describe('with catalog route params', function () {
-                beforeEach(function () {
-                    $routeParams.d0 = 'type';
-                    $routeParams.d1 = 'p1';
-                    $routeParams.d2 = 'p2';
-                    $ctrl = $componentController('binCatalogList', null, {});
-                    $ctrl.$onInit();
-                });
-
-                it('parse type and partition from route', function () {
-                    expect($ctrl.type).toEqual('type');
-                    expect($ctrl.partition).toEqual('/type/p1/p2/');
-                });
+        describe('when type is not given observe binarta browser', function () {
+            beforeEach(function () {
+                binarta.catalog.browser.type('type');
+                binarta.catalog.browser.path('/type/p1/p2/');
+                $ctrl = $componentController('binCatalogList', null, {});
+                $ctrl.$onInit();
             });
 
-            describe('with type route param', function () {
-                beforeEach(function () {
-                    $routeParams.type = 'type';
-                    $ctrl = $componentController('binCatalogList', null, {});
-                    $ctrl.$onInit();
-                });
-
-                it('parse type and partition from route', function () {
-                    expect($ctrl.type).toEqual('type');
-                    expect($ctrl.partition).toEqual('/');
-                });
+            it('parse type and partition from route', function () {
+                expect($ctrl.type).toEqual('type');
+                expect($ctrl.partition).toEqual('/type/p1/p2/');
             });
         });
 
@@ -3857,23 +3914,23 @@ describe('catalog', function () {
         });
     });
 
-    describe('<bin-catalog-partition-title/>', function() {
-        beforeEach(inject(function($componentController) {
+    describe('<bin-catalog-partition-title/>', function () {
+        beforeEach(inject(function ($componentController) {
             $ctrl = $componentController('binCatalogPartitionTitle', undefined, {});
         }));
 
-        it('exposes default template on init', function() {
+        it('exposes default template on init', function () {
             $ctrl.$onInit();
             expect($ctrl.templateUrl).toEqual('bin-catalog-partition-title-default.html');
         });
 
-        it('overriding the default template on init', function() {
+        it('overriding the default template on init', function () {
             $ctrl.templateUrl = 'override';
             $ctrl.$onInit();
             expect($ctrl.templateUrl).toEqual('override');
         });
 
-        it('overriding the default template post init', function() {
+        it('overriding the default template post init', function () {
             $ctrl.$onInit();
             $ctrl.templateUrl = 'override';
             $ctrl.$onChanges();
@@ -4343,8 +4400,8 @@ describe('catalog', function () {
                 $ctrl.q = searchParam;
             });
 
-            describe('and search mode is set to on focus', function() {
-                beforeEach(function() {
+            describe('and search mode is set to on focus', function () {
+                beforeEach(function () {
                     $ctrl.searchMode = 'on-focus';
                     $ctrl.submit();
                 });

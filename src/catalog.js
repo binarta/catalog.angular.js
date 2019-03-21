@@ -7,6 +7,7 @@
         'bin.price',
         'binarta-applicationjs-angular1',
         'binarta-checkpointjs-angular1',
+        'binarta-catalogjs-angular1',
         'carousel',
         'catalogx.gateway',
         'checkpoint',
@@ -36,7 +37,7 @@
         .factory('itemPinner', ['topicMessageDispatcher', 'restServiceHandler', 'config', ItemPinnerFactory])
         .service('binCatalogItemPublisher', ['$rootScope', 'moment', 'updateCatalogItemWriter', 'editModeRenderer', BinCatalogItemPublisherService])
         .service('binWidgetSettings', ['$rootScope', 'binarta', 'updateCatalogItemWriter', 'editModeRenderer', BinWidgetSettingsService])
-        .controller('BinBrowseCatalogPage', ['config', '$log', BinBrowseCatalogPage])
+        .controller('BinBrowseCatalogPage', ['binarta', 'config', 'catalogPathParser', '$routeParams', '$log', BinBrowseCatalogPage])
         .controller('ListCatalogPartitionsController', ['$scope', 'findCatalogPartitions', 'ngRegisterTopicHandler', ListCatalogPartitionsController])
         .controller('AddToCatalogController', ['$scope', '$routeParams', 'topicRegistry', 'findAllCatalogItemTypes', 'addCatalogItem', 'usecaseAdapterFactory', AddToCatalogController])
         .controller('RemoveCatalogPartitionController', ['config', '$scope', '$location', 'scopedRestServiceHandler', 'topicMessageDispatcher', 'topicRegistry', RemoveCatalogPartitionController])
@@ -299,7 +300,7 @@
         };
     }
 
-    function BinBrowseCatalogPage(config, $log) {
+    function BinBrowseCatalogPage(binarta, config, catalogPathParser, $routeParams, $log) {
         var $ctrl = this;
 
         $ctrl.templateUrl = 'bin-catalog-browse-page-default.html';
@@ -311,6 +312,13 @@
             if (config.BinBrowseCatalogPage.templateUrl)
                 $ctrl.templateUrl = config.BinBrowseCatalogPage.templateUrl;
         }
+
+        var c = catalogPathParser($routeParams);
+        $ctrl.type = c.head || $routeParams.type;
+        binarta.catalog.browser.type($ctrl.type);
+        binarta.catalog.browser.path(c.path);
+        if(c.parent)
+            binarta.catalog.browser.parentPath(c.parent);
     }
 
     function ListCatalogPartitionsController($scope, findCatalogPartitions, ngRegisterTopicHandler) {
@@ -1140,13 +1148,19 @@
             partitionsTemplateUrl: '@',
             partitionTitleTemplateUrl: '@'
         };
-        this.controller = function () {
+        this.controller = ['binarta', binComponentController(function (binarta) {
             var $ctrl = this;
 
-            $ctrl.$onInit = function () {
+            $ctrl.addInitHandler(function () {
                 $ctrl.partitionsTemplateUrl = $ctrl.partitionsTemplateUrl || 'bin-catalog-browse-component-partitions-default.html';
-            }
-        }
+
+                $ctrl.addDestroyHandler(binarta.catalog.browser.observe({
+                    type: function (it) {
+                        $ctrl.type = it;
+                    }
+                }).disconnect);
+            });
+        })]
     }
 
     function BinCatalogBrowsePartitionsComponent() {
@@ -1168,13 +1182,24 @@
             count: '@'
         };
 
-        this.controller = ['$location', '$routeParams', 'catalogPathParser', 'binartaSearch', function ($location, $routeParams, catalogPathParser, binartaSearch) {
+        this.controller = ['binarta', '$location', '$routeParams', 'catalogPathParser', 'binartaSearch', binComponentController(function (binarta, $location, $routeParams, catalogPathParser, binartaSearch) {
             var $ctrl = this;
             var count = 50, offset = 0, moreItemsAvailable = false, working = false;
 
-            $ctrl.$onInit = function () {
+            $ctrl.addInitHandler(function () {
+                if (!$ctrl.type)
+                    $ctrl.addDestroyHandler(binarta.catalog.browser.observe({
+                        type: function (it) {
+                            $ctrl.type = it;
+                        },
+                        path: function (it) {
+                            $ctrl.partition = it;
+                        },
+                        parentPath: function (it) {
+                            $ctrl.parent = it;
+                        }
+                    }).disconnect);
                 $ctrl.items = [];
-                if (!$ctrl.type) parsePropertiesFromRoute();
                 if ($ctrl.count) count = parseInt($ctrl.count);
                 $ctrl.search = search;
                 $ctrl.refresh = search;
@@ -1182,14 +1207,7 @@
                 $ctrl.hasMore = hasMore;
                 $ctrl.isWorking = isWorking;
                 searchItems();
-            };
-
-            function parsePropertiesFromRoute() {
-                var c = catalogPathParser($routeParams);
-                $ctrl.type = c.head || $routeParams.type;
-                $ctrl.partition = c.path;
-                $ctrl.parent = c.parent;
-            }
+            });
 
             function search() {
                 reset();
@@ -1254,7 +1272,7 @@
             function isWorking() {
                 return working;
             }
-        }];
+        })];
     }
 
     function BinCatalogPartitionsComponent() {
