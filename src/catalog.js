@@ -1136,6 +1136,7 @@
         this.templateUrl = 'bin-catalog-browse-component.html';
         this.bindings = {
             searchMode: '@',
+            itemTemplateUrl: '@',
             partitionsTemplateUrl: '@',
             partitionTitleTemplateUrl: '@'
         };

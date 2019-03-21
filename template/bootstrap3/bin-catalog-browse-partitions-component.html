@@ -1,6 +1,12 @@
 <bin-catalog-partitions>
     <bin-catalog-partition-description></bin-catalog-partition-description>
-    <bin-catalog-item-groups pinnable="true" configurable-component="catalog.item.search" configurable-widget="preview.image" redirect-on-add="true"></bin-catalog-item-groups>
+    <bin-catalog-item-groups
+            pinnable="true"
+            configurable-component="catalog.item.search"
+            configurable-widget="preview.image"
+            redirect-on-add="true"
+            item-template-url="{{$ctrl.parent.itemTemplateUrl}}"
+    ></bin-catalog-item-groups>
     <bin-catalog-working></bin-catalog-working>
     <bin-catalog-search-more></bin-catalog-search-more>
 </bin-catalog-partitions>

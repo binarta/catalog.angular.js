@@ -3207,7 +3207,7 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogPartitions component', function () {
+    describe('<bin-catalog-partitions/>', function () {
         var $ctrl, $timeout, findCatalogPartitionsMock, partitions, topicsMock;
 
         beforeEach(inject(function ($componentController, _$timeout_, topicRegistryMock) {
@@ -4460,7 +4460,7 @@ describe('catalog', function () {
         });
     });
 
-    describe('binCatalogItemGroups component', function () {
+    describe('<bin-catalog-item-groups/>', function () {
         var $componentController, $ctrl;
 
         beforeEach(inject(function (_$componentController_) {
