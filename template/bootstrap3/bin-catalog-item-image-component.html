@@ -1,5 +1,5 @@
 <div class="responsive-item maintain-aspect-ratio" ng-class="::{'item-image-not-found': !$ctrl.src}"
-     ng-style="{'padding-bottom': 'calc(100% * {{$ctrl.aspectRatio.height}} / {{$ctrl.aspectRatio.width}}}">
+     ng-style="{'padding-bottom': 'calc(100% * {{$ctrl.aspectRatio.height}} / {{$ctrl.aspectRatio.width}})}">
     <img bin-image="{{::$ctrl.src}}"
          ng-class="{'cover':$ctrl.fittingRule == 'cover', 'contain':$ctrl.fittingRule != 'cover'}"
          read-only="" ng-if="::$ctrl.src">
