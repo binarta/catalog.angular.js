@@ -6877,6 +6877,80 @@ describe('catalog', function () {
             });
         });
     });
+
+    describe('binCatalogItemImageComponent', function() {
+        beforeEach(inject(function($componentController) {
+            this.parent = {
+                image: {
+                    hero: 'hero-image-path'
+                }, 
+                item: {
+                    imageAspectRatio: 'aspect-ratio', 
+                    imageFittingRule: 'fitting-rule'
+                }
+            };
+            this.bindings = {parent: this.parent};
+            this.init = function() {
+                this.component = $componentController('binCatalogItemImage', this.locals, this.bindings);
+                this.component.$onInit();
+            }
+        }));
+
+        describe('without any input', function() {
+            beforeEach(function() {
+                this.init();
+            });
+
+            it('installs a default bottom template url', function() {
+                expect(this.component.bottomTemplateUrl).toEqual('bin-catalog-item-image-component-bottom.html');
+            });
+
+            it('exposes the item hero image', function() {
+                expect(this.component.src).toEqual(this.parent.image.hero);
+            });
+
+            it('exposes the aspect ratio', function() {
+                expect(this.component.aspectRatio).toEqual(this.parent.item.imageAspectRatio);
+            });
+
+            it('exposes the fitting rule', function() {
+                expect(this.component.fittingRule).toEqual(this.parent.item.imageFittingRule);
+            })
+        });
+
+        describe('with bottom template url input', function() {
+            it('exposes the provided input', function() {
+                this.bindings.bottomTemplateUrl = 'custom-template.html';
+                
+                this.init();
+
+                expect(this.component.bottomTemplateUrl).toEqual('custom-template.html');
+            });
+        });
+
+        describe('with aspect ratio and fitting rule defaults', function() {
+            beforeEach(function() {
+                this.bindings.defaultAspectRatio = 'default-aspect-ratio';
+                this.bindings.defaultFittingRule = 'default-fitting-rule';
+            });
+
+            it('exposes the item aspect ratio and fitting rule when defined', function() {
+                this.init();
+
+                expect(this.component.aspectRatio).toEqual(this.parent.item.imageAspectRatio);
+                expect(this.component.fittingRule).toEqual(this.parent.item.imageFittingRule);
+            });
+
+            it('exposes the defaults when the item has no aspect ratio or fitting rule defined', function() {
+                this.parent.item = {};
+                
+                this.init();
+
+                expect(this.component.aspectRatio).toEqual(this.bindings.defaultAspectRatio);
+                expect(this.component.fittingRule).toEqual(this.bindings.defaultFittingRule);
+            });
+        });
+    })
 });
 
 angular.module('test.app', ['catalog']).config(['catalogItemUpdatedDecoratorProvider', function (catalogItemUpdatedDecoratorProvider) {

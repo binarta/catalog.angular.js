@@ -2648,7 +2648,9 @@
     function BinCatalogItemImageComponent() {
         this.templateUrl = 'bin-catalog-item-image-component.html';
         this.bindings = {
-            bottomTemplateUrl: '@'
+            bottomTemplateUrl: '@',
+            defaultAspectRatio: '<',
+            defaultFittingRule: '@'
         };
         this.require = {
             parent: '^^binCatalogItem'
@@ -2660,8 +2662,8 @@
                 if (!$ctrl.bottomTemplateUrl)
                     $ctrl.bottomTemplateUrl = 'bin-catalog-item-image-component-bottom.html';
                 $ctrl.src = $ctrl.parent.image.hero;
-                $ctrl.aspectRatio = $ctrl.parent.item.imageAspectRatio;
-                $ctrl.fittingRule = $ctrl.parent.item.imageFittingRule;
+                $ctrl.aspectRatio = $ctrl.parent.item.imageAspectRatio || $ctrl.defaultAspectRatio;
+                $ctrl.fittingRule = $ctrl.parent.item.imageFittingRule || $ctrl.defaultFittingRule;
             }
         }
     }
