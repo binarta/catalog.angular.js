@@ -6643,6 +6643,14 @@ describe('catalog', function () {
             expect($ctrl.i18nCode).toEqual('itemId.cta');
         });
 
+        it('resolved i18n name of item is available', function() {
+            i18nDeferred.resolve('item name');
+            $rootScope.$digest();
+
+            expect($ctrl.itemName).toEqual('item name');
+            expect(i18n.resolve).toHaveBeenCalledWith({code: $ctrl.item.id});
+        });
+
         it('edit action is installed on item component', function () {
             expect($ctrl.itemCtrl.installEditAction).toHaveBeenCalledWith({
                 action: jasmine.any(Function),

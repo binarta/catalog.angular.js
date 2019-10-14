@@ -2733,11 +2733,16 @@
             itemCtrl: '^^binCatalogItem'
         };
 
-        this.controller = ['$scope', 'editModeRenderer', function ($scope, renderer) {
+        this.controller = ['$scope', 'editModeRenderer', 'i18n', function ($scope, renderer, i18n) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
                 $ctrl.i18nCode = $ctrl.item.id + '.cta';
+                i18n.resolve({
+                    code: $ctrl.item.id
+                }).then(function(message) {
+                    $ctrl.itemName = message;
+                });
 
                 $ctrl.isPurchasable = function () {
                     return isEnabledByDefault($ctrl.purchasable) && hasPrice();

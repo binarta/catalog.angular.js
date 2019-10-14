@@ -2,15 +2,34 @@
     <span ng-switch-when="none"></span>
     <span ng-switch-when="link">
         <a ng-href="{{$ctrl.item.link}}" target="{{$ctrl.item.linkTarget}}" class="btn btn-primary"
-           i18n code="{{::$ctrl.i18nCode}}" default="Info" read-only ng-bind="var">
+            analytics-on="click" 
+            analytics-event="Calalog Item CTA Link" 
+            analytics-category="Button" 
+            analytics-label="{{::$ctrl.itemName}}"
+            i18n code="{{::$ctrl.i18nCode}}" default="Info" read-only ng-bind="var">
         </a>
     </span>
     <span ng-switch-default>
         <% if(shop) { %>
-        <bin-basket mode="add-to-basket-button" item="$ctrl.item" ng-if="$ctrl.isPurchasable()"></bin-basket>
-        <bin-catalog-item-request-info-button item="$ctrl.item" ng-if="!$ctrl.isPurchasable()"></bin-catalog-item-request-info-button>
+        <bin-basket mode="add-to-basket-button" item="$ctrl.item" ng-if="$ctrl.isPurchasable()"
+            analytics-on="click" 
+            analytics-event="Catalog Item CTA Add To Basket" 
+            analytics-category="Button" 
+            analytics-label="{{::$ctrl.itemName}}"
+        ></bin-basket>
+        <bin-catalog-item-request-info-button item="$ctrl.item" ng-if="!$ctrl.isPurchasable()"
+            analytics-on="click" 
+            analytics-event="Catalog Item CTA Request Info" 
+            analytics-category="Button" 
+            analytics-label="{{::$ctrl.itemName}}"
+        ></bin-catalog-item-request-info-button>
         <% } else { %>
-        <bin-catalog-item-request-info-button item="$ctrl.item"></bin-catalog-item-request-info-button>
+        <bin-catalog-item-request-info-button item="$ctrl.item"
+            analytics-on="click" 
+            analytics-event="Catalog Item CTA Request Info" 
+            analytics-category="Button" 
+            analytics-label="{{::$ctrl.itemName}}"
+        ></bin-catalog-item-request-info-button>
         <% } %>
     </span>
 </span>
